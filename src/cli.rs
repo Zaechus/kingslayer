@@ -1,8 +1,8 @@
 use std::io;
 use std::io::Write;
 
-use read_line;
 use room::Room;
+use utils::read_line;
 use world::World;
 
 /// A Command Line Interface struct;
