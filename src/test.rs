@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod tests {
-    #[test]
+    // Example test:
+    /*#[test]
     fn it_works() {
         assert_eq!(2 + 2, 4);
-    }
+    }*/
 }
