@@ -1,15 +1,16 @@
-/// An enum type to represent all types of objects present in a Room
-pub enum Obj {
-    Container(Container),
-    Item(Item),
-    Weapon(Weapon),
+/// An struct type to represent all objects present in a Room
+pub struct Obj {
+    desc: String,
 }
 
-/// An Obj able to hold other Objs
-pub struct Container {}
-
-/// A generic Obj
-pub struct Item {}
-
-/// An Obj with the use of attacking
-pub struct Weapon {}
+impl Obj {
+    pub fn new(desc: &str) -> Obj {
+        Obj {
+            desc: desc.to_owned(),
+        }
+    }
+    /// return
+    pub fn desc(&self) -> String {
+        self.desc.clone()
+    }
+}
