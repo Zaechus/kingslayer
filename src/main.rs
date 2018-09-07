@@ -1,17 +1,17 @@
 extern crate kinggame1d;
 
-use kinggame1d::cli::Cli;
-use kinggame1d::obj::Obj;
-use kinggame1d::room::Room;
+use std::collections::HashMap;
+
+use kinggame1d::{cli::Cli, item::Item, room::Room};
 
 fn main() {
-    let mut rooms: Vec<Box<Room>> = Vec::new();
-    rooms.reserve(2);
-
     // start room
-    let iron_sword = Obj::new("There is an iron sword on the ground.");
-    let mut start_room_objs = Vec::new();
-    start_room_objs.push(Box::new(iron_sword));
+    let iron_sword = Box::new(Item::new(
+        "iron sword",
+        "There is an iron sword on the ground.",
+    ));
+    let mut start_room_objs: HashMap<String, Box<Item>> = HashMap::new();
+    start_room_objs.insert(iron_sword.name(), iron_sword);
     let mut start_room = Box::new(Room::new(
         "Start Room",
         "You stand at the beginning.",
@@ -19,20 +19,20 @@ fn main() {
     ));
 
     // next room
-    let wood_block = Obj::new("It's just a wooden block.");
-    let mut next_room_objs = Vec::new();
-    next_room_objs.push(Box::new(wood_block));
+    let big_red_block = Box::new(Item::new("big red block", "It's just a big red block."));
+    let mut next_room_objs: HashMap<String, Box<Item>> = HashMap::new();
+    next_room_objs.insert(big_red_block.name(), big_red_block);
     let mut next_room = Box::new(Room::new(
         "Next Room",
         "You are in the next room over.",
         next_room_objs,
     ));
 
+    // paths
     start_room.add_path("e", &next_room.name(), "There is a hallway to the east.");
     next_room.add_path("w", &start_room.name(), "There is a hallway to the east.");
 
-    rooms.push(start_room);
-    rooms.push(next_room);
+    let rooms: Vec<Box<Room>> = vec![start_room, next_room];
 
     let cli = Cli::new(rooms);
     cli.start();

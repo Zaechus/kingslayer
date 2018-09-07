@@ -1,8 +1,8 @@
 use std::cell::RefCell;
-use std::io;
-use std::io::Write;
+use std::collections::HashMap;
+use std::io::{self, Write};
 
-use obj::Obj;
+use item::Item;
 use room::Room;
 use utils::read_line;
 use world::World;
@@ -11,7 +11,7 @@ use world::World;
 /// controls all of the interactions between the user and all game objects
 pub struct Cli {
     world: RefCell<World>,
-    inventory: Vec<Box<Obj>>,
+    inventory: RefCell<HashMap<String, Box<Item>>>,
     cmds: Vec<String>,
     verbs: Vec<String>,
     preps: Vec<String>,
@@ -24,16 +24,22 @@ impl Cli {
     pub fn new(rooms: Vec<Box<Room>>) -> Cli {
         Cli {
             world: RefCell::new(World::new(rooms)),
-            inventory: Vec::new(),
+            inventory: RefCell::new(HashMap::new()),
             cmds: vec![
-                "quit", "q", "look", "l", "i", "n", "s", "e", "w", "ne", "nw", "se", "sw",
+                "quit", "q", "look", "l", "i", "n", "s", "e", "w", "ne", "nw", "se", "sw", "u", "d",
             ].iter()
                 .map(|x| x.to_string())
                 .collect(),
-            verbs: vec!["asdf"].iter().map(|x| x.to_string()).collect(),
-            preps: vec!["asdf"].iter().map(|x| x.to_string()).collect(),
-            adjs: vec!["asdf"].iter().map(|x| x.to_string()).collect(),
-            nouns: vec!["asdf"].iter().map(|x| x.to_string()).collect(),
+            verbs: vec!["take", "put"].iter().map(|x| x.to_string()).collect(),
+            preps: vec!["in"].iter().map(|x| x.to_string()).collect(),
+            adjs: vec!["iron", "big", "red"]
+                .iter()
+                .map(|x| x.to_string())
+                .collect(),
+            nouns: vec!["sword", "block"]
+                .iter()
+                .map(|x| x.to_string())
+                .collect(),
         }
     }
     /// starts the Cli session
@@ -98,25 +104,59 @@ impl Cli {
     /// interprets words as game commands
     fn parse(&self, words: &Vec<String>) {
         if self.cmds.contains(&words[0]) {
-            self.actions(&words[0]);
+            self.commands(&words[0]);
+        } else if words.len() > 1 {
+            if words[0] == "take" {
+                let mut item = String::new();
+                if self.nouns.contains(words.last().unwrap()) {}
+                if words.len() > 2 {
+                    for x in &words[1..words.len() - 1] {
+                        if self.adjs.contains(x) {
+                            item.push_str(&format!("{} ", x));
+                        }
+                    }
+                }
+                item.push_str(&words.last().unwrap());
+                self.take(item.clone());
+                let curr_room = self.world.borrow().curr_room();
+                self.remove_item(item, curr_room);
+            }
         }
     }
-    fn actions(&self, cmd: &str) {
+    fn commands(&self, cmd: &str) {
         match cmd {
             "l" | "look" => self.world.borrow().look(),
-            "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" => self.world.borrow_mut().mv(cmd),
+            "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
+                self.world.borrow_mut().mv(cmd)
+            }
             "i" => self.inventory(),
             _ => println!("Nothing to do here."),
         }
     }
     fn inventory(&self) {
-        if self.inventory.is_empty() {
+        if self.inventory.borrow().is_empty() {
             println!("You are empty-handed.");
         } else {
             println!("You are carrying:");
-            for x in self.inventory.iter() {
-                println!("  {}", x.desc())
+            for x in self.inventory.borrow().iter() {
+                println!("  {}", x.1.name())
             }
         }
+    }
+    fn take(&self, name: String) {
+        let world = self.world.borrow_mut();
+        match world.rooms[world.curr_room()].items.get(&name) {
+            Some(ob) => {
+                self.inventory
+                    .borrow_mut()
+                    .insert(ob.desc(), Box::new(Item::new(&ob.name(), &ob.desc())));
+                println!("Taken.");
+            }
+            None => println!("There is no {}.", &name),
+        }
+    }
+    fn remove_item(&self, name: String, curr_room: usize) {
+        let mut world = self.world.borrow_mut();
+        world.rooms[curr_room].items.remove(&name);
     }
 }

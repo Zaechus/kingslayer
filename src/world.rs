@@ -1,6 +1,6 @@
 use room::Room;
 
-/// Represents a world for the player to explore that consists of an array of rooms.
+/// Represents a world for the player to explore that consists of an array of Rooms.
 /// A World is a graph data structure that encapsulates a collection of Room nodes.
 pub struct World {
     pub rooms: Vec<Box<Room>>,
@@ -14,22 +14,29 @@ impl World {
             curr_room: 0,
         }
     }
+    pub fn curr_room(&self) -> usize {
+        self.curr_room
+    }
+    /// displays description of the current Room
     pub fn look(&self) {
         println!("{}", (*self.rooms[self.curr_room]).desc());
     }
+    /// changes the current Room to the target of the current Room's chosen path
     pub fn mv(&mut self, direction: &str) {
-        let tmp = self.rooms[self.curr_room].paths.get(direction.clone());
-        let tmp = match tmp {
-            Some(s) => s,
-            None => "",
-        };
-        let mut new_room: usize = 0;
-        for (i, ref x) in self.rooms.iter().enumerate() {
-            if x.name() == tmp {
-                new_room = i;
+        match self.rooms[self.curr_room].paths.get(direction.clone()) {
+            Some(new_room_name) => {
+                let new_room_name = new_room_name.clone();
+                let mut new_room: usize = 0;
+                for (i, ref x) in self.rooms.iter().enumerate() {
+                    if x.name() == new_room_name {
+                        new_room = i;
+                        break;
+                    }
+                }
+                self.curr_room = new_room;
+                self.look();
             }
-        }
-        self.curr_room = new_room;
-        self.look();
+            None => println!("You cannot go that way."),
+        };
     }
 }

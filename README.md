@@ -8,3 +8,4 @@
 ```
 cargo build --release
 ```
+the resulting executable is found as /target/release/kinggame1d
