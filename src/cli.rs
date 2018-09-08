@@ -39,7 +39,7 @@ impl Cli {
                 .iter()
                 .map(|x| x.to_string())
                 .collect(),
-            nouns: vec!["sword", "block"]
+            nouns: vec!["sword", "block", "capsule"]
                 .iter()
                 .map(|x| x.to_string())
                 .collect(),
@@ -57,15 +57,19 @@ impl Cli {
 
         self.world.borrow().look();
         loop {
-            let command = self.prompt();
-            let command = self.parts(command);
-            let command = self.filter(command);
+            let command = self.filter(self.parts(self.prompt()));
             if !command.is_empty() {
                 match command[0].as_str() {
-                    "quit" | "q" => break,
-                    _ => (),
+                    "quit" | "q" => {
+                        print!("Are you sure you want to quit? (y/N): ");
+                        io::stdout().flush().expect("error flushing");
+                        let response = read_line();
+                        if !response.is_empty() && response.chars().next().unwrap() == 'y' {
+                            break;
+                        }
+                    }
+                    _ => self.parse(&command),
                 }
-                self.parse(&command);
             } else {
                 println!("I do not recognize that phrase.");
             }
@@ -118,19 +122,11 @@ impl Cli {
         } else if words.len() > 1 {
             match words[0].as_str() {
                 "take" => {
-                    let item = if words.len() > 2 {
-                        self.gather_adj(&words)
-                    } else {
-                        words[1].clone()
-                    };
+                    let item = self.gather_adj(&words);
                     self.take(item.clone());
                 }
                 "drop" => {
-                    let item = if words.len() > 2 {
-                        self.gather_adj(&words)
-                    } else {
-                        words[1].clone()
-                    };
+                    let item = self.gather_adj(&words);
                     self.drop(item.clone());
                 }
                 _ => (),
@@ -138,17 +134,21 @@ impl Cli {
         }
     }
     /// gathers adjectives followed by a noun from a slice into one string
-    fn gather_adj(&self, words: &[String]) -> String {
-        let mut item = String::new();
-        if self.nouns.contains(words.last().unwrap()) {
-            for x in &words[1..words.len() - 1] {
-                if self.adjs.contains(x) {
-                    item.push_str(&format!("{} ", x));
+    fn gather_adj(&self, words: &Vec<String>) -> String {
+        if words.len() > 2 {
+            let mut item = String::new();
+            if self.nouns.contains(words.last().unwrap()) {
+                for x in &words[1..words.len() - 1] {
+                    if self.adjs.contains(x) {
+                        item.push_str(&format!("{} ", x));
+                    }
                 }
+                item.push_str(&words.last().unwrap());
             }
-            item.push_str(&words.last().unwrap());
+            item
+        } else {
+            words[1].clone()
         }
-        item
     }
     /// prints inventory contents
     fn inventory(&self) {
@@ -162,27 +162,27 @@ impl Cli {
         }
     }
 
-    /// takes an item from the current room
     fn take(&self, name: String) {
         let curr_room = self.world.borrow().curr_room();
-        self.take_item(name.clone());
-        self.remove_item(name, curr_room);
-    }
-    fn take_item(&self, name: String) {
-        let world = self.world.borrow_mut();
-        match world.rooms[world.curr_room()].items.get(&name) {
-            Some(ob) => {
-                self.inventory
-                    .borrow_mut()
-                    .insert(ob.name(), Box::new(Item::new(&ob.name(), &ob.desc())));
-                println!("Taken.");
+        // clone Item from World
+        {
+            let world = self.world.borrow_mut();
+            match world.rooms[world.curr_room()].items.get(&name) {
+                Some(ob) => {
+                    self.inventory.borrow_mut().insert(
+                        ob.name(),
+                        Box::new(Item::new(&ob.name(), &ob.desc(), ob.is_container())),
+                    );
+                    println!("Taken.");
+                }
+                None => println!("There is no {}.", &name),
             }
-            None => println!("There is no {}.", &name),
         }
-    }
-    fn remove_item(&self, name: String, curr_room: usize) {
-        let mut world = self.world.borrow_mut();
-        world.rooms[curr_room].items.remove(&name);
+        // remove taken Item from World
+        {
+            let mut world = self.world.borrow_mut();
+            world.rooms[curr_room].items.remove(&name);
+        }
     }
 
     /// places an item into the current room
@@ -190,10 +190,10 @@ impl Cli {
         let curr_room = self.world.borrow().curr_room();
         match self.inventory.borrow().get(&name) {
             Some(ob) => {
-                //let mut world = ;
-                self.world.borrow_mut().rooms[curr_room]
-                    .items
-                    .insert(name.clone(), Box::new(Item::new(&name, &ob.desc())));
+                self.world.borrow_mut().rooms[curr_room].items.insert(
+                    name.clone(),
+                    Box::new(Item::new(&name, &ob.desc(), ob.is_container())),
+                );
                 println!("Dropped.");
             }
             None => println!("You don't have that."),
