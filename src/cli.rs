@@ -162,6 +162,7 @@ impl Cli {
         }
     }
 
+    /// take an Item from the current Room
     fn take(&self, name: String) {
         let curr_room = self.world.borrow().curr_room();
         // clone Item from World
