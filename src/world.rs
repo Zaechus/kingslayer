@@ -10,7 +10,7 @@ pub struct World {
 impl World {
     pub fn new(rooms: Vec<Box<Room>>) -> World {
         World {
-            rooms: rooms,
+            rooms,
             curr_room: 0,
         }
     }
@@ -23,7 +23,10 @@ impl World {
     }
     /// changes the current Room to the target of the current Room's chosen path
     pub fn mv(&mut self, direction: &str) {
-        match self.rooms[self.curr_room].paths.get(direction.clone()) {
+        match self.rooms[self.curr_room]
+            .paths
+            .get(&direction.to_string().clone())
+        {
             Some(new_room_name) => {
                 let new_room_name = new_room_name.clone();
                 let mut new_room: usize = 0;

@@ -16,7 +16,7 @@ impl Room {
             name: name.to_owned(),
             desc: desc.to_owned(),
             paths: HashMap::new(),
-            items: items,
+            items,
         }
     }
     pub fn name(&self) -> String {
@@ -31,8 +31,8 @@ impl Room {
         desc
     }
     /// add path directive to another Room
-    pub fn add_path(&mut self, dir: &str, room: &String, desc: &str) {
-        self.paths.insert(dir.to_owned(), room.clone());
+    pub fn add_path(&mut self, dir: &str, room: &str, desc: &str) {
+        self.paths.insert(dir.to_owned(), room.to_string().clone());
         self.desc.push_str(format!("\n{}", desc).as_str());
     }
 }
