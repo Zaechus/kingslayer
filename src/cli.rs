@@ -211,5 +211,5 @@ impl Cli {
         self.inventory.borrow_mut().remove(name);
     }
     /// places an Item into a container-capable Item in the currrent room
-    fn put_in(&self, item: &str, container: &str) {}
+    fn put_in(&self, _item: &str, _container: &str) {}
 }
