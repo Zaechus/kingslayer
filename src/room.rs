@@ -25,7 +25,7 @@ impl Room {
     /// compiles all descriptions in the Room for printing
     pub fn desc(&self) -> String {
         let mut desc = format!("{}\n{}", self.name, self.desc);
-        for x in self.items.iter() {
+        for x in &self.items {
             desc.push_str(&format!("\n{}", &x.1.desc()));
         }
         desc

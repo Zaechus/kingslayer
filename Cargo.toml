@@ -1,6 +1,6 @@
 [package]
 name = "kinggame1d"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
 
 [dependencies]

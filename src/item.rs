@@ -4,6 +4,7 @@ pub struct Item {
     name: String,
     desc: String,
     is_container: bool,
+    /// Items contained if the Item is a container
     pub contents: Vec<Item>,
 }
 
@@ -16,12 +17,16 @@ impl Item {
             contents: Vec::new(),
         }
     }
+    /// the name of the Item
     pub fn name(&self) -> String {
         self.name.clone()
     }
+    /// the game description of the Item
     pub fn desc(&self) -> String {
         self.desc.clone()
     }
+    /// if the Item is classified as a 'container'
+    /// and is allowed to hold other Items in contents
     pub fn is_container(&self) -> bool {
         self.is_container
     }
