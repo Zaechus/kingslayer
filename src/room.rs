@@ -6,7 +6,9 @@ use item::Item;
 pub struct Room {
     name: String,
     desc: String,
+    /// pathways to other Rooms
     pub paths: HashMap<String, String>,
+    /// Items contained within the Room
     pub items: HashMap<String, Box<Item>>,
 }
 
@@ -19,6 +21,7 @@ impl Room {
             items,
         }
     }
+    /// name of the Room
     pub fn name(&self) -> String {
         self.name.clone()
     }

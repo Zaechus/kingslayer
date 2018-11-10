@@ -11,7 +11,6 @@ use world::World;
 /// controls all of the interactions between the user and all game objects
 pub struct Cli {
     world: RefCell<World>,
-    /// Contains Items held by the player
     inventory: RefCell<HashMap<String, Box<Item>>>,
     cmds: Vec<String>,
     verbs: Vec<String>,

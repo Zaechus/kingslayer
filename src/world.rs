@@ -14,6 +14,7 @@ impl World {
             curr_room: 0,
         }
     }
+    /// index of the current Room
     pub fn curr_room(&self) -> usize {
         self.curr_room
     }
