@@ -1,11 +1,12 @@
-/// An struct type to represent all objects present in a Room
+use std::collections::HashMap;
 
+/// An struct type to represent all objects present in a Room
 pub struct Item {
     name: String,
     desc: String,
     is_container: bool,
     /// Items contained if the Item is a container
-    pub contents: Vec<Item>,
+    pub contents: HashMap<String, Box<Item>>,
 }
 
 impl Item {
@@ -14,7 +15,7 @@ impl Item {
             name: name.to_owned(),
             desc: desc.to_owned(),
             is_container,
-            contents: Vec::new(),
+            contents: HashMap::new(),
         }
     }
     /// the name of the Item
