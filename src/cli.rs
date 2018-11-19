@@ -26,11 +26,12 @@ impl Cli {
             world: RefCell::new(World::new(rooms)),
             inventory: RefCell::new(HashMap::new()),
             cmds: vec![
-                "quit", "q", "look", "l", "i", "n", "s", "e", "w", "ne", "nw", "se", "sw", "u", "d",
+                "quit", "q", "look", "l", "i", "exit", "n", "s", "e", "w", "ne", "nw", "se", "sw",
+                "u", "d",
             ].iter()
             .map(|x| x.to_string())
             .collect(),
-            verbs: vec!["take", "drop", "put", "place"]
+            verbs: vec!["enter", "take", "drop", "put", "place"]
                 .iter()
                 .map(|x| x.to_string())
                 .collect(),
@@ -39,7 +40,7 @@ impl Cli {
                 .iter()
                 .map(|x| x.to_string())
                 .collect(),
-            nouns: vec!["sword", "block", "capsule"]
+            nouns: vec!["sword", "block", "capsule", "closet"]
                 .iter()
                 .map(|x| x.to_string())
                 .collect(),
@@ -113,7 +114,7 @@ impl Cli {
         if self.cmds.contains(&words[0]) {
             match words[0].as_str() {
                 "l" | "look" => self.world.borrow().look(),
-                "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
+                "exit" | "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                     self.world.borrow_mut().mv(&words[0])
                 }
                 "i" => self.inventory(),
@@ -121,6 +122,9 @@ impl Cli {
             }
         } else if words.len() > 1 {
             match words[0].as_str() {
+                "enter" => {
+                    self.world.borrow_mut().mv(&words[1])
+                }
                 "take" => {
                     let item = self.gather_adj(&words[1..]);
                     self.take(&item);
@@ -207,11 +211,11 @@ impl Cli {
     }
 
     // places an Item into a container-capable Item in the currrent room
-    fn put_in(&self, item: &str, container: &str) {
+    fn put_in(&self, item: &str, _container: &str) {
         // TODO
-        let curr_room = self.world.borrow().curr_room();
+        let _curr_room = self.world.borrow().curr_room();
         match self.inventory.borrow().get(item) {
-            Some(ob) => {}
+            Some(_ob) => {}
             None => println!("You don't have that."),
         }
     }

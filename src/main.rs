@@ -19,6 +19,14 @@ fn main() {
         start_room_objs,
     ));
 
+    // Closet
+    let closet_objs: HashMap<String, Box<Item>> = HashMap::new();
+    let mut closet = Box::new(Room::new(
+        "Closet",
+        "This isn't a very large or clean closet.",
+        closet_objs,
+    ));
+
     // Next Room
     let big_red_block = Box::new(Item::new(
         "big red block",
@@ -50,10 +58,20 @@ fn main() {
         &long_hallway.name(),
         "There is a hallway to the south.",
     );
+    start_room.add_path(
+        "closet",
+        &closet.name(),
+        "There is a closet off to the side.",
+    );
+    closet.add_path(
+        "exit",
+        &start_room.name(),
+        "The door leads back into the room.",
+    );
     long_hallway.add_path("n", &start_room.name(), "There is a room to the north");
     next_room.add_path("w", &start_room.name(), "There is a pathway to the west.");
 
-    let rooms: Vec<Box<Room>> = vec![start_room, next_room, long_hallway];
+    let rooms: Vec<Box<Room>> = vec![start_room, next_room, long_hallway, closet];
 
     let cli = Cli::new(rooms);
     cli.start();
