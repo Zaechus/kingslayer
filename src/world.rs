@@ -1,3 +1,5 @@
+// Copyright (c) 2018 Maxwell Anderson
+
 use room::Room;
 
 /// Represents a world for the player to explore that consists of an array of Rooms.

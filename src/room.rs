@@ -1,3 +1,5 @@
+// Copyright (c) 2018 Maxwell Anderson
+
 use std::collections::HashMap;
 
 use items::obj::Obj;
