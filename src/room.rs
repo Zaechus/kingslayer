@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use item::Item;
+use items::obj::Obj;
 
 /// A node found within a World that is connected by paths
 pub struct Room {
@@ -9,11 +9,11 @@ pub struct Room {
     /// pathways to other Rooms
     pub paths: HashMap<String, String>,
     /// Items contained within the Room
-    pub items: HashMap<String, Box<Item>>,
+    pub items: HashMap<String, Box<Obj>>,
 }
 
 impl Room {
-    pub fn new(name: &str, desc: &str, items: HashMap<String, Box<Item>>) -> Room {
+    pub fn new(name: &str, desc: &str, items: HashMap<String, Box<Obj>>) -> Room {
         Room {
             name: name.to_owned(),
             desc: desc.to_owned(),

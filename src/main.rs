@@ -2,16 +2,17 @@ extern crate kinggame1d;
 
 use std::collections::HashMap;
 
-use kinggame1d::{cli::Cli, item::Item, room::Room};
+use kinggame1d::{
+    cli::Cli, items::container::Container, items::item::Item, items::obj::Obj, room::Room,
+};
 
 fn main() {
     // Start Room
     let iron_sword = Box::new(Item::new(
         "iron sword",
         "There is an iron sword on the ground.",
-        false,
     ));
-    let mut start_room_objs: HashMap<String, Box<Item>> = HashMap::new();
+    let mut start_room_objs: HashMap<String, Box<Obj>> = HashMap::new();
     start_room_objs.insert(iron_sword.name(), iron_sword);
     let mut start_room = Box::new(Room::new(
         "Start Room",
@@ -20,7 +21,7 @@ fn main() {
     ));
 
     // Closet
-    let closet_objs: HashMap<String, Box<Item>> = HashMap::new();
+    let closet_objs: HashMap<String, Box<Obj>> = HashMap::new();
     let mut closet = Box::new(Room::new(
         "Closet",
         "This isn't a very large or clean closet.",
@@ -28,12 +29,8 @@ fn main() {
     ));
 
     // Next Room
-    let big_red_block = Box::new(Item::new(
-        "big red block",
-        "It's just a big red block.",
-        false,
-    ));
-    let mut next_room_objs: HashMap<String, Box<Item>> = HashMap::new();
+    let big_red_block = Box::new(Item::new("big red block", "It's just a big red block."));
+    let mut next_room_objs: HashMap<String, Box<Obj>> = HashMap::new();
     next_room_objs.insert(big_red_block.name(), big_red_block);
     let mut next_room = Box::new(Room::new(
         "Next Room",
@@ -42,8 +39,8 @@ fn main() {
     ));
 
     // Long Hallway
-    let capsule = Box::new(Item::new("capsule", "There is a capsule here.", true));
-    let mut long_hallway_objs: HashMap<String, Box<Item>> = HashMap::new();
+    let capsule = Box::new(Container::new("capsule", "There is a capsule here."));
+    let mut long_hallway_objs: HashMap<String, Box<Obj>> = HashMap::new();
     long_hallway_objs.insert(capsule.name(), capsule);
     let mut long_hallway = Box::new(Room::new(
         "Long Hallway",

@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, Write};
 
-use item::Item;
+use items::obj::Obj;
 use room::Room;
 use utils::read_line;
 use world::World;
@@ -11,7 +11,7 @@ use world::World;
 /// controls all of the interactions between the user and all game objects
 pub struct Cli {
     world: RefCell<World>,
-    inventory: RefCell<HashMap<String, Box<Item>>>,
+    inventory: RefCell<HashMap<String, Box<Obj>>>,
     cmds: Vec<String>,
     verbs: Vec<String>,
     preps: Vec<String>,
@@ -122,9 +122,7 @@ impl Cli {
             }
         } else if words.len() > 1 {
             match words[0].as_str() {
-                "enter" => {
-                    self.world.borrow_mut().mv(&words[1])
-                }
+                "enter" => self.world.borrow_mut().mv(&words[1]),
                 "take" => {
                     let item = self.gather_adj(&words[1..]);
                     self.take(&item);
@@ -178,39 +176,33 @@ impl Cli {
         }
     }
 
-    // take an Item from the current Room
     fn take(&self, name: &str) {
         let curr_room = self.world.borrow().curr_room();
-        match self.world.borrow_mut().rooms[curr_room].items.get(name) {
+        let taken = self.world.borrow_mut().rooms[curr_room].items.remove(name);
+        match taken {
             Some(ob) => {
-                self.inventory.borrow_mut().insert(
-                    ob.name(),
-                    Box::new(Item::new(&ob.name(), &ob.desc(), ob.is_container())),
-                );
+                self.inventory.borrow_mut().insert(ob.name(), ob);
                 println!("Taken.");
             }
             None => println!("There is no {} here.", &name),
         }
-        self.world.borrow_mut().rooms[curr_room].items.remove(name);
     }
 
-    // places an Item into the current room
     fn drop(&self, name: &str) {
         let curr_room = self.world.borrow().curr_room();
-        match self.inventory.borrow().get(name) {
+        let dropped = self.inventory.borrow_mut().remove(name);
+        match dropped {
             Some(ob) => {
-                self.world.borrow_mut().rooms[curr_room].items.insert(
-                    name.to_string().clone(),
-                    Box::new(Item::new(&name, &ob.desc(), ob.is_container())),
-                );
+                self.world.borrow_mut().rooms[curr_room]
+                    .items
+                    .insert(ob.name(), ob);
                 println!("Dropped.");
             }
             None => println!("You don't have that."),
         }
-        self.inventory.borrow_mut().remove(name);
     }
 
-    // places an Item into a container-capable Item in the currrent room
+    // places an Obj into a Container in the currrent room
     fn put_in(&self, item: &str, _container: &str) {
         // TODO
         let _curr_room = self.world.borrow().curr_room();
