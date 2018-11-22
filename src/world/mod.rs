@@ -40,7 +40,7 @@ impl World {
                     }
                 }
                 self.curr_room = new_room;
-                self.look();
+                println!("{}", self.look());
             }
             None => println!("You cannot go that way."),
         };

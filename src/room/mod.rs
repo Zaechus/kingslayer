@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use items::obj::Obj;
+use things::obj::Obj;
 
 /// A node found within a World that is connected by paths
 pub struct Room {

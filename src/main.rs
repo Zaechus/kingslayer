@@ -5,7 +5,7 @@ extern crate kinggame1d;
 use std::collections::HashMap;
 
 use kinggame1d::{
-    cli::Cli, items::container::Container, items::item::Item, items::obj::Obj, room::Room,
+    cli::Cli, room::Room, things::container::Container, things::item::Item, things::obj::Obj,
 };
 
 fn main() {

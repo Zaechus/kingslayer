@@ -1,6 +1,6 @@
 // Copyright (c) 2018 Maxwell Anderson
 
-use items::obj::Obj;
+use things::obj::Obj;
 
 /// An struct type to represent all objects present in a Room
 #[derive(Debug)]

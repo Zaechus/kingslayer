@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use items::obj::Obj;
+use things::obj::Obj;
 
 /// An struct type to represent all objects present in a Room
 pub struct Container {
