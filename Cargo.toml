@@ -2,5 +2,9 @@
 name = "kinggame1d"
 version = "0.4.4"
 authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
+description = "The text-based version of The KingGame"
+readme = "README.md"
+license = "MIT"
+publish = false
 
 [dependencies]
