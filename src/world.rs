@@ -21,8 +21,8 @@ impl World {
         self.curr_room
     }
     /// displays description of the current Room
-    pub fn look(&self) {
-        println!("{}", (*self.rooms[self.curr_room]).desc());
+    pub fn look(&self) -> String {
+        (*self.rooms[self.curr_room]).desc()
     }
     /// changes the current Room to the target of the current Room's chosen path
     pub fn mv(&mut self, direction: &str) {

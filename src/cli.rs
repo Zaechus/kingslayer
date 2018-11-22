@@ -58,7 +58,7 @@ impl Cli {
         }
         println!("Welcome, {}!\n", name);
 
-        self.world.borrow().look();
+        println!("{}", self.world.borrow().look());
         loop {
             let command = self.filter(&self.parts(&self.prompt()));
             if !command.is_empty() {
@@ -115,11 +115,11 @@ impl Cli {
     fn parse(&self, words: &[String]) {
         if self.cmds.contains(&words[0]) {
             match words[0].as_str() {
-                "l" | "look" => self.world.borrow().look(),
+                "l" | "look" => println!("{}", self.world.borrow().look()),
                 "exit" | "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                     self.world.borrow_mut().mv(&words[0])
                 }
-                "i" => self.inventory(),
+                "i" => println!("{}", self.inventory()),
                 _ => println!("Nothing to do here."),
             }
         } else if words.len() > 1 {
@@ -167,14 +167,15 @@ impl Cli {
     }
 
     // prints inventory contents
-    fn inventory(&self) {
+    fn inventory(&self) -> String {
         if self.inventory.borrow().is_empty() {
-            println!("You are empty-handed.");
+            "You are empty-handed.".to_string()
         } else {
-            println!("You are carrying:");
+            let mut inv = String::from("You are carrying:\n");
             for x in self.inventory.borrow().iter() {
-                println!("  {}", x.1.name())
+                inv = format!("{}  {}\n", inv, x.1.name())
             }
+            inv
         }
     }
 
@@ -212,5 +213,80 @@ impl Cli {
             Some(_ob) => {}
             None => println!("You don't have that."),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use items::item::Item;
+
+    #[test]
+    fn cli_take_drop() {
+        let iron_sword = Box::new(Item::new(
+            "iron sword",
+            "There is an iron sword on the ground.",
+        ));
+        let capsule = Box::new(Item::new("capsule", "There is a capsule here."));
+
+        let mut sandbox_room_objs: HashMap<String, Box<Obj>> = HashMap::new();
+        sandbox_room_objs.insert(iron_sword.name(), iron_sword);
+        sandbox_room_objs.insert(capsule.name(), capsule);
+
+        let sandbox_room = Box::new(Room::new(
+            "Sandbox Room",
+            "You stand in a large box filled with sand.",
+            sandbox_room_objs,
+        ));
+        let rooms: Vec<Box<Room>> = vec![sandbox_room];
+
+        let cli = Cli::new(rooms);
+
+        assert_eq!(cli.inventory(), "You are empty-handed.");
+        assert!(
+            cli.world.borrow().look().contains("iron sword")
+                && cli.world.borrow().look().contains("capsule")
+        );
+
+        cli.take("iron sword");
+        assert_eq!(cli.inventory(), "You are carrying:\n  iron sword\n");
+        assert_eq!(
+            cli.world.borrow().look(),
+            format!(
+                "{}{}{}",
+                "Sandbox Room\n",
+                "You stand in a large box filled with sand.\n",
+                "There is a capsule here."
+            )
+        );
+
+        cli.take("capsule");
+        assert!(cli.inventory().contains("iron sword") && cli.inventory().contains("capsule"));
+        assert_eq!(
+            cli.world.borrow().look(),
+            format!(
+                "{}{}",
+                "Sandbox Room\n", "You stand in a large box filled with sand.",
+            )
+        );
+
+        cli.drop("iron sword");
+        assert_eq!(cli.inventory(), "You are carrying:\n  capsule\n");
+        assert_eq!(
+            cli.world.borrow().look(),
+            format!(
+                "{}{}{}",
+                "Sandbox Room\n",
+                "You stand in a large box filled with sand.\n",
+                "There is an iron sword on the ground.",
+            )
+        );
+
+        cli.drop("capsule");
+        assert_eq!(cli.inventory(), "You are empty-handed.");
+        assert!(
+            cli.world.borrow().look().contains("iron sword")
+                && cli.world.borrow().look().contains("capsule")
+        );
     }
 }
