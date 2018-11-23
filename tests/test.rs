@@ -1,5 +1,3 @@
-// Copyright (c) 2018 Maxwell Anderson
-
 extern crate kinggame1d;
 
 #[cfg(test)]

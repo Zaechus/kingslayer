@@ -1,5 +1,3 @@
-// Copyright (c) 2018 Maxwell Anderson
-
 use super::*;
 use things::item::Item;
 

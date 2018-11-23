@@ -1,5 +1,3 @@
-// Copyright (c) 2018 Maxwell Anderson
-
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, Write};

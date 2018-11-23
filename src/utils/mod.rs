@@ -1,5 +1,3 @@
-// Copyright (c) 2018 Maxwell Anderson
-
 use std::io;
 
 /// gets text input from the user and returns a String

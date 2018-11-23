@@ -1,5 +1,3 @@
-// Copyright (c) 2018 Maxwell Anderson
-
 use things::obj::Obj;
 
 /// An struct type to represent all objects present in a Room
