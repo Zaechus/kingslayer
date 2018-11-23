@@ -1,5 +1,5 @@
 # kinggame1d
-WIP
+(WIP) A text-based adventure of The KingGame.
 
 ### Dependencies
 * rustc >= 1.28.0
