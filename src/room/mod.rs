@@ -41,3 +41,6 @@ impl Room {
         self.desc.push_str(format!("\n{}", desc).as_str());
     }
 }
+
+#[cfg(test)]
+mod tests;

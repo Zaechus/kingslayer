@@ -35,9 +35,9 @@ fn cli_take_drop() {
     assert_eq!(
         cli.world.borrow().look(),
         format!(
-            "{}{}{}",
-            "Sandbox Room\n",
-            "You stand in a large box filled with sand.\n",
+            "{}\n{}\n{}",
+            "Sandbox Room",
+            "You stand in a large box filled with sand.",
             "There is a capsule here."
         )
     );
@@ -47,8 +47,8 @@ fn cli_take_drop() {
     assert_eq!(
         cli.world.borrow().look(),
         format!(
-            "{}{}",
-            "Sandbox Room\n", "You stand in a large box filled with sand.",
+            "{}\n{}",
+            "Sandbox Room", "You stand in a large box filled with sand.",
         )
     );
 
@@ -57,9 +57,9 @@ fn cli_take_drop() {
     assert_eq!(
         cli.world.borrow().look(),
         format!(
-            "{}{}{}",
-            "Sandbox Room\n",
-            "You stand in a large box filled with sand.\n",
+            "{}\n{}\n{}",
+            "Sandbox Room",
+            "You stand in a large box filled with sand.",
             "There is an iron sword on the ground.",
         )
     );
