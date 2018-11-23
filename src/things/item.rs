@@ -17,8 +17,8 @@ impl Obj for Item {
 }
 
 impl Item {
-    pub fn new(name: &str, desc: &str) -> Item {
-        Item {
+    pub fn new(name: &str, desc: &str) -> Self {
+        Self {
             name: name.to_owned(),
             desc: desc.to_owned(),
         }

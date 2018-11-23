@@ -21,8 +21,8 @@ pub struct Cli {
 
 impl Cli {
     /// Cli constructor
-    pub fn new(rooms: Vec<Box<Room>>) -> Cli {
-        Cli {
+    pub fn new(rooms: Vec<Box<Room>>) -> Self {
+        Self {
             world: RefCell::new(World::new(rooms)),
             inventory: RefCell::new(HashMap::new()),
             cmds: vec![

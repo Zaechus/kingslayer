@@ -20,8 +20,8 @@ impl Obj for Container {
 }
 
 impl Container {
-    pub fn new(name: &str, desc: &str) -> Container {
-        Container {
+    pub fn new(name: &str, desc: &str) -> Self {
+        Self {
             name: name.to_owned(),
             desc: desc.to_owned(),
             contents: HashMap::new(),

@@ -13,8 +13,8 @@ pub struct Room {
 }
 
 impl Room {
-    pub fn new(name: &str, desc: &str, items: HashMap<String, Box<Obj>>) -> Room {
-        Room {
+    pub fn new(name: &str, desc: &str, items: HashMap<String, Box<Obj>>) -> Self {
+        Self {
             name: name.to_owned(),
             desc: desc.to_owned(),
             paths: HashMap::new(),

@@ -8,8 +8,8 @@ pub struct World {
 }
 
 impl World {
-    pub fn new(rooms: Vec<Box<Room>>) -> World {
-        World {
+    pub fn new(rooms: Vec<Box<Room>>) -> Self {
+        Self {
             rooms,
             curr_room: 0,
         }
