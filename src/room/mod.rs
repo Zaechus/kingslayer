@@ -35,7 +35,7 @@ impl Room {
     }
     /// add path directive to another Room
     pub fn add_path(&mut self, dir: &str, room: &str, desc: &str) {
-        self.paths.insert(dir.to_owned(), room.to_string().clone());
+        self.paths.insert(dir.to_string(), room.to_string());
         self.desc.push_str(format!("\n{}", desc).as_str());
     }
 }
