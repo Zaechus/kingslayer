@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use things::obj::Obj;
+use things::obj::{Obj, ObjType};
 
-/// An struct type to represent all objects present in a Room
+/// A type of Obj that can container other Objs
 pub struct Container {
     name: String,
     desc: String,
-    /// Items contained if the Item is a container
-    pub contents: HashMap<String, Box<Container>>,
+    /// Objs contained within the Container
+    pub contents: HashMap<String, Box<Obj>>,
 }
 
 impl Obj for Container {
@@ -16,6 +16,9 @@ impl Obj for Container {
     }
     fn desc(&self) -> String {
         self.desc.clone()
+    }
+    fn objtype(&self) -> ObjType {
+        ObjType::Container
     }
 }
 

@@ -1,7 +1,6 @@
-use things::obj::Obj;
+use things::obj::{Obj, ObjType};
 
-/// An struct type to represent all objects present in a Room
-#[derive(Debug)]
+/// A basic type of Obj
 pub struct Item {
     name: String,
     desc: String,
@@ -13,6 +12,9 @@ impl Obj for Item {
     }
     fn desc(&self) -> String {
         self.desc.clone()
+    }
+    fn objtype(&self) -> ObjType {
+        ObjType::Container
     }
 }
 

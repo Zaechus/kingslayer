@@ -132,7 +132,6 @@ impl Cli {
                     self.drop(&item);
                 }
                 "put" | "place" => {
-                    // TODO
                     if words.contains(&"in".to_string()) {
                         let in_index = words.iter().position(|r| r == &"in".to_string()).unwrap();
                         let item = self.gather_adj(&words[1..in_index]);
@@ -185,7 +184,7 @@ impl Cli {
                 self.inventory.borrow_mut().insert(ob.name(), ob);
                 println!("Taken.");
             }
-            None => println!("There is no {} here.", &name),
+            None => println!("There is no {} here.", name),
         }
     }
 
@@ -204,13 +203,22 @@ impl Cli {
     }
 
     // places an Obj into a Container in the currrent room
-    fn put_in(&self, item: &str, _container: &str) {
-        // TODO
-        let _curr_room = self.world.borrow().curr_room();
-        match self.inventory.borrow().get(item) {
-            Some(_ob) => {}
-            None => println!("You don't have that."),
-        }
+    fn put_in(&self, item: &str, container: &str) {
+        println!("{} -> {}", item, container);
+        // let curr_room = self.world.borrow().curr_room();
+        // let placed = self.inventory.borrow_mut().remove(item);
+        // match placed {
+        //     Some(ob) => match self.world.borrow_mut().rooms[curr_room]
+        //         .items
+        //         .get(container)
+        //     {
+        //         Some(cont) => if cont.objtype() == ObjType::Container {
+        //             cont.contents.insert(item.to_string(), ob);
+        //         },
+        //         None => println!("There is no {} here.", container),
+        //     },
+        //     None => println!("You don't have that."),
+        // }
     }
 }
 
