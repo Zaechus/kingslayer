@@ -29,12 +29,11 @@ impl World {
             .get(&direction.to_string().clone())
         {
             Some(new_room_name) => {
-                for (i, ref room) in self.rooms.iter().enumerate() {
-                    if &room.name() == new_room_name {
-                        self.curr_room = i;
-                        break;
-                    }
-                }
+                self.curr_room = self
+                    .rooms
+                    .iter()
+                    .position(|ref r| &r.name() == new_room_name)
+                    .unwrap();
                 println!("{}", self.look());
             }
             None => println!("You cannot go that way."),
