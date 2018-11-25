@@ -33,9 +33,9 @@ impl Room {
         }
         desc
     }
-    /// add path directive to another Room
-    pub fn add_path(&mut self, dir: &str, room: &str, desc: &str) {
-        self.paths.insert(dir.to_string(), room.to_string());
+    /// add path to another Room
+    pub fn add_path(&mut self, direction: &str, name: &str, desc: &str) {
+        self.paths.insert(direction.to_string(), name.to_string());
         self.desc.push_str(format!("\n{}", desc).as_str());
     }
 }

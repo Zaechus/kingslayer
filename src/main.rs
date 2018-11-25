@@ -29,9 +29,9 @@ fn main() {
     ));
 
     // Next Room
-    let big_red_block = Box::new(Item::new("big red block", "It's just a big red block."));
+    let large_red_block = Box::new(Item::new("large red block", "It's just a large red block."));
     let mut next_room_objs: HashMap<String, Box<Obj>> = HashMap::new();
-    next_room_objs.insert(big_red_block.name(), big_red_block);
+    next_room_objs.insert(large_red_block.name(), large_red_block);
     let mut next_room = Box::new(Room::new(
         "Next Room",
         "You are in the next room over.",

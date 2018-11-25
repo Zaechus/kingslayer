@@ -36,7 +36,7 @@ impl Cli {
                 .map(|x| x.to_string())
                 .collect(),
             preps: vec!["in"].iter().map(|x| x.to_string()).collect(),
-            adjs: vec!["iron", "big", "red"]
+            adjs: vec!["iron", "large", "red"]
                 .iter()
                 .map(|x| x.to_string())
                 .collect(),
@@ -48,24 +48,23 @@ impl Cli {
     }
     /// starts the Cli session
     pub fn start(&self) {
-        let mut name = String::new();
-        while name.is_empty() {
+        let mut player_name = String::new();
+        while player_name.is_empty() {
             print!("Enter a character name: ");
             io::stdout().flush().expect("error flushing");
-            name = read_line();
+            player_name = read_line();
         }
-        println!("Welcome, {}!\n", name);
+        println!("Welcome, {}!\n", player_name);
 
         println!("{}", self.world.borrow().look());
         loop {
             let command = self.filter(&self.parts(&self.prompt()));
             if !command.is_empty() {
-                match command[0].as_str() {
+                match command.first().unwrap().as_str() {
                     "quit" | "q" => {
                         print!("Are you sure you want to quit? (y/N): ");
                         io::stdout().flush().expect("error flushing");
-                        let response = read_line();
-                        if !response.is_empty() && response.starts_with('y') {
+                        if read_line().starts_with('y') {
                             break;
                         }
                     }
@@ -75,9 +74,9 @@ impl Cli {
                 println!("I do not recognize that phrase.");
             }
         }
-        println!("Farewell, {}!", name);
+        println!("Farewell, {}!", player_name);
     }
-    // prompts the user for a command
+    // prompts the user for an action
     fn prompt(&self) -> String {
         loop {
             print!("\n> ");
@@ -90,13 +89,14 @@ impl Cli {
     }
     // splits a string into a vector of individual words
     fn parts(&self, s: &str) -> Vec<String> {
-        let out = s.split_whitespace().map(|x| x.to_lowercase().to_owned());
-        let out: Vec<String> = out.collect();
-        out
+        s.split_whitespace()
+            .map(|x| x.to_lowercase().to_owned())
+            .collect()
     }
     // removes meaningless words
     fn filter(&self, words: &[String]) -> Vec<String> {
         let mut filtered: Vec<String> = Vec::new();
+        filtered.reserve(5);
         for w in words.iter() {
             if self.cmds.contains(&w)
                 || self.verbs.contains(&w)
@@ -107,6 +107,7 @@ impl Cli {
                 filtered.push(w.clone());
             }
         }
+        filtered.shrink_to_fit();
         filtered
     }
     // interprets words as game commands
@@ -145,7 +146,7 @@ impl Cli {
             }
         }
     }
-
+    // collect adjectives and nouns
     fn gather_adj(&self, words: &[String]) -> String {
         if words.len() > 1 {
             let mut item = String::new();
@@ -162,7 +163,6 @@ impl Cli {
             words.first().unwrap().clone()
         }
     }
-
     // prints inventory contents
     fn inventory(&self) -> String {
         if self.inventory.borrow().is_empty() {
@@ -175,7 +175,7 @@ impl Cli {
             inv
         }
     }
-
+    // take an Obj from the current Room into the inventory
     fn take(&self, name: &str) {
         let curr_room = self.world.borrow().curr_room();
         let taken = self.world.borrow_mut().rooms[curr_room].items.remove(name);
@@ -187,7 +187,7 @@ impl Cli {
             None => println!("There is no {} here.", name),
         }
     }
-
+    // drop an Obj from inventory into the current Room
     fn drop(&self, name: &str) {
         let curr_room = self.world.borrow().curr_room();
         let dropped = self.inventory.borrow_mut().remove(name);
@@ -201,7 +201,6 @@ impl Cli {
             None => println!("You don't have that."),
         }
     }
-
     // places an Obj into a Container in the currrent room
     fn put_in(&self, item: &str, container: &str) {
         println!("{} -> {}", item, container);
