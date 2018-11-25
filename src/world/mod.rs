@@ -23,7 +23,7 @@ impl World {
         (*self.rooms[self.curr_room]).desc()
     }
     /// changes the current Room to the target of the current Room's chosen path
-    pub fn mv(&mut self, direction: &str) {
+    pub fn move_room(&mut self, direction: &str) {
         match self.rooms[self.curr_room]
             .paths
             .get(&direction.to_string().clone())

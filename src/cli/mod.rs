@@ -12,11 +12,6 @@ use world::World;
 pub struct Cli {
     world: RefCell<World>,
     inventory: RefCell<HashMap<String, Box<Obj>>>,
-    cmds: Vec<String>,
-    verbs: Vec<String>,
-    preps: Vec<String>,
-    adjs: Vec<String>,
-    nouns: Vec<String>,
 }
 
 impl Cli {
@@ -25,25 +20,6 @@ impl Cli {
         Self {
             world: RefCell::new(World::new(rooms)),
             inventory: RefCell::new(HashMap::new()),
-            cmds: vec![
-                "quit", "q", "look", "l", "i", "exit", "n", "s", "e", "w", "ne", "nw", "se", "sw",
-                "u", "d",
-            ].iter()
-            .map(|x| x.to_string())
-            .collect(),
-            verbs: vec!["enter", "take", "drop", "put", "place"]
-                .iter()
-                .map(|x| x.to_string())
-                .collect(),
-            preps: vec!["in"].iter().map(|x| x.to_string()).collect(),
-            adjs: vec!["iron", "large", "red"]
-                .iter()
-                .map(|x| x.to_string())
-                .collect(),
-            nouns: vec!["sword", "block", "capsule", "closet"]
-                .iter()
-                .map(|x| x.to_string())
-                .collect(),
         }
     }
     /// starts the Cli session
@@ -60,6 +36,7 @@ impl Cli {
         loop {
             let command = self.filter(&self.parts(&self.prompt()));
             if !command.is_empty() {
+                // quit command
                 match command.first().unwrap().as_str() {
                     "quit" | "q" => {
                         print!("Are you sure you want to quit? (y/N): ");
@@ -95,72 +72,34 @@ impl Cli {
     }
     // removes meaningless words
     fn filter(&self, words: &[String]) -> Vec<String> {
-        let mut filtered: Vec<String> = Vec::new();
-        filtered.reserve(5);
-        for w in words.iter() {
-            if self.cmds.contains(&w)
-                || self.verbs.contains(&w)
-                || self.preps.contains(&w)
-                || self.adjs.contains(&w)
-                || self.nouns.contains(&w)
-            {
-                filtered.push(w.clone());
-            }
-        }
-        filtered.shrink_to_fit();
+        let mut filtered: Vec<String> = words.to_vec();
+        filtered.retain(|ref w| *w != "the" || *w != "a");
         filtered
     }
     // interprets words as game commands
     fn parse(&self, words: &[String]) {
-        if self.cmds.contains(&words[0]) {
-            match words[0].as_str() {
-                "l" | "look" => println!("{}", self.world.borrow().look()),
-                "exit" | "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
-                    self.world.borrow_mut().mv(&words[0])
-                }
-                "i" => println!("{}", self.inventory()),
-                _ => println!("Nothing to do here."),
+        match words[0].as_str() {
+            "l" | "look" => println!("{}", self.world.borrow().look()),
+            "exit" | "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
+                self.world.borrow_mut().move_room(&words[0])
             }
-        } else if words.len() > 1 {
-            match words[0].as_str() {
-                "enter" => self.world.borrow_mut().mv(&words[1]),
-                "take" => {
-                    let item = self.gather_adj(&words[1..]);
-                    self.take(&item);
+            "i" => println!("{}", self.inventory()),
+            "enter" => self.world.borrow_mut().move_room(&words[1]),
+            "take" | "grab" => {
+                if words.len() > 1 {
+                    self.take(&words[1..].join(" "));
+                } else {
+                    println!("You wan't to {} what?", words[0].as_str());
                 }
-                "drop" => {
-                    let item = self.gather_adj(&words[1..]);
-                    self.drop(&item);
-                }
-                "put" | "place" => {
-                    if words.contains(&"in".to_string()) {
-                        let in_index = words.iter().position(|r| r == &"in".to_string()).unwrap();
-                        let item = self.gather_adj(&words[1..in_index]);
-                        let container = self.gather_adj(&words[in_index + 1..words.len()]);
-                        self.put_in(&item, &container);
-                    } else {
-                        println!("Put it in what?");
-                    }
-                }
-                _ => println!("That doesn't make any sense."),
             }
-        }
-    }
-    // collect adjectives and nouns
-    fn gather_adj(&self, words: &[String]) -> String {
-        if words.len() > 1 {
-            let mut item = String::new();
-            if self.nouns.contains(words.last().unwrap()) {
-                for x in &words[0..words.len() - 1] {
-                    if self.adjs.contains(x) {
-                        item.push_str(&format!("{} ", x));
-                    }
+            "drop" => {
+                if words.len() > 1 {
+                    self.drop(&words[1..].join(" "));
+                } else {
+                    println!("You wan't to {} what?", words[0].as_str());
                 }
-                item.push_str(&words.last().unwrap());
             }
-            item
-        } else {
-            words.first().unwrap().clone()
+            _ => println!("I don't know the word \"{}\"", &words[0]),
         }
     }
     // prints inventory contents
@@ -200,24 +139,6 @@ impl Cli {
             }
             None => println!("You don't have that."),
         }
-    }
-    // places an Obj into a Container in the currrent room
-    fn put_in(&self, item: &str, container: &str) {
-        println!("{} -> {}", item, container);
-        // let curr_room = self.world.borrow().curr_room();
-        // let placed = self.inventory.borrow_mut().remove(item);
-        // match placed {
-        //     Some(ob) => match self.world.borrow_mut().rooms[curr_room]
-        //         .items
-        //         .get(container)
-        //     {
-        //         Some(cont) => if cont.objtype() == ObjType::Container {
-        //             cont.contents.insert(item.to_string(), ob);
-        //         },
-        //         None => println!("There is no {} here.", container),
-        //     },
-        //     None => println!("You don't have that."),
-        // }
     }
 }
 
