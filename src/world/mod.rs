@@ -26,7 +26,7 @@ impl World {
     pub fn move_room(&mut self, direction: &str) {
         match self.rooms[self.curr_room]
             .paths
-            .get(&direction.to_string().clone())
+            .get(&direction.to_owned().clone())
         {
             Some(new_room_name) => {
                 self.curr_room = self

@@ -22,11 +22,6 @@ fn cli_take_drop() {
 
     let cli = Cli::new(rooms);
 
-    // let iron_sword_words = &vec!["iron".to_string(), "sword".to_string()];
-    // let capsule_words = &vec!["capsule".to_string()];
-    // let iron_sword_name = cli.gather_obj_name(&iron_sword_words[..]);
-    // let capsule_name = cli.gather_obj_name(&capsule_words[..]);
-
     assert_eq!(cli.inventory(), "You are empty-handed.");
     assert!(
         cli.world.borrow().look().contains("iron sword")

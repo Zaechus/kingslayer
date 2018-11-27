@@ -35,7 +35,7 @@ impl Room {
     }
     /// add path to another Room
     pub fn add_path(&mut self, direction: &str, name: &str, desc: &str) {
-        self.paths.insert(direction.to_string(), name.to_string());
+        self.paths.insert(direction.to_owned(), name.to_owned());
         self.desc.push_str(format!("\n{}", desc).as_str());
     }
 }

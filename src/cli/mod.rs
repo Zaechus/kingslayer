@@ -105,7 +105,7 @@ impl Cli {
     // prints inventory contents
     fn inventory(&self) -> String {
         if self.inventory.borrow().is_empty() {
-            "You are empty-handed.".to_string()
+            "You are empty-handed.".to_owned()
         } else {
             let mut inv = String::from("You are carrying:\n");
             for x in self.inventory.borrow().iter() {
