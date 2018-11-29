@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
+use item::Item;
 use room::Room;
-use things::obj::Obj;
 
 #[test]
 fn room_addpath() {
     // Start Room
-    let start_room_objs: HashMap<String, Box<Obj>> = HashMap::new();
+    let start_room_objs: HashMap<String, Box<Item>> = HashMap::new();
     let mut start_room = Box::new(Room::new(
         "Start Room",
         "You stand at the beginning.",
@@ -14,7 +14,7 @@ fn room_addpath() {
     ));
 
     // Closet
-    let closet_objs: HashMap<String, Box<Obj>> = HashMap::new();
+    let closet_objs: HashMap<String, Box<Item>> = HashMap::new();
     let mut closet = Box::new(Room::new(
         "Closet",
         "This isn't a very large or clean closet.",
@@ -22,7 +22,7 @@ fn room_addpath() {
     ));
 
     // Next Room
-    let next_room_objs: HashMap<String, Box<Obj>> = HashMap::new();
+    let next_room_objs: HashMap<String, Box<Item>> = HashMap::new();
     let mut next_room = Box::new(Room::new(
         "Next Room",
         "You are in the next room over.",
@@ -30,7 +30,7 @@ fn room_addpath() {
     ));
 
     // Long Hallway
-    let long_hallway_objs: HashMap<String, Box<Obj>> = HashMap::new();
+    let long_hallway_objs: HashMap<String, Box<Item>> = HashMap::new();
     let mut long_hallway = Box::new(Room::new(
         "Long Hallway",
         "You are in a long, dark hallway.",

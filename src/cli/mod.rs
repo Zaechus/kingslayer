@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, Write};
 
+use item::Item;
 use room::Room;
-use things::obj::Obj;
 use utils::read_line;
 use world::World;
 
@@ -11,7 +11,7 @@ use world::World;
 /// controls all of the interactions between the user and all game objects
 pub struct Cli {
     world: RefCell<World>,
-    inventory: RefCell<HashMap<String, Box<Obj>>>,
+    inventory: RefCell<HashMap<String, Box<Item>>>,
 }
 
 impl Cli {
@@ -89,17 +89,17 @@ impl Cli {
                 if words.len() > 1 {
                     self.take(&words[1..].join(" "));
                 } else {
-                    println!("You wan't to {} what?", words[0].as_str());
+                    println!("What do you want to {}?", words[0].as_str());
                 }
             }
             "drop" => {
                 if words.len() > 1 {
                     self.drop(&words[1..].join(" "));
                 } else {
-                    println!("You wan't to {} what?", words[0].as_str());
+                    println!("What do you want to {}?", words[0].as_str());
                 }
             }
-            _ => println!("I don't know the word \"{}\"", &words[0]),
+            _ => println!("I don't know the word \"{}\".", &words[0]),
         }
     }
     // prints inventory contents

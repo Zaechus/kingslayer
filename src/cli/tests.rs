@@ -1,15 +1,16 @@
 use super::*;
-use things::item::Item;
+use item::Item;
 
 #[test]
 fn cli_take_drop() {
     let iron_sword = Box::new(Item::new(
         "iron sword",
         "There is an iron sword on the ground.",
+        None,
     ));
-    let capsule = Box::new(Item::new("capsule", "There is a capsule here."));
+    let capsule = Box::new(Item::new("capsule", "There is a capsule here.", None));
 
-    let mut sandbox_room_objs: HashMap<String, Box<Obj>> = HashMap::new();
+    let mut sandbox_room_objs: HashMap<String, Box<Item>> = HashMap::new();
     sandbox_room_objs.insert(iron_sword.name(), iron_sword);
     sandbox_room_objs.insert(capsule.name(), capsule);
 

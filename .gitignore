@@ -1,3 +1,5 @@
+rust-toolchain
+
 # Cargo
 /target
 **/*.rs.bk

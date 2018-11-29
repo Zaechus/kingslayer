@@ -4,9 +4,7 @@ extern crate kinggame1d;
 mod tests {
     use std::collections::HashMap;
 
-    use kinggame1d::{
-        cli::Cli, room::Room, things::container::Container, things::item::Item, things::obj::Obj,
-    };
+    use kinggame1d::{cli::Cli, item::Item, room::Room};
 
     #[test]
     fn setup_cli_works() {
@@ -14,8 +12,9 @@ mod tests {
         let iron_sword = Box::new(Item::new(
             "iron sword",
             "There is an iron sword on the ground.",
+            None,
         ));
-        let mut start_room_objs: HashMap<String, Box<Obj>> = HashMap::new();
+        let mut start_room_objs: HashMap<String, Box<Item>> = HashMap::new();
         start_room_objs.insert(iron_sword.name(), iron_sword);
         let mut start_room = Box::new(Room::new(
             "Start Room",
@@ -24,8 +23,8 @@ mod tests {
         ));
 
         // Long Hallway
-        let capsule = Box::new(Container::new("capsule", "There is a capsule here."));
-        let mut long_hallway_objs: HashMap<String, Box<Obj>> = HashMap::new();
+        let capsule = Box::new(Item::new("capsule", "There is a capsule here.", None));
+        let mut long_hallway_objs: HashMap<String, Box<Item>> = HashMap::new();
         long_hallway_objs.insert(capsule.name(), capsule);
         let mut long_hallway = Box::new(Room::new(
             "Long Hallway",

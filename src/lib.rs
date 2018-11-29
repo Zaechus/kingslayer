@@ -5,7 +5,7 @@ pub mod cli;
 pub mod room;
 
 /// Representations of objects found within the World
-pub mod things;
+pub mod item;
 
 /// Contains the read_line function
 pub mod utils;
