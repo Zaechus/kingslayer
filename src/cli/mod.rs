@@ -99,6 +99,24 @@ impl Cli {
                     println!("What do you want to {}?", words[0].as_str());
                 }
             }
+            "put" | "place" => {
+                if words.len() > 1 {
+                    match words.iter().position(|r| r == "in") {
+                        Some(loc) => {
+                            self.put_in(&words[0..loc - 1].join(" "), &words[loc + 1..].join(" "))
+                        }
+                        None => {
+                            print!("{} ", &words[0]);
+                            for word in &words[1..] {
+                                print!("{} ", word);
+                            }
+                            println!("in what?");
+                        }
+                    }
+                } else {
+                    println!("{} what?", &words[0])
+                }
+            }
             _ => println!("I don't know the word \"{}\".", &words[0]),
         }
     }
@@ -109,12 +127,12 @@ impl Cli {
         } else {
             let mut inv = String::from("You are carrying:\n");
             for x in self.inventory.borrow().iter() {
-                inv = format!("{}  {}\n", inv, x.1.name())
+                inv = format!("{}  {}\n", inv, x.1.name());
             }
             inv
         }
     }
-    // take an Obj from the current Room into the inventory
+    // take an Item from the current Room into the inventory
     fn take(&self, name: &str) {
         let curr_room = self.world.borrow().curr_room();
         let taken = self.world.borrow_mut().rooms[curr_room].items.remove(name);
@@ -126,7 +144,7 @@ impl Cli {
             None => println!("There is no {} here.", name),
         }
     }
-    // drop an Obj from inventory into the current Room
+    // drop an Item from inventory into the current Room
     fn drop(&self, name: &str) {
         let curr_room = self.world.borrow().curr_room();
         let dropped = self.inventory.borrow_mut().remove(name);
@@ -139,6 +157,10 @@ impl Cli {
             }
             None => println!("You don't have that."),
         }
+    }
+    // place an Item into a container Item
+    fn put_in(&self, item: &str, container: &str) {
+        println!("TODO: put {} in {}", item, container);
     }
 }
 

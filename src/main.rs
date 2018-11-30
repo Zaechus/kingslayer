@@ -42,7 +42,12 @@ fn main() {
     ));
 
     // Long Hallway
-    let capsule = Box::new(Item::new("capsule", "There is a capsule here.", None));
+    let capsule_contents: HashMap<String, Box<Item>> = HashMap::new();
+    let capsule = Box::new(Item::new(
+        "capsule",
+        "There is a capsule here.",
+        Some(capsule_contents),
+    ));
     let mut long_hallway_objs: HashMap<String, Box<Item>> = HashMap::new();
     long_hallway_objs.insert(capsule.name(), capsule);
     let mut long_hallway = Box::new(Room::new(

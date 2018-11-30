@@ -20,6 +20,15 @@ impl Item {
         self.name.clone()
     }
     pub fn desc(&self) -> String {
-        self.desc.clone()
+        match self.contents {
+            Some(ref contents) => {
+                let mut desc = String::from("contains:\n");
+                for x in contents.iter() {
+                    desc = format!("{}  {}\n", desc, x.1.name());
+                }
+                desc
+            }
+            None => self.desc.clone(),
+        }
     }
 }
