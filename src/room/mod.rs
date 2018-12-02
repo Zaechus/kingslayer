@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use item::Item;
 
-/// A node found within a World that is connected by paths
+/// A section of the world connected by paths
 pub struct Room {
     name: String,
     desc: String,

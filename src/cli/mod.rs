@@ -7,8 +7,7 @@ use room::Room;
 use utils::read_line;
 use world::World;
 
-/// A Command Line Interface struct;
-/// controls all of the interactions between the user and all game objects
+/// A command line interface for controlling interactions between objects in a game
 pub struct Cli {
     world: RefCell<World>,
     inventory: RefCell<HashMap<String, Box<Item>>>,

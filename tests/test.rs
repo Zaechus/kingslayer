@@ -4,7 +4,7 @@ extern crate kinggame1d;
 mod tests {
     use std::collections::HashMap;
 
-    use kinggame1d::{cli::Cli, item::Item, room::Room};
+    use kinggame1d::{Cli, Item, Room};
 
     #[test]
     fn setup_cli_works() {

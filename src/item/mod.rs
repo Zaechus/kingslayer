@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-/// A representation of an item within the World to be interacted with by the user
+/// An object to be interacted with by the user
 pub struct Item {
     name: String,
     desc: String,
-    /// Items contained within the Item if capable
+    /// Items contained within a container Item
     pub contents: Option<HashMap<String, Box<Item>>>,
 }
 
