@@ -30,7 +30,7 @@ fn cli_take_drop() {
     );
 
     cli.take("iron sword");
-    assert_eq!(cli.inventory(), "You are carrying:\n  iron sword\n");
+    assert_eq!(cli.inventory(), "You are carrying:\n  iron sword");
     assert_eq!(
         cli.world.borrow().look(),
         format!(
@@ -52,7 +52,7 @@ fn cli_take_drop() {
     );
 
     cli.drop("iron sword");
-    assert_eq!(cli.inventory(), "You are carrying:\n  capsule\n");
+    assert_eq!(cli.inventory(), "You are carrying:\n  capsule");
     assert_eq!(
         cli.world.borrow().look(),
         format!(

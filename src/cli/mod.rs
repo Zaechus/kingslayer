@@ -80,11 +80,17 @@ impl Cli {
     fn parse(&self, words: &[String]) {
         match words[0].as_str() {
             "l" | "look" => println!("{}", self.world.borrow().look()),
-            "exit" | "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
+            "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                 self.world.borrow_mut().move_room(&words[0])
             }
-            "i" => println!("{}", self.inventory()),
-            "enter" => self.world.borrow_mut().move_room(&words[1]),
+            "enter" => {
+                if words.len() > 1 {
+                    self.world.borrow_mut().move_room(&words[1])
+                } else {
+                    println!("Where do you want to {}?", words[0].as_str());
+                }
+            }
+            "i" | "inventory" => println!("{}", self.inventory()),
             "take" | "grab" => {
                 if words.len() > 1 {
                     self.take(&words[1..].join(" "));
@@ -125,11 +131,11 @@ impl Cli {
         if self.inventory.borrow().is_empty() {
             "You are empty-handed.".to_owned()
         } else {
-            let mut inv = String::from("You are carrying:\n");
+            let mut items_carried = String::from("You are carrying:");
             for x in self.inventory.borrow().iter() {
-                inv = format!("{}  {}\n", inv, x.1.name());
+                items_carried = format!("{}\n  {}", items_carried, x.1.name());
             }
-            inv
+            items_carried
         }
     }
     // take an Item from the current Room into the inventory

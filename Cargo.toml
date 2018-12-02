@@ -1,6 +1,6 @@
 [package]
 name = "kinggame1d"
-version = "0.5.4"
+version = "0.5.1"
 authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
 description = "A text-based adventure written in Rust"
 readme = "README.md"

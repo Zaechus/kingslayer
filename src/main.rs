@@ -2,7 +2,7 @@ extern crate kinggame1d;
 
 use std::collections::HashMap;
 
-use kinggame1d::{cli::Cli, item::Item, room::Room};
+use kinggame1d::{Cli, Item, Room};
 
 fn main() {
     // Start Room
@@ -69,7 +69,7 @@ fn main() {
         "There is a closet off to the side.",
     );
     closet.add_path(
-        "exit",
+        "door",
         &start_room.name(),
         "The door leads back into the room.",
     );

@@ -1,3 +1,7 @@
+pub use cli::Cli;
+pub use item::Item;
+pub use room::Room;
+
 /// Contains the Cli struct
 pub mod cli;
 
@@ -8,7 +12,7 @@ pub mod room;
 pub mod item;
 
 /// Contains the read_line function
-pub mod utils;
+mod utils;
 
 /// Contains the World struct
-pub mod world;
+mod world;
