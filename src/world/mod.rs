@@ -32,7 +32,7 @@ impl World {
                 self.curr_room = self
                     .rooms
                     .iter()
-                    .position(|ref r| &r.name() == new_room_name)
+                    .position(|ref r| r.name() == new_room_name.0)
                     .unwrap();
                 println!("{}", self.look());
             }
