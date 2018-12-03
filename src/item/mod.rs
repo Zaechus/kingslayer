@@ -28,13 +28,25 @@ impl Item {
         }
     }
     pub fn name(&self) -> String {
-        self.name.clone()
+        match self.contents {
+            Some(ref contents) => {
+                if !contents.is_empty() {
+                    let mut desc = format!("{}; it contains:", self.name);
+                    for x in contents.iter() {
+                        desc = format!("{}\n    {}", desc, x.1.name());
+                    }
+                    return desc;
+                }
+                self.name.clone()
+            }
+            None => self.name.clone(),
+        }
     }
     pub fn desc(&self) -> String {
         match self.contents {
             Some(ref contents) => {
                 if !contents.is_empty() {
-                    let mut desc = format!("{} contains:", self.name);
+                    let mut desc = format!("{}\nThe {} contains:", self.desc, self.name);
                     for x in contents.iter() {
                         desc = format!("{}\n  {}", desc, x.1.name());
                     }
