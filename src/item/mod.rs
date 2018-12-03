@@ -1,14 +1,10 @@
 use std::collections::HashMap;
 
-extern crate serde;
-extern crate serde_json;
-
-/// An object to be interacted with by the user
-#[derive(Serialize, Deserialize, Debug)]
+// An object to be interacted with by the user
+#[derive(Serialize, Deserialize)]
 pub struct Item {
     name: String,
     desc: String,
-    /// Items contained within a container Item
     pub contents: Option<HashMap<String, Box<Item>>>,
 }
 
@@ -37,11 +33,14 @@ impl Item {
     pub fn desc(&self) -> String {
         match self.contents {
             Some(ref contents) => {
-                let mut desc = format!("{} contains:\n", self.name);
-                for x in contents.iter() {
-                    desc = format!("{}  {}\n", desc, x.1.name());
+                if !contents.is_empty() {
+                    let mut desc = format!("{} contains:", self.name);
+                    for x in contents.iter() {
+                        desc = format!("{}\n  {}", desc, x.1.name());
+                    }
+                    return desc;
                 }
-                desc
+                self.desc.clone()
             }
             None => self.desc.clone(),
         }

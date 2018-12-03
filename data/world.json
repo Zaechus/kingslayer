@@ -1,0 +1,84 @@
+{
+    "world": {
+        "curr_room": "Start Room",
+        "rooms": {
+            "Closet": {
+                "name": "Closet",
+                "desc": "This isn't a very large or clean closet.",
+                "paths": {
+                    "door": [
+                        "Start Room",
+                        "The door leads back into the room."
+                    ]
+                },
+                "items": {}
+            },
+            "Start Room": {
+                "name": "Start Room",
+                "desc": "You stand at the beginning.",
+                "paths": {
+                    "closet": [
+                        "Closet",
+                        "There is a closet off to the side."
+                    ],
+                    "e": [
+                        "Next Room",
+                        "There is a pathway tothe east."
+                    ],
+                    "s": [
+                        "Long Hallway",
+                        "There is a hallway to the south."
+                    ]
+                },
+                "items": {
+                    "iron sword": {
+                        "name": "iron sword",
+                        "desc": "There is an iron sword on the ground.",
+                        "contents": null
+                    }
+                }
+            },
+            "Next Room": {
+                "name": "Next Room",
+                "desc": "You are in the next room over.",
+                "paths": {
+                    "w": [
+                        "Start Room",
+                        "There is a pathway to the west."
+                    ]
+                },
+                "items": {
+                    "large red block": {
+                        "name": "large red block",
+                        "desc": "It's just a large red block.",
+                        "contents": null
+                    }
+                }
+            },
+            "Long Hallway": {
+                "name": "Long Hallway",
+                "desc": "You are in a long, dark hallway.",
+                "paths": {
+                    "n": [
+                        "Start Room",
+                        "There is a room to the north"
+                    ]
+                },
+                "items": {
+                    "capsule": {
+                        "name": "capsule",
+                        "desc": "There is a capsule here.",
+                        "contents": {
+                            "curious object": {
+                                "name": "curious object",
+                                "desc": "There is a curious object here.",
+                                "contents": null
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "inventory": {}
+}

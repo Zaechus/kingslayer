@@ -1,42 +1,44 @@
+use std::collections::HashMap;
+
 use room::Room;
 
-/// Represents a world for the player to explore that consists of an array of Rooms.
-/// A World is a graph data structure that encapsulates a collection of Room nodes.
+// Represents a world for the player to explore that consists of a grid of Rooms.
+// A World is a graph data structure that encapsulates a collection of Room nodes.
+#[derive(Serialize, Deserialize)]
 pub struct World {
-    curr_room: usize,
-    pub rooms: Vec<Box<Room>>,
+    curr_room: String,
+    pub rooms: HashMap<String, Box<Room>>,
 }
 
 impl World {
-    pub fn new(rooms: Vec<Box<Room>>) -> Self {
+    pub fn new(curr_room: &str, rooms: HashMap<String, Box<Room>>) -> Self {
         Self {
-            curr_room: 0,
+            curr_room: curr_room.to_owned(),
             rooms,
         }
     }
-    /// index of the current Room
-    pub fn curr_room(&self) -> usize {
-        self.curr_room
+    // index of the current Room
+    pub fn curr_room(&self) -> String {
+        self.curr_room.clone()
     }
-    /// displays description of the current Room
+    // displays description of the current Room
     pub fn look(&self) -> String {
-        (*self.rooms[self.curr_room]).desc()
+        match self.rooms.get(&self.curr_room) {
+            Some(room) => room.desc(),
+            None => "You are not in a room...".to_owned(),
+        }
     }
-    /// changes the current Room to the target of the current Room's chosen path
+    // changes the current Room to the target of the current Room's chosen path
     pub fn move_room(&mut self, direction: &str) {
-        match self.rooms[self.curr_room]
-            .paths
-            .get(&direction.to_owned().clone())
-        {
-            Some(new_room_name) => {
-                self.curr_room = self
-                    .rooms
-                    .iter()
-                    .position(|ref r| r.name() == new_room_name.0)
-                    .unwrap();
-                println!("{}", self.look());
-            }
-            None => println!("You cannot go that way."),
-        };
+        match self.rooms.get(&self.curr_room) {
+            Some(room) => match room.paths.get(direction) {
+                Some(new_room_name) => {
+                    self.curr_room = new_room_name.0.clone();
+                    println!("{}", self.look());
+                }
+                None => println!("You cannot go that way."),
+            },
+            None => println!("You are not in a room..."),
+        }
     }
 }

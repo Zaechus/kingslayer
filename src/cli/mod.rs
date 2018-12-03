@@ -4,10 +4,11 @@ use std::io::{self, Write};
 
 use item::Item;
 use room::Room;
-use utils::read_line;
+use utils::read_line::read_line;
 use world::World;
 
 /// A command line interface for controlling interactions between objects in a game
+#[derive(Serialize, Deserialize)]
 pub struct Cli {
     world: RefCell<World>,
     inventory: RefCell<HashMap<String, Box<Item>>>,
@@ -15,9 +16,9 @@ pub struct Cli {
 
 impl Cli {
     /// Cli constructor
-    pub fn new(rooms: Vec<Box<Room>>) -> Self {
+    pub fn new(curr_room: &str, rooms: HashMap<String, Box<Room>>) -> Self {
         Self {
-            world: RefCell::new(World::new(rooms)),
+            world: RefCell::new(World::new(curr_room, rooms)),
             inventory: RefCell::new(HashMap::new()),
         }
     }
@@ -140,13 +141,16 @@ impl Cli {
     // take an Item from the current Room into the inventory
     fn take(&self, name: &str) {
         let curr_room = self.world.borrow().curr_room();
-        let taken = self.world.borrow_mut().rooms[curr_room].items.remove(name);
+        let taken = match self.world.borrow_mut().rooms.get_mut(&curr_room) {
+            Some(room) => room.items.remove(name),
+            None => None,
+        };
         match taken {
             Some(ob) => {
                 self.inventory.borrow_mut().insert(ob.name(), ob);
                 println!("Taken.");
             }
-            None => println!("There is no {} here.", name),
+            None => println!("There is no \"{}\" here.", name),
         }
     }
     // drop an Item from inventory into the current Room
@@ -155,12 +159,12 @@ impl Cli {
         let dropped = self.inventory.borrow_mut().remove(name);
         match dropped {
             Some(ob) => {
-                self.world.borrow_mut().rooms[curr_room]
-                    .items
-                    .insert(ob.name(), ob);
-                println!("Dropped.");
+                if let Some(room) = self.world.borrow_mut().rooms.get_mut(&curr_room) {
+                    room.items.insert(ob.name(), ob);
+                    println!("Dropped.")
+                }
             }
-            None => println!("You don't have that."),
+            None => println!("You don't have the \"{}\".", name),
         }
     }
     // place an Item into a container Item

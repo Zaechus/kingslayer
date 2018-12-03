@@ -18,9 +18,10 @@ fn cli_take_drop() {
         "You stand in a large box filled with sand.",
         sandbox_room_objs,
     ));
-    let rooms: Vec<Box<Room>> = vec![sandbox_room];
+    let mut rooms: HashMap<String, Box<Room>> = HashMap::new();
+    rooms.insert(sandbox_room.name(), sandbox_room);
 
-    let cli = Cli::new(rooms);
+    let cli = Cli::new("Sandbox Room", rooms);
 
     assert_eq!(cli.inventory(), "You are empty-handed.");
     assert!(
