@@ -131,6 +131,13 @@ impl Cli {
                     println!("{} what?", &words[0])
                 }
             }
+            "examine" | "inspect" => {
+                if words.len() > 1 {
+                    println!("{}", self.inspect(&words[1..].join(" ")));
+                } else {
+                    println!("{} what?", &words[0])
+                }
+            }
             _ => println!("I don't know the word \"{}\".", &words[0]),
         }
     }
@@ -221,6 +228,19 @@ impl Cli {
                 }
             }
             None => println!("You don't have the \"{}\".", item),
+        }
+    }
+    pub fn inspect(&self, name: &str) -> String {
+        let curr_room = &self.world.borrow().curr_room();
+        match self.world.borrow().rooms.get(curr_room) {
+            Some(room) => match room.items.get(name) {
+                Some(item) => item.inspection(),
+                None => match self.inventory.borrow().get(name) {
+                    Some(item) => item.inspection(),
+                    None => format!("There is no {} here.", name),
+                },
+            },
+            None => "You are not in a room...".to_owned(),
         }
     }
 }

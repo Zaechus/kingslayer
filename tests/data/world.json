@@ -19,7 +19,7 @@
                 "paths": {
                     "closet": [
                         "Closet",
-                        "There is a closet off to the side."
+                        "A closet lies off to the side."
                     ],
                     "e": [
                         "Next Room",
@@ -34,6 +34,7 @@
                     "iron sword": {
                         "name": "iron sword",
                         "desc": "There is an iron sword on the ground.",
+                        "inspection": "The iron sword is of crude workmanship, but it should be usable.",
                         "contents": null
                     }
                 }
@@ -50,7 +51,8 @@
                 "items": {
                     "large red block": {
                         "name": "large red block",
-                        "desc": "It's just a large red block.",
+                        "desc": "A large red block rests on the ground.",
+                        "inspection": "Well... it's just a large red block.",
                         "contents": null
                     }
                 }
@@ -68,10 +70,12 @@
                     "capsule": {
                         "name": "capsule",
                         "desc": "There is a capsule here.",
+                        "inspection": "The capsule appears to be able to hold things.",
                         "contents": {
                             "curious object": {
                                 "name": "curious object",
                                 "desc": "There is a curious object here.",
+                                "inspection": "The object's appearance confuses your weak mind.",
                                 "contents": null
                             }
                         }
@@ -80,5 +84,12 @@
             }
         }
     },
-    "inventory": {}
+    "inventory": {
+        "brown leaf": {
+            "name": "brown leaf",
+            "desc": "A brown leaf lies on the ground.",
+            "inspection": "It's small, brown, and dry.",
+            "contents": null
+        }
+    }
 }

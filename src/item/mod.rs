@@ -5,25 +5,29 @@ use std::collections::HashMap;
 pub struct Item {
     name: String,
     desc: String,
+    inspection: String,
     pub contents: Option<HashMap<String, Box<Item>>>,
 }
 
 impl Item {
-    pub fn new(name: &str, desc: &str) -> Self {
+    pub fn new(name: &str, desc: &str, inspection: &str) -> Self {
         Self {
             name: name.to_owned(),
             desc: desc.to_owned(),
+            inspection: inspection.to_owned(),
             contents: None,
         }
     }
     pub fn new_container(
         name: &str,
         desc: &str,
+        inspection: &str,
         contents: Option<HashMap<String, Box<Item>>>,
     ) -> Self {
         Self {
             name: name.to_owned(),
             desc: desc.to_owned(),
+            inspection: inspection.to_owned(),
             contents,
         }
     }
@@ -56,5 +60,8 @@ impl Item {
             }
             None => self.desc.clone(),
         }
+    }
+    pub fn inspection(&self) -> String {
+        self.inspection.clone()
     }
 }
