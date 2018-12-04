@@ -73,7 +73,7 @@ impl Cli {
     // removes meaningless words
     fn filter(&self, words: &[String]) -> Vec<String> {
         let mut filtered: Vec<String> = words.to_vec();
-        filtered.retain(|ref w| *w != "the" || *w != "a");
+        filtered.retain(|ref w| *w != "the" || *w != "a" || *w != "an");
         filtered
     }
     // interprets words as game commands
@@ -93,14 +93,22 @@ impl Cli {
             "i" | "inventory" => println!("{}", self.inventory()),
             "take" | "grab" => {
                 if words.len() > 1 {
-                    self.take(&words[1..].join(" "));
+                    if words[1] == "all" {
+                        self.take_all();
+                    } else {
+                        self.take(&words[1..].join(" "));
+                    }
                 } else {
                     println!("What do you want to {}?", words[0].as_str());
                 }
             }
             "drop" => {
                 if words.len() > 1 {
-                    self.drop(&words[1..].join(" "));
+                    if words[1] == "all" {
+                        self.drop_all();
+                    } else {
+                        self.drop(&words[1..].join(" "));
+                    }
                 } else {
                     println!("What do you want to {}?", words[0].as_str());
                 }
@@ -109,7 +117,7 @@ impl Cli {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "in") {
                         Some(loc) => {
-                            self.put_in(&words[0..loc - 1].join(" "), &words[loc + 1..].join(" "))
+                            self.put_in(&words[1..loc].join(" "), &words[loc + 1..].join(" "))
                         }
                         None => {
                             print!("{} ", &words[0]);
@@ -140,8 +148,8 @@ impl Cli {
     }
     // take an Item from the current Room into the inventory
     fn take(&self, name: &str) {
-        let curr_room = self.world.borrow().curr_room();
-        let taken = match self.world.borrow_mut().rooms.get_mut(&curr_room) {
+        let curr_room = &self.world.borrow().curr_room();
+        let taken = match self.world.borrow_mut().rooms.get_mut(curr_room) {
             Some(room) => room.items.remove(name),
             None => None,
         };
@@ -153,23 +161,67 @@ impl Cli {
             None => println!("There is no \"{}\" here.", name),
         }
     }
+    // take all Items in the current Room
+    fn take_all(&self) {
+        let curr_room = &self.world.borrow().curr_room();
+        if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
+            for item in &room.items {
+                self.inventory
+                    .borrow_mut()
+                    .insert(item.0.clone(), item.1.clone());
+                println!("Taken.");
+            }
+            room.items.clear();
+            room.items.shrink_to_fit();
+        }
+    }
     // drop an Item from inventory into the current Room
     fn drop(&self, name: &str) {
-        let curr_room = self.world.borrow().curr_room();
+        let curr_room = &self.world.borrow().curr_room();
         let dropped = self.inventory.borrow_mut().remove(name);
         match dropped {
-            Some(ob) => {
-                if let Some(room) = self.world.borrow_mut().rooms.get_mut(&curr_room) {
-                    room.items.insert(ob.name(), ob);
+            Some(obj) => {
+                if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
+                    room.items.insert(obj.name(), obj);
                     println!("Dropped.")
                 }
             }
             None => println!("You don't have the \"{}\".", name),
         }
     }
+    // drop all Items from inventory into the current Room
+    fn drop_all(&self) {
+        let curr_room = &self.world.borrow().curr_room();
+        if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
+            for item in self.inventory.borrow_mut().iter() {
+                room.items.insert(item.0.clone(), item.1.clone());
+                println!("Dropped.");
+            }
+            self.inventory.borrow_mut().clear();
+            self.inventory.borrow_mut().shrink_to_fit();
+        }
+    }
     // place an Item into a container Item
     fn put_in(&self, item: &str, container: &str) {
-        println!("TODO: put {} in {}", item, container);
+        let curr_room = &self.world.borrow().curr_room();
+        let placed = self.inventory.borrow_mut().remove(item);
+        match placed {
+            Some(obj) => {
+                if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
+                    match room.items.get_mut(container) {
+                        Some(cont) => match cont.contents {
+                            Some(ref mut contents) => {
+                                contents.insert(obj.name(), obj);
+                                println!("Placed.")
+                            }
+                            None => println!("You can't place anything in the {}.", container),
+                        },
+                        None => println!("There is no \"{}\" here.", container),
+                    }
+                }
+            }
+            None => println!("You don't have the \"{}\".", item),
+        }
     }
 }
 

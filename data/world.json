@@ -19,11 +19,11 @@
                 "paths": {
                     "closet": [
                         "Closet",
-                        "There is a closet off to the side."
+                        "A closet lies off to the side."
                     ],
                     "e": [
                         "Next Room",
-                        "There is a pathway tothe east."
+                        "There is a pathway to the east."
                     ],
                     "s": [
                         "Long Hallway",
@@ -80,5 +80,11 @@
             }
         }
     },
-    "inventory": {}
+    "inventory": {
+        "brown leaf": {
+            "name": "brown leaf",
+            "desc": "A brown leaf lies on the ground.",
+            "contents": null
+        }
+    }
 }

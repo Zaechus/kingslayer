@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 // An object to be interacted with by the user
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Item {
     name: String,
     desc: String,
