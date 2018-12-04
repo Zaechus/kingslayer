@@ -70,3 +70,77 @@ fn cli_take_drop() {
             && cli.world.borrow().look().contains("capsule")
     );
 }
+
+#[test]
+fn cli_take_all_drop_all() {
+    let big_item = Box::new(Item::new("big item", "There is a big item on the ground."));
+    let thingy = Box::new(Item::new("thingy", "There is a thingy here."));
+
+    let mut sandbox_room_objs: HashMap<String, Box<Item>> = HashMap::new();
+    sandbox_room_objs.insert(big_item.name(), big_item);
+    sandbox_room_objs.insert(thingy.name(), thingy);
+
+    let sandbox_room = Box::new(Room::new(
+        "Sandbox Room",
+        "You stand in a large box filled with sand.",
+        sandbox_room_objs,
+    ));
+    let mut rooms: HashMap<String, Box<Room>> = HashMap::new();
+    rooms.insert(sandbox_room.name(), sandbox_room);
+
+    let cli = Cli::new("Sandbox Room", rooms);
+
+    assert!(
+        cli.world.borrow().look().contains("thingy")
+            && cli.world.borrow().look().contains("big item")
+    );
+    cli.take_all();
+    assert!(cli.inventory().contains("thingy") && cli.inventory().contains("big item"));
+
+    cli.drop_all();
+    assert!(
+        cli.world.borrow().look().contains("thingy")
+            && cli.world.borrow().look().contains("big item")
+    );
+    assert_eq!(cli.inventory(), "You are empty-handed.");
+}
+
+#[test]
+fn cli_put_in() {
+    let big_item_contents: HashMap<String, Box<Item>> = HashMap::new();
+    let big_item = Box::new(Item::new_container(
+        "big item",
+        "There is a big item on the ground.",
+        Some(big_item_contents),
+    ));
+    let thingy = Box::new(Item::new("thingy", "There is a thingy here."));
+
+    let mut sandbox_room_objs: HashMap<String, Box<Item>> = HashMap::new();
+    sandbox_room_objs.insert(big_item.name(), big_item);
+    sandbox_room_objs.insert(thingy.name(), thingy);
+
+    let sandbox_room = Box::new(Room::new(
+        "Sandbox Room",
+        "You stand in a large box filled with sand.",
+        sandbox_room_objs,
+    ));
+    let mut rooms: HashMap<String, Box<Room>> = HashMap::new();
+    rooms.insert(sandbox_room.name(), sandbox_room);
+
+    let cli = Cli::new("Sandbox Room", rooms);
+
+    assert!(
+        cli.world.borrow().look().contains("thingy")
+            && cli.world.borrow().look().contains("big item")
+    );
+    cli.take("thingy");
+    assert!(cli.inventory().contains("thingy"));
+
+    cli.put_in("thingy", "big item");
+    assert!(
+        cli.world.borrow().look().contains("thingy")
+            && cli.world.borrow().look().contains("big item")
+            && cli.world.borrow().look().contains("contains")
+    );
+    assert_eq!(cli.inventory(), "You are empty-handed.");
+}
