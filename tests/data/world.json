@@ -8,7 +8,8 @@
                 "paths": {
                     "door": [
                         "Start Room",
-                        "The door leads back into the room."
+                        "The door leads back into the room.",
+                        true
                     ]
                 },
                 "items": {}
@@ -19,15 +20,18 @@
                 "paths": {
                     "closet": [
                         "Closet",
-                        "A closet lies off to the side."
+                        "A closet lies off to the side.",
+                        true
                     ],
                     "e": [
                         "Next Room",
-                        "There is a pathway to the east."
+                        "There is a pathway to the east.",
+                        true
                     ],
                     "s": [
                         "Long Hallway",
-                        "There is a hallway to the south."
+                        "There is a hallway to the south.",
+                        true
                     ]
                 },
                 "items": {
@@ -45,7 +49,8 @@
                 "paths": {
                     "w": [
                         "Start Room",
-                        "There is a pathway to the west."
+                        "There is a pathway to the west.",
+                        true
                     ]
                 },
                 "items": {
@@ -63,7 +68,8 @@
                 "paths": {
                     "n": [
                         "Start Room",
-                        "There is a room to the north"
+                        "There is a room to the north",
+                        true
                     ]
                 },
                 "items": {

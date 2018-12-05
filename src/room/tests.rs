@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use item::Item;
-use room::Room;
+use room::{IsOpen, Room};
 
 #[test]
 fn room_addpath() {
@@ -36,24 +36,42 @@ fn room_addpath() {
         "You are in a long, dark hallway.",
         long_hallway_objs,
     ));
-    start_room.add_path("e", &next_room.name(), "There is a pathway to the east.");
+    start_room.add_path(
+        "e",
+        &next_room.name(),
+        "There is a pathway to the east.",
+        IsOpen(true),
+    );
     start_room.add_path(
         "s",
         &long_hallway.name(),
         "There is a hallway to the south.",
+        IsOpen(true),
     );
     start_room.add_path(
         "closet",
         &closet.name(),
         "There is a closet off to the side.",
+        IsOpen(true),
     );
     closet.add_path(
         "exit",
         &start_room.name(),
         "The door leads back into the room.",
+        IsOpen(true),
     );
-    long_hallway.add_path("n", &start_room.name(), "There is a room to the north");
-    next_room.add_path("w", &start_room.name(), "There is a pathway to the west.");
+    long_hallway.add_path(
+        "n",
+        &start_room.name(),
+        "There is a room to the north",
+        IsOpen(true),
+    );
+    next_room.add_path(
+        "w",
+        &start_room.name(),
+        "There is a pathway to the west.",
+        IsOpen(true),
+    );
 
     assert!(
         start_room

@@ -5,13 +5,16 @@ extern crate serde_json;
 
 use item::Item;
 
+#[derive(Serialize, Deserialize)]
+pub struct IsOpen(bool);
+
 // A section of the world connected by paths
 #[derive(Serialize, Deserialize)]
 pub struct Room {
     name: String,
     desc: String,
     // pathways to other Rooms.  <direction, (name, desc)>
-    pub paths: HashMap<String, (String, String)>,
+    pub paths: HashMap<String, (String, String, IsOpen)>,
     // Items contained within the Room
     pub items: HashMap<String, Box<Item>>,
 }
@@ -41,9 +44,11 @@ impl Room {
         desc
     }
     // add path to another Room
-    pub fn add_path(&mut self, direction: &str, name: &str, desc: &str) {
-        self.paths
-            .insert(direction.to_owned(), (name.to_owned(), desc.to_owned()));
+    pub fn add_path(&mut self, direction: &str, name: &str, desc: &str, is_open: IsOpen) {
+        self.paths.insert(
+            direction.to_owned(),
+            (name.to_owned(), desc.to_owned(), is_open),
+        );
     }
 }
 
