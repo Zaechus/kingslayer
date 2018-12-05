@@ -15,5 +15,5 @@ A text-based adventure written in Rust
 * `drop {item}`: drop an item from your inventory and into the current room
 * `take all`: take all items from the room
 * `drop all`: drop all items in inventory into the room
-* `put {item} in {item}` or `place {item} in {item}`: places an item from your inventory into a container item in the room
+* `put {item} in {item}` or `place {item} in {item}`: places an item from your inventory into a container item in the room or your inventory
 * `inspect {item}` or `examine {item}`: display special properties of an item

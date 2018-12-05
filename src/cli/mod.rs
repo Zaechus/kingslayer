@@ -93,10 +93,17 @@ impl Cli {
             "i" | "inventory" => println!("{}", self.inventory()),
             "take" | "grab" => {
                 if words.len() > 1 {
-                    if words[1] == "all" {
-                        self.take_all();
-                    } else {
-                        self.take(&words[1..].join(" "));
+                    match words.iter().position(|r| r == "from") {
+                        Some(pos) => {
+                            self.take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+                        }
+                        None => {
+                            if words[1] == "all" {
+                                self.take_all();
+                            } else {
+                                self.take(&words[1..].join(" "));
+                            }
+                        }
                     }
                 } else {
                     println!("What do you want to {}?", words[0].as_str());
@@ -116,8 +123,8 @@ impl Cli {
             "put" | "place" => {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "in") {
-                        Some(loc) => {
-                            self.put_in(&words[1..loc].join(" "), &words[loc + 1..].join(" "))
+                        Some(pos) => {
+                            self.put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         }
                         None => {
                             print!("{} ", &words[0]);
@@ -182,6 +189,10 @@ impl Cli {
             room.items.shrink_to_fit();
         }
     }
+    // take an item from a container in the room or inventory
+    fn take_from(&self, item: &str, container: &str) {
+        println!("TODO: take {} from {}", item, container);
+    }
     // drop an Item from inventory into the current Room
     fn drop(&self, name: &str) {
         let curr_room = &self.world.borrow().curr_room();
@@ -219,11 +230,29 @@ impl Cli {
                         Some(cont) => match cont.contents {
                             Some(ref mut contents) => {
                                 contents.insert(obj.name(), obj);
-                                println!("Placed.")
+                                println!("Placed.");
                             }
-                            None => println!("You can't place anything in the {}.", container),
+                            None => {
+                                self.inventory.borrow_mut().insert(obj.name(), obj);
+                                println!("You can't place anything in the {}.", container);
+                            }
                         },
-                        None => println!("There is no \"{}\" here.", container),
+                        None => match self.inventory.borrow_mut().get_mut(container) {
+                            Some(cont) => match cont.contents {
+                                Some(ref mut contents) => {
+                                    contents.insert(obj.name(), obj);
+                                    println!("Placed.");
+                                }
+                                None => {
+                                    self.inventory.borrow_mut().insert(obj.name(), obj);
+                                    println!("You can't place anything in the {}.", container);
+                                }
+                            },
+                            None => {
+                                self.inventory.borrow_mut().insert(obj.name(), obj);
+                                println!("There is no \"{}\" here.", container)
+                            }
+                        },
                     }
                 }
             }
