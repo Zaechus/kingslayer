@@ -7,7 +7,7 @@ use room::Room;
 use utils::read_line::read_line;
 use world::World;
 
-/// A command line interface for controlling interactions between objects in a game
+// A command line interface for controlling interactions between objects in a game
 #[derive(Serialize, Deserialize)]
 pub struct Cli {
     world: RefCell<World>,
@@ -15,14 +15,12 @@ pub struct Cli {
 }
 
 impl Cli {
-    /// Cli constructor
     pub fn new(curr_room: &str, rooms: HashMap<String, Box<Room>>) -> Self {
         Self {
             world: RefCell::new(World::new(curr_room, rooms)),
             inventory: RefCell::new(HashMap::new()),
         }
     }
-    /// starts the Cli session
     pub fn start(&self) {
         let mut player_name = String::new();
         while player_name.is_empty() {
@@ -38,7 +36,7 @@ impl Cli {
             if !command.is_empty() {
                 // quit command
                 match command.first().unwrap().as_str() {
-                    "quit" | "q" => {
+                    "q" | "quit" => {
                         print!("Are you sure you want to quit? (y/N): ");
                         io::stdout().flush().expect("error flushing");
                         if read_line().starts_with('y') {
@@ -48,7 +46,7 @@ impl Cli {
                     _ => self.parse(&command),
                 }
             } else {
-                println!("I do not recognize that phrase.");
+                println!("I do not understand that phrase.");
             }
         }
         println!("Farewell, {}!", player_name);
@@ -61,6 +59,8 @@ impl Cli {
             let input = read_line();
             if !input.is_empty() {
                 return input;
+            } else {
+                println!("Excuse me?");
             }
         }
     }
@@ -72,9 +72,11 @@ impl Cli {
     }
     // removes meaningless words
     fn filter(&self, words: &[String]) -> Vec<String> {
-        let mut filtered: Vec<String> = words.to_vec();
-        filtered.retain(|ref w| *w != "the" || *w != "a" || *w != "an");
-        filtered
+        words
+            .to_vec()
+            .into_iter()
+            .filter(|w| w != "the" || w != "a" || w != "an")
+            .collect()
     }
     // interprets words as game commands
     fn parse(&self, words: &[String]) {
@@ -91,7 +93,7 @@ impl Cli {
                 }
             }
             "i" | "inventory" => println!("{}", self.inventory()),
-            "take" | "grab" => {
+            "take" | "get" => {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "from") {
                         Some(pos) => {
@@ -111,13 +113,16 @@ impl Cli {
             }
             "drop" => {
                 if words.len() > 1 {
-                    if words[1] == "all" {
-                        self.drop_all();
-                    } else {
-                        self.drop(&words[1..].join(" "));
-                    }
+                    self.drop(&words[1..].join(" "));
                 } else {
                     println!("What do you want to {}?", words[0].as_str());
+                }
+            }
+            "examine" | "inspect" => {
+                if words.len() > 1 {
+                    println!("{}", self.inspect(&words[1..].join(" ")));
+                } else {
+                    println!("{} what?", &words[0])
                 }
             }
             "put" | "place" => {
@@ -134,13 +139,6 @@ impl Cli {
                             println!("in what?");
                         }
                     }
-                } else {
-                    println!("{} what?", &words[0])
-                }
-            }
-            "examine" | "inspect" => {
-                if words.len() > 1 {
-                    println!("{}", self.inspect(&words[1..].join(" ")));
                 } else {
                     println!("{} what?", &words[0])
                 }
@@ -205,18 +203,6 @@ impl Cli {
                 }
             }
             None => println!("You don't have the \"{}\".", name),
-        }
-    }
-    // drop all Items from inventory into the current Room
-    fn drop_all(&self) {
-        let curr_room = &self.world.borrow().curr_room();
-        if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
-            for item in self.inventory.borrow_mut().iter() {
-                room.items.insert(item.0.clone(), item.1.clone());
-                println!("Dropped.");
-            }
-            self.inventory.borrow_mut().clear();
-            self.inventory.borrow_mut().shrink_to_fit();
         }
     }
     // place an Item into a container Item

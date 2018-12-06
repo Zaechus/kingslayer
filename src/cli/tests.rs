@@ -77,7 +77,7 @@ fn cli_take_drop() {
 }
 
 #[test]
-fn cli_take_all_drop_all() {
+fn cli_take_all() {
     let big_item = Box::new(Item::new(
         "big item",
         "There is a big item on the ground.",
@@ -109,13 +109,6 @@ fn cli_take_all_drop_all() {
     );
     cli.take_all();
     assert!(cli.inventory().contains("thingy") && cli.inventory().contains("big item"));
-
-    cli.drop_all();
-    assert!(
-        cli.world.borrow().look().contains("thingy")
-            && cli.world.borrow().look().contains("big item")
-    );
-    assert_eq!(cli.inventory(), "You are empty-handed.");
 }
 
 #[test]
