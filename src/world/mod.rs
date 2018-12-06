@@ -33,7 +33,7 @@ impl World {
         match self.rooms.get(&self.curr_room) {
             Some(room) => match room.paths.get(direction) {
                 Some(new_room_name) => {
-                    self.curr_room = new_room_name.0.clone();
+                    self.curr_room = new_room_name.name();
                     println!("{}", self.look());
                 }
                 None => println!("You cannot go that way."),

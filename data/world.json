@@ -6,11 +6,12 @@
                 "name": "Closet",
                 "desc": "This isn't a very large or clean closet.",
                 "paths": {
-                    "door": [
-                        "Start Room",
-                        "The door leads back into the room.",
-                        true
-                    ]
+                    "door": {
+                        "name": "Start Room",
+                        "desc": "The door leads back into the room.",
+                        "inspection": "The door is plain and wooden.",
+                        "is_open": true
+                    }
                 },
                 "items": {}
             },
@@ -18,21 +19,24 @@
                 "name": "Start Room",
                 "desc": "You stand at the beginning.",
                 "paths": {
-                    "closet": [
-                        "Closet",
-                        "A closet lies off to the side.",
-                        true
-                    ],
-                    "e": [
-                        "Next Room",
-                        "There is a pathway to the east.",
-                        true
-                    ],
-                    "s": [
-                        "Long Hallway",
-                        "There is a hallway to the south.",
-                        true
-                    ]
+                    "closet": {
+                        "name": "Closet",
+                        "desc": "A closet lies off to the side.",
+                        "inspection": "The door is plain and wooden.",
+                        "is_open": true
+                    },
+                    "e": {
+                        "name": "Next Room",
+                        "desc": "There is a pathway to the east.",
+                        "inspection": "The opening is spacious.",
+                        "is_open": true
+                    },
+                    "s": {
+                        "name": "Long Hallway",
+                        "desc": "There is a hallway to the south.",
+                        "inspection": "The hallway seems narrow and foreboding.",
+                        "is_open": true
+                    }
                 },
                 "items": {
                     "iron sword": {
@@ -47,11 +51,12 @@
                 "name": "Next Room",
                 "desc": "You are in the next room over.",
                 "paths": {
-                    "w": [
-                        "Start Room",
-                        "There is a pathway to the west.",
-                        true
-                    ]
+                    "w": {
+                        "name": "Start Room",
+                        "desc": "There is a pathway to the west.",
+                        "inspection": "The path expands into a larger room.",
+                        "is_open": true
+                    }
                 },
                 "items": {
                     "large red block": {
@@ -66,11 +71,12 @@
                 "name": "Long Hallway",
                 "desc": "You are in a long, dark hallway.",
                 "paths": {
-                    "n": [
-                        "Start Room",
-                        "There is a room to the north",
-                        true
-                    ]
+                    "n": {
+                        "name": "Start Room",
+                        "desc": "There is a room to the north",
+                        "inspection": "The hallway seems narrow and foreboding.",
+                        "is_open": true
+                    }
                 },
                 "items": {
                     "capsule": {

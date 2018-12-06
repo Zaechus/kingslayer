@@ -158,6 +158,23 @@ impl Cli {
             items_carried
         }
     }
+    // returns the special properties of an object or path
+    pub fn inspect(&self, name: &str) -> String {
+        let curr_room = &self.world.borrow().curr_room();
+        match self.world.borrow().rooms.get(curr_room) {
+            Some(room) => match room.items.get(name) {
+                Some(item) => item.inspection(),
+                None => match self.inventory.borrow().get(name) {
+                    Some(item) => item.inspection(),
+                    None => match room.paths.get(name) {
+                        Some(item) => item.inspection(),
+                        None => format!("There is no \"{}\" here.", name),
+                    },
+                },
+            },
+            None => "You are not in a room...".to_owned(),
+        }
+    }
     // take an Item from the current Room into the inventory
     fn take(&self, name: &str) {
         let curr_room = &self.world.borrow().curr_room();
@@ -243,19 +260,6 @@ impl Cli {
                 }
             }
             None => println!("You don't have the \"{}\".", item),
-        }
-    }
-    pub fn inspect(&self, name: &str) -> String {
-        let curr_room = &self.world.borrow().curr_room();
-        match self.world.borrow().rooms.get(curr_room) {
-            Some(room) => match room.items.get(name) {
-                Some(item) => item.inspection(),
-                None => match self.inventory.borrow().get(name) {
-                    Some(item) => item.inspection(),
-                    None => format!("There is no {} here.", name),
-                },
-            },
-            None => "You are not in a room...".to_owned(),
         }
     }
 }
