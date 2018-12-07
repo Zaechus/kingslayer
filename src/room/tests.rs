@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use item::Item;
-use properties::IsOpen;
-use room::Room;
+use crate::item::Item;
+use crate::properties::IsOpen;
+use crate::room::Room;
 
 #[test]
 fn room_addpath() {

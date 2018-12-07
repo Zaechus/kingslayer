@@ -1,5 +1,5 @@
 use super::*;
-use item::Item;
+use crate::item::Item;
 
 #[test]
 fn cli_take_drop() {

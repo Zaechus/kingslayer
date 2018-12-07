@@ -4,7 +4,7 @@ use std::io::{BufReader, Read};
 extern crate serde;
 extern crate serde_json;
 
-use cli::Cli;
+use crate::cli::Cli;
 
 pub fn get_world(path: &str) -> Cli {
     let world_file = File::open(path).expect("Unable to open file");

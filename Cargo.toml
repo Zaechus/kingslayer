@@ -2,7 +2,8 @@
 name = "kinggame1d"
 version = "0.8.1"
 authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
-description = "A text-based adventure written in Rust"
+edition = "2018"
+description = "A text adventure written in Rust"
 readme = "README.md"
 license = "MIT"
 publish = false

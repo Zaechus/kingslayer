@@ -1,4 +1,4 @@
-use properties::IsOpen;
+use crate::properties::IsOpen;
 
 #[derive(Serialize, Deserialize)]
 pub struct Pathway {

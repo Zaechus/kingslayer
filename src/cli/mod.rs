@@ -2,10 +2,10 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, Write};
 
-use item::Item;
-use room::Room;
-use utils::read_line::read_line;
-use world::World;
+use crate::item::Item;
+use crate::room::Room;
+use crate::utils::read_line::read_line;
+use crate::world::World;
 
 // A command line interface for controlling interactions between objects in a game
 #[derive(Serialize, Deserialize)]

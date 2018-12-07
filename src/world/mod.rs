@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use room::Room;
+use crate::room::Room;
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
 // A World is a graph data structure that encapsulates a collection of Room nodes.

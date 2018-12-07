@@ -3,9 +3,9 @@ use std::collections::HashMap;
 extern crate serde;
 extern crate serde_json;
 
-use item::Item;
-use pathway::Pathway;
-use properties::IsOpen;
+use crate::item::Item;
+use crate::pathway::Pathway;
+use crate::properties::IsOpen;
 
 // A section of the world connected by paths
 #[derive(Serialize, Deserialize)]
