@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use kinggame1d::get_world;
+    use kingslayer::get_world;
 
     #[test]
     fn setup_cli_works_json() {

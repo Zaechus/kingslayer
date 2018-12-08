@@ -1,4 +1,4 @@
 fn main() {
-    let cli = kinggame1d::get_world("data/world.json");
+    let cli = kingslayer::get_world("data/world.json");
     cli.start();
 }

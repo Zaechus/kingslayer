@@ -7,7 +7,7 @@ use crate::cli::Cli;
 ///
 /// A game should be setup as such:
 /// ```
-/// use kinggame1d::get_world;
+/// use kingslayer::get_world;
 ///
 /// fn main() {
 ///     let cli = get_world("data/world.json");
