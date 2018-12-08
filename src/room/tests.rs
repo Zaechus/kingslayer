@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::item::Item;
+use crate::properties::IsLocked;
 use crate::properties::IsOpen;
 use crate::room::Room;
 
@@ -43,6 +44,7 @@ fn room_addpath() {
         "There is a pathway to the east.",
         "It is a simple doorway.",
         IsOpen(true),
+        IsLocked(false),
     );
     start_room.add_path(
         "s",
@@ -50,6 +52,7 @@ fn room_addpath() {
         "There is a hallway to the south.",
         "It is a simple doorway.",
         IsOpen(true),
+        IsLocked(false),
     );
     start_room.add_path(
         "closet",
@@ -57,6 +60,7 @@ fn room_addpath() {
         "There is a closet off to the side.",
         "It is a simple doorway.",
         IsOpen(true),
+        IsLocked(false),
     );
     closet.add_path(
         "exit",
@@ -64,6 +68,7 @@ fn room_addpath() {
         "The door leads back into the room.",
         "It is a simple doorway.",
         IsOpen(true),
+        IsLocked(false),
     );
     long_hallway.add_path(
         "n",
@@ -71,6 +76,7 @@ fn room_addpath() {
         "There is a room to the north",
         "It is a simple doorway.",
         IsOpen(true),
+        IsLocked(false),
     );
     next_room.add_path(
         "w",
@@ -78,6 +84,7 @@ fn room_addpath() {
         "There is a pathway to the west.",
         "It is a simple doorway.",
         IsOpen(true),
+        IsLocked(false),
     );
 
     assert!(

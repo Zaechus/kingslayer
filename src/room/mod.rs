@@ -5,6 +5,7 @@ use serde_derive::Serialize;
 
 use crate::item::Item;
 use crate::pathway::Pathway;
+use crate::properties::IsLocked;
 use crate::properties::IsOpen;
 
 // A section of the world connected by paths
@@ -50,10 +51,11 @@ impl Room {
         desc: &str,
         inspection: &str,
         is_open: IsOpen,
+        is_locked: IsLocked,
     ) {
         self.paths.insert(
             direction.to_owned(),
-            Pathway::new(name, desc, inspection, is_open),
+            Pathway::new(name, desc, inspection, is_open, is_locked),
         );
     }
 }

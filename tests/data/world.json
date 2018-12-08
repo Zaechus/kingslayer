@@ -10,6 +10,7 @@
                         "name": "Start Room",
                         "desc": "The door leads back into the room.",
                         "inspection": "The door is plain and wooden.",
+                        "is_locked": false,
                         "is_open": true
                     }
                 },
@@ -23,18 +24,21 @@
                         "name": "Closet",
                         "desc": "A closet lies off to the side.",
                         "inspection": "The door is plain and wooden.",
+                        "is_locked": false,
                         "is_open": true
                     },
                     "e": {
                         "name": "Next Room",
                         "desc": "There is a pathway to the east.",
                         "inspection": "The opening is spacious.",
+                        "is_locked": false,
                         "is_open": true
                     },
                     "s": {
                         "name": "Long Hallway",
                         "desc": "There is a hallway to the south.",
                         "inspection": "The hallway seems narrow and foreboding.",
+                        "is_locked": false,
                         "is_open": true
                     }
                 },
@@ -42,8 +46,7 @@
                     "iron sword": {
                         "name": "iron sword",
                         "desc": "There is an iron sword on the ground.",
-                        "inspection": "The iron sword is of crude workmanship, but it should be usable.",
-                        "contents": null
+                        "inspection": "The iron sword is of crude workmanship, but it should be usable."
                     }
                 }
             },
@@ -55,6 +58,7 @@
                         "name": "Start Room",
                         "desc": "There is a pathway to the west.",
                         "inspection": "The path expands into a larger room.",
+                        "is_locked": false,
                         "is_open": true
                     }
                 },
@@ -62,8 +66,7 @@
                     "large red block": {
                         "name": "large red block",
                         "desc": "A large red block rests on the ground.",
-                        "inspection": "Well... it's just a large red block.",
-                        "contents": null
+                        "inspection": "Well... it's just a large red block."
                     }
                 }
             },
@@ -75,6 +78,7 @@
                         "name": "Start Room",
                         "desc": "There is a room to the north",
                         "inspection": "The hallway seems narrow and foreboding.",
+                        "is_locked": false,
                         "is_open": true
                     }
                 },
@@ -87,8 +91,7 @@
                             "curious object": {
                                 "name": "curious object",
                                 "desc": "There is a curious object here.",
-                                "inspection": "The object's appearance confuses your weak mind.",
-                                "contents": null
+                                "inspection": "The object's appearance confuses your weak mind."
                             }
                         }
                     }
@@ -100,8 +103,7 @@
         "brown leaf": {
             "name": "brown leaf",
             "desc": "A brown leaf lies on the ground.",
-            "inspection": "It's small, brown, and dry.",
-            "contents": null
+            "inspection": "It's small, brown, and dry."
         }
     }
 }

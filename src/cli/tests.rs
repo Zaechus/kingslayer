@@ -1,5 +1,6 @@
 use super::*;
 use crate::item::Item;
+use crate::properties::{IsLocked, IsOpen};
 
 #[test]
 fn cli_take_drop() {
@@ -119,6 +120,8 @@ fn cli_world_put_in() {
         "There is a big item on the ground.",
         "Meh, it's just some random thing.",
         Some(big_item_contents),
+        Some(IsLocked(false)),
+        Some(IsOpen(true)),
     ));
     let thingy = Box::new(Item::new(
         "thingy",
@@ -164,6 +167,8 @@ fn cli_inventory_put_in() {
         "There is a big item on the ground.",
         "Meh, it's just some random thing.",
         Some(big_item_contents),
+        Some(IsLocked(false)),
+        Some(IsOpen(true)),
     ));
     let thingy = Box::new(Item::new(
         "thingy",

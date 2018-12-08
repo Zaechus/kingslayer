@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
+use crate::properties::{IsLocked, IsOpen};
+
 // An object to be interacted with by the user
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Item {
@@ -10,6 +12,8 @@ pub struct Item {
     desc: String,
     inspection: String,
     pub contents: Option<HashMap<String, Box<Item>>>,
+    is_locked: Option<IsLocked>,
+    is_open: Option<IsOpen>,
 }
 
 impl Item {
@@ -19,6 +23,8 @@ impl Item {
             desc: desc.to_owned(),
             inspection: inspection.to_owned(),
             contents: None,
+            is_locked: None,
+            is_open: None,
         }
     }
     pub fn new_container(
@@ -26,12 +32,16 @@ impl Item {
         desc: &str,
         inspection: &str,
         contents: Option<HashMap<String, Box<Item>>>,
+        is_locked: Option<IsLocked>,
+        is_open: Option<IsOpen>,
     ) -> Self {
         Self {
             name: name.to_owned(),
             desc: desc.to_owned(),
             inspection: inspection.to_owned(),
             contents,
+            is_locked,
+            is_open,
         }
     }
     pub fn name(&self) -> String {

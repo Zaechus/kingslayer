@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use crate::properties::IsOpen;
+use crate::properties::{IsLocked, IsOpen};
 
 #[derive(Serialize, Deserialize)]
 pub struct Pathway {
@@ -9,15 +9,23 @@ pub struct Pathway {
     desc: String,
     inspection: String,
     is_open: IsOpen,
+    is_locked: IsLocked,
 }
 
 impl Pathway {
-    pub fn new(name: &str, desc: &str, inspection: &str, is_open: IsOpen) -> Self {
+    pub fn new(
+        name: &str,
+        desc: &str,
+        inspection: &str,
+        is_open: IsOpen,
+        is_locked: IsLocked,
+    ) -> Self {
         Self {
             name: name.to_owned(),
             desc: desc.to_owned(),
             inspection: inspection.to_owned(),
             is_open,
+            is_locked,
         }
     }
     pub fn name(&self) -> String {
