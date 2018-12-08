@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
+
 use crate::room::Room;
 
 // Represents a world for the player to explore that consists of a grid of Rooms.

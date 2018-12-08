@@ -2,6 +2,9 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, Write};
 
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
+
 use crate::item::Item;
 use crate::room::Room;
 use crate::utils::read_line::read_line;

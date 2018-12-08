@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
+
 // An object to be interacted with by the user
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Item {

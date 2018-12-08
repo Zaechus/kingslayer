@@ -1,5 +1,3 @@
-extern crate kinggame1d;
-
 #[cfg(test)]
 mod tests {
     use kinggame1d::get_world;

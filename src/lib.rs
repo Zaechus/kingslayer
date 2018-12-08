@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate serde_derive;
-
 pub use crate::utils::get_world::get_world;
 
 mod cli;

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-extern crate serde;
-extern crate serde_json;
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 
 use crate::item::Item;
 use crate::pathway::Pathway;

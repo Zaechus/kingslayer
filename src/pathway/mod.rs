@@ -1,3 +1,6 @@
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
+
 use crate::properties::IsOpen;
 
 #[derive(Serialize, Deserialize)]
