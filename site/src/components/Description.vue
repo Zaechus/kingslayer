@@ -1,7 +1,7 @@
 <template>
-  <div class="description">
+  <div class="desc">
     <h1>{{ msg }}</h1>
-    <p>A text adventure game written in Rust.</p>
+    <p>A text adventure game written in Rust</p>
   </div>
 </template>
 
