@@ -1,0 +1,8 @@
+{
+    "hp": 100,
+    "world": {
+        "curr_room": "",
+        "rooms": {}
+    },
+    "inventory": {}
+}

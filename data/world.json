@@ -1,4 +1,5 @@
 {
+    "hp": 100,
     "world": {
         "curr_room": "Start Room",
         "rooms": {

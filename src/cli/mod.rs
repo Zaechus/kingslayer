@@ -13,6 +13,7 @@ use crate::world::World;
 // A command line interface for controlling interactions between objects in a game
 #[derive(Serialize, Deserialize)]
 pub struct Cli {
+    hp: i32,
     world: RefCell<World>,
     inventory: RefCell<HashMap<String, Box<Item>>>,
 }
@@ -20,24 +21,27 @@ pub struct Cli {
 impl Cli {
     pub fn new(curr_room: &str, rooms: HashMap<String, Box<Room>>) -> Self {
         Self {
+            hp: 100,
             world: RefCell::new(World::new(curr_room, rooms)),
             inventory: RefCell::new(HashMap::new()),
         }
     }
+
     pub fn start(&self) {
-        let mut player_name = String::new();
-        while player_name.is_empty() {
+        let player_name = loop {
             print!("Enter a character name: ");
             io::stdout().flush().expect("error flushing");
-            player_name = read_line();
-        }
+            let input = read_line();
+            if !input.is_empty() {
+                break input;
+            }
+        };
         println!("Welcome, {}!\n", player_name);
 
         println!("{}", self.world.borrow().look());
         loop {
             let command = self.filter(&self.parts(&self.prompt()));
             if !command.is_empty() {
-                // quit command
                 match command.first().unwrap().as_str() {
                     "q" | "quit" => {
                         print!("Are you sure you want to quit? (y/N): ");
@@ -54,6 +58,7 @@ impl Cli {
         }
         println!("Farewell, {}!", player_name);
     }
+
     // prompts the user for an action
     fn prompt(&self) -> String {
         loop {
@@ -67,12 +72,14 @@ impl Cli {
             }
         }
     }
+
     // splits a string into a vector of individual words
     fn parts(&self, s: &str) -> Vec<String> {
         s.split_whitespace()
             .map(|x| x.to_lowercase().to_owned())
             .collect()
     }
+
     // removes meaningless words
     fn filter(&self, words: &[String]) -> Vec<String> {
         words
@@ -81,6 +88,7 @@ impl Cli {
             .filter(|w| w != "the" || w != "a" || w != "an")
             .collect()
     }
+
     // interprets words as game commands
     fn parse(&self, words: &[String]) {
         match words[0].as_str() {
@@ -128,6 +136,9 @@ impl Cli {
                     println!("{} what?", &words[0])
                 }
             }
+            "status" | "diagnostic" => {
+                println!("{}", self.status());
+            }
             "put" | "place" => {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "in") {
@@ -146,10 +157,14 @@ impl Cli {
                     println!("{} what?", &words[0])
                 }
             }
+            "hello" | "hi" => {
+                println!("Greetings.");
+            }
             _ => println!("I don't know the word \"{}\".", &words[0]),
         }
     }
-    // prints inventory contents
+
+    // returns inventory contents
     fn inventory(&self) -> String {
         if self.inventory.borrow().is_empty() {
             "You are empty-handed.".to_owned()
@@ -161,6 +176,12 @@ impl Cli {
             items_carried
         }
     }
+
+    // returns HP
+    fn status(&self) -> String {
+        format!("You have {} HP.", self.hp)
+    }
+
     // returns the special properties of an object or path
     pub fn inspect(&self, name: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
@@ -178,6 +199,7 @@ impl Cli {
             None => "You are not in a room...".to_owned(),
         }
     }
+
     // take an Item from the current Room into the inventory
     fn take(&self, name: &str) {
         let curr_room = &self.world.borrow().curr_room();
@@ -193,6 +215,7 @@ impl Cli {
             None => println!("There is no \"{}\" here.", name),
         }
     }
+
     // take all Items in the current Room
     fn take_all(&self) {
         let curr_room = &self.world.borrow().curr_room();
@@ -207,10 +230,12 @@ impl Cli {
             room.items.shrink_to_fit();
         }
     }
+
     // take an item from a container in the room or inventory
     fn take_from(&self, item: &str, container: &str) {
         println!("TODO: take {} from {}", item, container);
     }
+
     // drop an Item from inventory into the current Room
     fn drop(&self, name: &str) {
         let curr_room = &self.world.borrow().curr_room();
@@ -225,6 +250,7 @@ impl Cli {
             None => println!("You don't have the \"{}\".", name),
         }
     }
+
     // place an Item into a container Item
     fn put_in(&self, item: &str, container: &str) {
         let curr_room = &self.world.borrow().curr_room();

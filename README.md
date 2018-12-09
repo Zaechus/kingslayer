@@ -1,4 +1,4 @@
-# kingslayer
+# Kingslayer
 A text adventure game written in Rust.
 
 ### Dependencies
