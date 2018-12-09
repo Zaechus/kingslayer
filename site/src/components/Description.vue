@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="description">
     <h1>{{ msg }}</h1>
     <p>A text adventure game written in Rust.</p>
   </div>
@@ -9,7 +9,7 @@
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "HelloWorld",
+  name: "Description",
   props: {
     msg: String
   }
