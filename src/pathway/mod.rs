@@ -28,12 +28,15 @@ impl Pathway {
             is_locked,
         }
     }
+
     pub fn name(&self) -> String {
         self.name.clone()
     }
+
     pub fn desc(&self) -> String {
         self.desc.clone()
     }
+
     pub fn inspection(&self) -> String {
         self.inspection.clone()
     }

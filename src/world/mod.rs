@@ -20,10 +20,11 @@ impl World {
             rooms,
         }
     }
-    // index of the current Room
+
     pub fn curr_room(&self) -> String {
         self.curr_room.clone()
     }
+
     // displays description of the current Room
     pub fn look(&self) -> String {
         match self.rooms.get(&self.curr_room) {
@@ -31,6 +32,7 @@ impl World {
             None => "You are not in a room...".to_owned(),
         }
     }
+
     // changes the current Room to the target of the current Room's chosen path
     pub fn move_room(&mut self, direction: &str) {
         match self.rooms.get(&self.curr_room) {

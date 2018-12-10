@@ -27,6 +27,7 @@ impl Item {
             is_open: None,
         }
     }
+
     pub fn new_container(
         name: &str,
         desc: &str,
@@ -44,6 +45,7 @@ impl Item {
             is_open,
         }
     }
+
     pub fn name(&self) -> String {
         match self.contents {
             Some(ref contents) => {
@@ -59,6 +61,7 @@ impl Item {
             None => self.name.clone(),
         }
     }
+
     pub fn desc(&self) -> String {
         match self.contents {
             Some(ref contents) => {
@@ -74,6 +77,7 @@ impl Item {
             None => self.desc.clone(),
         }
     }
+
     pub fn inspection(&self) -> String {
         self.inspection.clone()
     }

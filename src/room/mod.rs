@@ -28,10 +28,11 @@ impl Room {
             items,
         }
     }
-    // name of the Room
+
     pub fn name(&self) -> String {
         self.name.clone()
     }
+
     // compiles all descriptions in the Room for printing
     pub fn desc(&self) -> String {
         let mut desc = format!("{}\n{}", self.name, self.desc);
@@ -43,7 +44,8 @@ impl Room {
         }
         desc
     }
-    // add path to another Room
+
+    // add Pathway pointing to another Room
     pub fn add_path(
         &mut self,
         direction: &str,
