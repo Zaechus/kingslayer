@@ -1,3 +1,6 @@
 module.exports = {
-  lintOnSave: false
+  lintOnSave: false,
+  baseUrl: process.env.NODE_ENV === 'production'
+    ? '/kingslayer/'
+    : '/'
 }
