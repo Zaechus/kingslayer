@@ -1,5 +1,3 @@
-serve.sh
-
 # Cargo
 /target
 **/*.rs.bk
