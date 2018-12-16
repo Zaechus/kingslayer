@@ -1,11 +1,11 @@
 [package]
 name = "kingslayer"
-version = "0.9.3"
+version = "0.9.4"
 authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
 edition = "2018"
 description = "A text adventure written in Rust"
-readme = "README.md"
 license = "MIT"
+readme = "README.md"
 publish = false
 
 [dependencies]

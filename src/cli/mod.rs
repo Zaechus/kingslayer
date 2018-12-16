@@ -40,7 +40,8 @@ impl Cli {
 
         println!("{}", self.world.borrow().look());
         loop {
-            let command = self.filter(&self.parts(&self.prompt()));
+            let command = self.mod_directions(&self.filter(&self.parts(&self.prompt())));
+            println!("{:?}", command);
             if !command.is_empty() {
                 match command.first().unwrap().as_str() {
                     "q" | "quit" => {
@@ -82,11 +83,35 @@ impl Cli {
 
     // removes meaningless words
     fn filter(&self, words: &[String]) -> Vec<String> {
-        words
-            .to_vec()
-            .into_iter()
-            .filter(|w| w != "the" || w != "a" || w != "an")
-            .collect()
+        let mut filtered = Vec::with_capacity(words.len());
+        for w in words {
+            match w.as_str() {
+                "the" | "a" | "an" | "go" => (),
+                _ => filtered.push(w.to_owned()),
+            }
+        }
+        filtered
+    }
+
+    // modify path directives
+    fn mod_directions(&self, words: &[String]) -> Vec<String> {
+        let mut modified = Vec::with_capacity(words.len());
+        for w in words {
+            match w.as_str() {
+                "north" => modified.push("n".to_owned()),
+                "south" => modified.push("s".to_owned()),
+                "east" => modified.push("e".to_owned()),
+                "west" => modified.push("w".to_owned()),
+                "northeast" => modified.push("ne".to_owned()),
+                "northwest" => modified.push("nw".to_owned()),
+                "southeast" => modified.push("se".to_owned()),
+                "southwest" => modified.push("sw".to_owned()),
+                "up" => modified.push("u".to_owned()),
+                "down" => modified.push("d".to_owned()),
+                _ => modified.push(w.to_owned()),
+            }
+        }
+        modified
     }
 
     // interprets words as game commands
@@ -129,7 +154,7 @@ impl Cli {
                     println!("What do you want to {}?", words[0].as_str());
                 }
             }
-            "examine" | "inspect" => {
+            "examine" | "inspect" | "read" => {
                 if words.len() > 1 {
                     println!("{}", self.inspect(&words[1..].join(" ")));
                 } else {
@@ -156,9 +181,6 @@ impl Cli {
                 } else {
                     println!("{} what?", &words[0])
                 }
-            }
-            "hello" | "hi" => {
-                println!("Greetings.");
             }
             _ => println!("I don't know the word \"{}\".", &words[0]),
         }
