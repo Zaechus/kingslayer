@@ -1,5 +1,6 @@
-os: Visual Studio 2015
-os: Ubuntu
+image:
+  - Visual Studio 2015
+  - Ubuntu
 
 environment:
   matrix:
