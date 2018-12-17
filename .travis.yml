@@ -21,8 +21,5 @@ matrix:
   fast_finish: true
 
 script:
-  - rustup target add wasm32-unknown-unknown
   - cargo build --verbose --all
   - cargo test --verbose --all
-  - cargo build --verbose --all --target=wasm32-unknown-unknown
-  - cargo test --verbose --all --target=wasm32-unknown-unknown
