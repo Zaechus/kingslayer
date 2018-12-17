@@ -1,4 +1,7 @@
 fn main() {
     let cli = kingslayer::get_world("data/world.json");
-    cli.start();
+
+    loop {
+        println!("{}", cli.ask(&cli.prompt()));
+    }
 }

@@ -27,41 +27,17 @@ impl Cli {
         }
     }
 
-    pub fn start(&self) {
-        let player_name = loop {
-            print!("Enter a character name: ");
-            io::stdout().flush().expect("error flushing");
-            let input = read_line();
-            if !input.is_empty() {
-                break input;
-            }
-        };
-        println!("Welcome, {}!\n", player_name);
-
-        println!("{}", self.world.borrow().look());
-        loop {
-            let command = self.mod_directions(&self.filter(&self.parts(&self.prompt())));
-            println!("{:?}", command);
-            if !command.is_empty() {
-                match command.first().unwrap().as_str() {
-                    "q" | "quit" => {
-                        print!("Are you sure you want to quit? (y/N): ");
-                        io::stdout().flush().expect("error flushing");
-                        if read_line().starts_with('y') {
-                            break;
-                        }
-                    }
-                    _ => self.parse(&command),
-                }
-            } else {
-                println!("I do not understand that phrase.");
-            }
+    pub fn ask(&self, input: &str) -> String {
+        let command = self.mod_directions(&self.filter(&self.parts(input)));
+        if !command.is_empty() {
+            self.parse(&command)
+        } else {
+            "I do not understand that phrase.".to_owned()
         }
-        println!("Farewell, {}!", player_name);
     }
 
     // prompts the user for an action
-    fn prompt(&self) -> String {
+    pub fn prompt(&self) -> String {
         loop {
             print!("\n> ");
             io::stdout().flush().expect("error flushing");
@@ -115,9 +91,9 @@ impl Cli {
     }
 
     // interprets words as game commands
-    fn parse(&self, words: &[String]) {
+    fn parse(&self, words: &[String]) -> String {
         match words[0].as_str() {
-            "l" | "look" => println!("{}", self.world.borrow().look()),
+            "l" | "look" => self.world.borrow().look(),
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                 self.world.borrow_mut().move_room(&words[0])
             }
@@ -125,10 +101,10 @@ impl Cli {
                 if words.len() > 1 {
                     self.world.borrow_mut().move_room(&words[1])
                 } else {
-                    println!("Where do you want to {}?", words[0].as_str());
+                    format!("Where do you want to {}?", words[0].as_str())
                 }
             }
-            "i" | "inventory" => println!("{}", self.inventory()),
+            "i" | "inventory" => self.inventory(),
             "take" | "get" => {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "from") {
@@ -137,52 +113,44 @@ impl Cli {
                         }
                         None => {
                             if words[1] == "all" {
-                                self.take_all();
+                                self.take_all()
                             } else {
-                                self.take(&words[1..].join(" "));
+                                self.take(&words[1..].join(" "))
                             }
                         }
                     }
                 } else {
-                    println!("What do you want to {}?", words[0].as_str());
+                    format!("What do you want to {}?", words[0].as_str())
                 }
             }
             "drop" => {
                 if words.len() > 1 {
-                    self.drop(&words[1..].join(" "));
+                    self.drop(&words[1..].join(" "))
                 } else {
-                    println!("What do you want to {}?", words[0].as_str());
+                    format!("What do you want to {}?", words[0].as_str())
                 }
             }
             "examine" | "inspect" | "read" => {
                 if words.len() > 1 {
-                    println!("{}", self.inspect(&words[1..].join(" ")));
+                    self.inspect(&words[1..].join(" "))
                 } else {
-                    println!("{} what?", &words[0])
+                    format!("{} what?", &words[0])
                 }
             }
-            "status" | "diagnostic" => {
-                println!("{}", self.status());
-            }
+            "status" | "diagnostic" => self.status(),
             "put" | "place" => {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "in") {
                         Some(pos) => {
                             self.put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         }
-                        None => {
-                            print!("{} ", &words[0]);
-                            for word in &words[1..] {
-                                print!("{} ", word);
-                            }
-                            println!("in what?");
-                        }
+                        None => format!("{} in what?", words.join(" ")),
                     }
                 } else {
-                    println!("{} what?", &words[0])
+                    format!("{} what?", &words[0])
                 }
             }
-            _ => println!("I don't know the word \"{}\".", &words[0]),
+            _ => format!("I don't know the word \"{}\".", &words[0]),
         }
     }
 
@@ -223,7 +191,7 @@ impl Cli {
     }
 
     // take an Item from the current Room into the inventory
-    fn take(&self, name: &str) {
+    fn take(&self, name: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
         let taken = match self.world.borrow_mut().rooms.get_mut(curr_room) {
             Some(room) => room.items.remove(name),
@@ -232,49 +200,53 @@ impl Cli {
         match taken {
             Some(ob) => {
                 self.inventory.borrow_mut().insert(ob.name(), ob);
-                println!("Taken.");
+                "Taken.".to_owned()
             }
-            None => println!("There is no \"{}\" here.", name),
+            None => format!("There is no \"{}\" here.", name),
         }
     }
 
     // take all Items in the current Room
-    fn take_all(&self) {
+    fn take_all(&self) -> String {
         let curr_room = &self.world.borrow().curr_room();
+        let mut taken_str = String::new();
         if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
             for item in &room.items {
                 self.inventory
                     .borrow_mut()
                     .insert(item.0.clone(), item.1.clone());
-                println!("Taken.");
+                taken_str.push_str("Taken. ");
             }
             room.items.clear();
             room.items.shrink_to_fit();
         }
+        taken_str
     }
 
     // take an item from a container in the room or inventory
-    fn take_from(&self, item: &str, container: &str) {
-        println!("TODO: take {} from {}", item, container);
+    fn take_from(&self, item: &str, container: &str) -> String {
+        format!("TODO: take {} from {}", item, container)
     }
 
     // drop an Item from inventory into the current Room
-    fn drop(&self, name: &str) {
+    fn drop(&self, name: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
         let dropped = self.inventory.borrow_mut().remove(name);
         match dropped {
             Some(obj) => {
                 if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
                     room.items.insert(obj.name(), obj);
-                    println!("Dropped.")
+                    "Dropped.".to_owned()
+                } else {
+                    String::new()
                 }
             }
-            None => println!("You don't have the \"{}\".", name),
+            None => format!("You don't have the \"{}\".", name),
         }
     }
 
     // place an Item into a container Item
-    fn put_in(&self, item: &str, container: &str) {
+    fn put_in(&self, item: &str, container: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
         let placed = self.inventory.borrow_mut().remove(item);
         match placed {
@@ -284,33 +256,35 @@ impl Cli {
                         Some(cont) => match cont.contents {
                             Some(ref mut contents) => {
                                 contents.insert(obj.name(), obj);
-                                println!("Placed.");
+                                "Placed.".to_owned()
                             }
                             None => {
                                 self.inventory.borrow_mut().insert(obj.name(), obj);
-                                println!("You can't place anything in the {}.", container);
+                                format!("You can't place anything in the {}.", container)
                             }
                         },
                         None => match self.inventory.borrow_mut().get_mut(container) {
                             Some(cont) => match cont.contents {
                                 Some(ref mut contents) => {
                                     contents.insert(obj.name(), obj);
-                                    println!("Placed.");
+                                    "Placed.".to_owned()
                                 }
                                 None => {
                                     self.inventory.borrow_mut().insert(obj.name(), obj);
-                                    println!("You can't place anything in the {}.", container);
+                                    format!("You can't place anything in the {}.", container)
                                 }
                             },
                             None => {
                                 self.inventory.borrow_mut().insert(obj.name(), obj);
-                                println!("There is no \"{}\" here.", container)
+                                format!("There is no \"{}\" here.", container)
                             }
                         },
                     }
+                } else {
+                    String::new()
                 }
             }
-            None => println!("You don't have the \"{}\".", item),
+            None => format!("You don't have the \"{}\".", item),
         }
     }
 }

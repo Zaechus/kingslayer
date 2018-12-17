@@ -5,13 +5,17 @@ use crate::cli::Cli;
 
 /// Creates a Cli from the given file
 ///
-/// A game should be setup as such:
+/// A game should be setup and started like so:
 /// ```
 /// use kingslayer::get_world;
 ///
 /// fn main() {
 ///     let cli = get_world("data/world.json");
-///     // `cli.start()` should be run here
+///
+///     loop {
+///         # break;
+///         println!("{}", cli.ask(&cli.prompt()));
+///     }
 /// }
 /// ```
 /// The string parameter should link to an existing file with

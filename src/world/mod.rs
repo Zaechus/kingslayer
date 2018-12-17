@@ -34,16 +34,16 @@ impl World {
     }
 
     // changes the current Room to the target of the current Room's chosen path
-    pub fn move_room(&mut self, direction: &str) {
+    pub fn move_room(&mut self, direction: &str) -> String {
         match self.rooms.get(&self.curr_room) {
             Some(room) => match room.paths.get(direction) {
                 Some(new_room_name) => {
                     self.curr_room = new_room_name.name();
-                    println!("{}", self.look());
+                    self.look()
                 }
-                None => println!("You cannot go that way."),
+                None => "You cannot go that way.".to_owned(),
             },
-            None => println!("You are not in a room..."),
+            None => "You are not in a room...".to_owned(),
         }
     }
 }
