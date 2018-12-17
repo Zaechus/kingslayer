@@ -1,12 +1,28 @@
 language: rust
+
 rust:
   - stable
   - beta
   - nightly
+
+os:
+  - linux
+  - osx
+  - windows
+
+env:
+  global:
+    - RUST_BACKTRACE=1
+
 matrix:
   allow_failures:
     - rust: nightly
+    - os: osx
   fast_finish: true
+
 script:
+  - rustup target add wasm32-unknown-unknown
   - cargo build --verbose --all
   - cargo test --verbose --all
+  - cargo build --verbose --all --target=wasm32-unknown-unknown
+  - cargo test --verbose --all --target=wasm32-unknown-unknown
