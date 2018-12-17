@@ -7,7 +7,8 @@ license = "MIT"
 description = "A text adventure written in Rust"
 readme = "README.md"
 repository = "https://github.com/Maxgy/kingslayer"
-publish = false
+keywords = ["text", "adventure", "game"]
+categories = ["games", "game-engines"]
 
 [dependencies]
 serde = "1.0"
