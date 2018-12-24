@@ -16,7 +16,7 @@ pub struct World {
 impl World {
     pub fn new(curr_room: &str, rooms: HashMap<String, Box<Room>>) -> Self {
         Self {
-            curr_room: curr_room.to_owned(),
+            curr_room: curr_room.to_string(),
             rooms,
         }
     }
@@ -29,7 +29,7 @@ impl World {
     pub fn look(&self) -> String {
         match self.rooms.get(&self.curr_room) {
             Some(room) => room.desc(),
-            None => "You are not in a room...".to_owned(),
+            None => "You are not in a room...".to_string(),
         }
     }
 
@@ -41,9 +41,9 @@ impl World {
                     self.curr_room = new_room_name.name();
                     self.look()
                 }
-                None => "You cannot go that way.".to_owned(),
+                None => "You cannot go that way.".to_string(),
             },
-            None => "You are not in a room...".to_owned(),
+            None => "You are not in a room...".to_string(),
         }
     }
 }

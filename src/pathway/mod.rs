@@ -21,9 +21,9 @@ impl Pathway {
         is_locked: IsLocked,
     ) -> Self {
         Self {
-            name: name.to_owned(),
-            desc: desc.to_owned(),
-            inspection: inspection.to_owned(),
+            name: name.to_string(),
+            desc: desc.to_string(),
+            inspection: inspection.to_string(),
             is_open,
             is_locked,
         }

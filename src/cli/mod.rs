@@ -32,7 +32,7 @@ impl Cli {
         if !command.is_empty() {
             self.parse(&command)
         } else {
-            "I do not understand that phrase.".to_owned()
+            "I do not understand that phrase.".to_string()
         }
     }
 
@@ -53,7 +53,7 @@ impl Cli {
     // splits a string into a vector of individual words
     fn parts(&self, s: &str) -> Vec<String> {
         s.split_whitespace()
-            .map(|x| x.to_lowercase().to_owned())
+            .map(|x| x.to_lowercase().to_string())
             .collect()
     }
 
@@ -62,8 +62,8 @@ impl Cli {
         let mut filtered = Vec::with_capacity(words.len());
         for w in words {
             match w.as_str() {
-                "the" | "a" | "an" | "go" => (),
-                _ => filtered.push(w.to_owned()),
+                "the" | "a" | "an" | "go" | "of" => (),
+                _ => filtered.push(w.to_string()),
             }
         }
         filtered
@@ -74,17 +74,17 @@ impl Cli {
         let mut modified = Vec::with_capacity(words.len());
         for w in words {
             match w.as_str() {
-                "north" => modified.push("n".to_owned()),
-                "south" => modified.push("s".to_owned()),
-                "east" => modified.push("e".to_owned()),
-                "west" => modified.push("w".to_owned()),
-                "northeast" => modified.push("ne".to_owned()),
-                "northwest" => modified.push("nw".to_owned()),
-                "southeast" => modified.push("se".to_owned()),
-                "southwest" => modified.push("sw".to_owned()),
-                "up" => modified.push("u".to_owned()),
-                "down" => modified.push("d".to_owned()),
-                _ => modified.push(w.to_owned()),
+                "north" => modified.push("n".to_string()),
+                "south" => modified.push("s".to_string()),
+                "east" => modified.push("e".to_string()),
+                "west" => modified.push("w".to_string()),
+                "northeast" => modified.push("ne".to_string()),
+                "northwest" => modified.push("nw".to_string()),
+                "southeast" => modified.push("se".to_string()),
+                "southwest" => modified.push("sw".to_string()),
+                "up" => modified.push("u".to_string()),
+                "down" => modified.push("d".to_string()),
+                _ => modified.push(w.to_string()),
             }
         }
         modified
@@ -101,13 +101,13 @@ impl Cli {
                 if words.len() > 1 {
                     self.world.borrow_mut().move_room(&words[1])
                 } else {
-                    format!("Where do you want to {}?", words[0].as_str())
+                    format!("Where do you want to {}?", words[0])
                 }
             }
             "i" | "inventory" => self.inventory(),
             "take" | "get" => {
                 if words.len() > 1 {
-                    match words.iter().position(|r| r == "from") {
+                    match words.iter().position(|r| r == "from" || r == "out") {
                         Some(pos) => {
                             self.take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         }
@@ -120,14 +120,14 @@ impl Cli {
                         }
                     }
                 } else {
-                    format!("What do you want to {}?", words[0].as_str())
+                    format!("What do you want to {}?", words[0])
                 }
             }
             "drop" => {
                 if words.len() > 1 {
                     self.drop(&words[1..].join(" "))
                 } else {
-                    format!("What do you want to {}?", words[0].as_str())
+                    format!("What do you want to {}?", words[0])
                 }
             }
             "examine" | "inspect" | "read" => {
@@ -157,7 +157,7 @@ impl Cli {
     // returns inventory contents
     fn inventory(&self) -> String {
         if self.inventory.borrow().is_empty() {
-            "You are empty-handed.".to_owned()
+            "You are empty-handed.".to_string()
         } else {
             let mut items_carried = String::from("You are carrying:");
             for x in self.inventory.borrow().iter() {
@@ -186,7 +186,7 @@ impl Cli {
                     },
                 },
             },
-            None => "You are not in a room...".to_owned(),
+            None => "You are not in a room...".to_string(),
         }
     }
 
@@ -200,7 +200,7 @@ impl Cli {
         match taken {
             Some(ob) => {
                 self.inventory.borrow_mut().insert(ob.name(), ob);
-                "Taken.".to_owned()
+                "Taken.".to_string()
             }
             None => format!("There is no \"{}\" here.", name),
         }
@@ -220,12 +220,39 @@ impl Cli {
             room.items.clear();
             room.items.shrink_to_fit();
         }
-        taken_str
+        if taken_str.is_empty() {
+            "There is nothing here to take.".to_string()
+        } else {
+            taken_str
+        }
     }
 
     // take an item from a container in the room or inventory
     fn take_from(&self, item: &str, container: &str) -> String {
-        format!("TODO: take {} from {}", item, container)
+        let curr_room = &self.world.borrow().curr_room();
+        let taken = match self.world.borrow_mut().rooms.get_mut(curr_room) {
+            Some(room) => match room.items.get_mut(container) {
+                Some(cont) => match cont.contents {
+                    Some(ref mut contents) => contents.remove(item),
+                    None => None,
+                },
+                None => match self.inventory.borrow_mut().get_mut(container) {
+                    Some(cont2) => match cont2.contents {
+                        Some(ref mut contents) => contents.remove(item),
+                        None => None,
+                    },
+                    None => return format!("There is no {} here.", container),
+                },
+            },
+            None => None,
+        };
+        match taken {
+            Some(ob) => {
+                self.inventory.borrow_mut().insert(ob.name(), ob);
+                "Taken.".to_string()
+            }
+            None => format!("There is no \"{}\" here.", item),
+        }
     }
 
     // drop an Item from inventory into the current Room
@@ -236,7 +263,7 @@ impl Cli {
             Some(obj) => {
                 if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
                     room.items.insert(obj.name(), obj);
-                    "Dropped.".to_owned()
+                    "Dropped.".to_string()
                 } else {
                     String::new()
                 }
@@ -256,7 +283,7 @@ impl Cli {
                         Some(cont) => match cont.contents {
                             Some(ref mut contents) => {
                                 contents.insert(obj.name(), obj);
-                                "Placed.".to_owned()
+                                "Placed.".to_string()
                             }
                             None => {
                                 self.inventory.borrow_mut().insert(obj.name(), obj);
@@ -267,7 +294,7 @@ impl Cli {
                             Some(cont) => match cont.contents {
                                 Some(ref mut contents) => {
                                     contents.insert(obj.name(), obj);
-                                    "Placed.".to_owned()
+                                    "Placed.".to_string()
                                 }
                                 None => {
                                     self.inventory.borrow_mut().insert(obj.name(), obj);

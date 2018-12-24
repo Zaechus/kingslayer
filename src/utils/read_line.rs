@@ -5,5 +5,5 @@ pub fn read_line() -> String {
     io::stdin()
         .read_line(&mut input)
         .expect("Error reading from stdin");
-    input.trim().to_owned()
+    input.trim().to_string()
 }

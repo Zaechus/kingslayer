@@ -19,9 +19,9 @@ pub struct Item {
 impl Item {
     pub fn new(name: &str, desc: &str, inspection: &str) -> Self {
         Self {
-            name: name.to_owned(),
-            desc: desc.to_owned(),
-            inspection: inspection.to_owned(),
+            name: name.to_string(),
+            desc: desc.to_string(),
+            inspection: inspection.to_string(),
             contents: None,
             is_locked: None,
             is_open: None,
@@ -37,9 +37,9 @@ impl Item {
         is_open: Option<IsOpen>,
     ) -> Self {
         Self {
-            name: name.to_owned(),
-            desc: desc.to_owned(),
-            inspection: inspection.to_owned(),
+            name: name.to_string(),
+            desc: desc.to_string(),
+            inspection: inspection.to_string(),
             contents,
             is_locked,
             is_open,

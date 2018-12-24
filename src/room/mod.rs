@@ -22,8 +22,8 @@ pub struct Room {
 impl Room {
     pub fn new(name: &str, desc: &str, items: HashMap<String, Box<Item>>) -> Self {
         Self {
-            name: name.to_owned(),
-            desc: desc.to_owned(),
+            name: name.to_string(),
+            desc: desc.to_string(),
             paths: HashMap::new(),
             items,
         }
@@ -56,7 +56,7 @@ impl Room {
         is_locked: IsLocked,
     ) {
         self.paths.insert(
-            direction.to_owned(),
+            direction.to_string(),
             Pathway::new(name, desc, inspection, is_open, is_locked),
         );
     }
