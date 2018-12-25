@@ -186,7 +186,7 @@ impl Cli {
                 }
                 room.enemies.retain(|_, e| e.hp() > 0);
                 if hp.0 <= 0 {
-                    events_str.push_str("You died.");
+                    events_str.push_str(" You died.");
                 }
                 events_str
             }

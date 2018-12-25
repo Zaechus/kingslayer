@@ -4,11 +4,12 @@ fn main() {
     println!("{}", cli.ask("l"));
     loop {
         match cli.ask(&cli.prompt()).as_str() {
-            ref s if s.contains("You died.") => {
+            ref s => {
                 println!("{}", s);
-                break;
+                if s.contains("You died.") {
+                    break;
+                }
             }
-            ref s => println!("{}", s),
         }
     }
 }
