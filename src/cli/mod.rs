@@ -33,7 +33,11 @@ impl Cli {
     }
 
     pub fn ask(&self, input: &str) -> String {
-        let command = self.mod_directions(&self.filter(&self.parts(input)));
+        let filter_out = vec!["a", "an", "at", "go", "my", "of", "the", "to"];
+        let mut command = self.parts(input);
+        command.retain(|w| !(&filter_out).contains(&w.as_str()));
+        let command = self.mod_directions(&command);
+
         if !command.is_empty() {
             format!("{}{}", self.parse(&command), self.events())
         } else {
@@ -70,18 +74,6 @@ impl Cli {
             .collect()
     }
 
-    // removes meaningless words
-    fn filter(&self, words: &[String]) -> Vec<String> {
-        let mut filtered = Vec::with_capacity(words.len());
-        for w in words {
-            match w.as_str() {
-                "a" | "an" | "go" | "my" | "of" | "the" | "to" => (),
-                _ => filtered.push(w.to_string()),
-            }
-        }
-        filtered
-    }
-
     // modify path directives
     fn mod_directions(&self, words: &[String]) -> Vec<String> {
         let mut modified = Vec::with_capacity(words.len());
@@ -106,14 +98,18 @@ impl Cli {
     // interprets words as game commands
     fn parse(&self, words: &[String]) -> String {
         match words[0].as_str() {
-            "l" | "look" => self.world.borrow().look(),
+            "l" | "look" => {
+                if words.len() < 2 {
+                    self.world.borrow().look()
+                } else {
+                    self.inspect(&words[1..].join(" "))
+                }
+            }
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
-                self.in_combat.replace(false);
                 self.world.borrow_mut().move_room(&words[0])
             }
             "enter" => {
                 if words.len() > 1 {
-                    self.in_combat.replace(false);
                     self.world.borrow_mut().move_room(&words[1])
                 } else {
                     format!("Where do you want to {}?", words[0])
@@ -302,20 +298,24 @@ impl Cli {
 
     // returns the special properties of an object or path
     pub fn inspect(&self, name: &str) -> String {
-        let curr_room = &self.world.borrow().curr_room();
-        match self.world.borrow().rooms.get(curr_room) {
-            Some(room) => match room.items.get(name) {
-                Some(item) => item.inspection(),
-
-                None => match self.inventory.borrow().get(name) {
+        if name == "me" || name == "self" || name == "myself" {
+            self.status()
+        } else {
+            let curr_room = &self.world.borrow().curr_room();
+            match self.world.borrow().rooms.get(curr_room) {
+                Some(room) => match room.items.get(name) {
                     Some(item) => item.inspection(),
-                    None => match room.paths.get(name) {
+
+                    None => match self.inventory.borrow().get(name) {
                         Some(item) => item.inspection(),
-                        None => format!("There is no \"{}\" here.", name),
+                        None => match room.paths.get(name) {
+                            Some(item) => item.inspection(),
+                            None => format!("There is no \"{}\" here.", name),
+                        },
                     },
                 },
-            },
-            None => "You are not in a room...".to_string(),
+                None => "You are not in a room...".to_string(),
+            }
         }
     }
 

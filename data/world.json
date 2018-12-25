@@ -5,9 +5,9 @@
     ],
     "in_combat": false,
     "inventory": {
-        "brown leaf": {
-            "name": "brown leaf",
-            "desc": "A brown leaf lies on the ground.",
+        "leaf": {
+            "name": "leaf",
+            "desc": "A leaf lies on the ground.",
             "inspection": "It's small, brown, and dry."
         }
     },
