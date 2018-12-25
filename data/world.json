@@ -3,6 +3,14 @@
         10,
         10
     ],
+    "in_combat": false,
+    "inventory": {
+        "brown leaf": {
+            "name": "brown leaf",
+            "desc": "A brown leaf lies on the ground.",
+            "inspection": "It's small, brown, and dry."
+        }
+    },
     "world": {
         "curr_room": "Start Room",
         "rooms": {
@@ -78,6 +86,15 @@
                         "inspection": "The troll is holding a club that is long and made of wood. He appears to be wearing nothing but a loincloth and a leather jerkin.",
                         "loot": {},
                         "is_angry": false
+                    },
+                    "goblin": {
+                        "hp": 5,
+                        "damage": 2,
+                        "name": "goblin",
+                        "desc": "The goblin cowers in a corner holding a knife.",
+                        "inspection": "The goblin is small, grey, and skinny. He is brandishing a knife.",
+                        "loot": {},
+                        "is_angry": false
                     }
                 },
                 "items": {
@@ -116,13 +133,6 @@
                     }
                 }
             }
-        }
-    },
-    "inventory": {
-        "brown leaf": {
-            "name": "brown leaf",
-            "desc": "A brown leaf lies on the ground.",
-            "inspection": "It's small, brown, and dry."
         }
     }
 }

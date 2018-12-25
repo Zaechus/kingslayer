@@ -10,11 +10,19 @@ use crate::cli::Cli;
 /// use kingslayer::get_world;
 ///
 /// fn main() {
-///     let cli = get_world("data/world.json");
+///     let cli = kingslayer::get_world("data/world.json");
 ///
+///     println!("{}", cli.ask("l"));
 ///     loop {
 ///         # break;
-///         println!("{}", cli.ask(&cli.prompt()));
+///         match cli.ask(&cli.prompt()).as_str() {
+///             ref s => {
+///                 println!("{}", s);
+///                 if s.contains("You died.") {
+///                     break;
+///                 }
+///             }
+///         }
 ///     }
 /// }
 /// ```
@@ -29,4 +37,9 @@ pub fn get_world(path: &str) -> Cli {
         .expect("Unable to read string");
 
     serde_json::from_str(&data).expect("Error when creating world from file.")
+}
+
+/// Creates a Cli from JSON already in str form
+pub fn get_world_from_str(data: &str) -> Cli {
+    serde_json::from_str(data).expect("Error when creating world from file.")
 }

@@ -5,4 +5,5 @@
 A text adventure game written in Rust.
 
 ### Dependencies
-* `rustc` and `cargo` >= 1.31.0
+* `rustc` >= 1.31.1
+* `cargo` >= 1.31.0

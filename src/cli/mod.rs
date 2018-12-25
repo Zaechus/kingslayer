@@ -1,6 +1,9 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, Write};
+use std::{thread, time};
+
+use rand::Rng;
 
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -14,8 +17,9 @@ use crate::world::World;
 #[derive(Serialize, Deserialize)]
 pub struct Cli {
     hp: RefCell<(i32, i32)>,
-    world: RefCell<World>,
+    in_combat: RefCell<bool>,
     inventory: RefCell<HashMap<String, Box<Item>>>,
+    world: RefCell<World>,
 }
 
 impl Cli {
@@ -24,6 +28,7 @@ impl Cli {
             hp: RefCell::new((10, 10)),
             world: RefCell::new(World::new(curr_room, rooms)),
             inventory: RefCell::new(HashMap::new()),
+            in_combat: RefCell::new(false),
         }
     }
 
@@ -62,7 +67,7 @@ impl Cli {
         let mut filtered = Vec::with_capacity(words.len());
         for w in words {
             match w.as_str() {
-                "the" | "a" | "an" | "go" | "of" => (),
+                "the" | "a" | "an" | "go" | "of" | "to" => (),
                 _ => filtered.push(w.to_string()),
             }
         }
@@ -95,10 +100,12 @@ impl Cli {
         match words[0].as_str() {
             "l" | "look" => self.world.borrow().look(),
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
+                self.in_combat.replace(false);
                 self.world.borrow_mut().move_room(&words[0])
             }
             "enter" => {
                 if words.len() > 1 {
+                    self.in_combat.replace(false);
                     self.world.borrow_mut().move_room(&words[1])
                 } else {
                     format!("Where do you want to {}?", words[0])
@@ -156,10 +163,17 @@ impl Cli {
                         Some(pos) => {
                             self.attack(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         }
-                        None => format!("{} with what?", &words[0]),
+                        None => format!("What are you going to {} with?", &words[0]),
                     }
                 } else {
                     format!("What do you want to {}?", &words[0])
+                }
+            }
+            "rest" | "sleep" | "heal" => {
+                if !*self.in_combat.borrow() {
+                    self.rest()
+                } else {
+                    "You cannot rest while in combat.".to_string()
                 }
             }
             _ => format!("I don't know the word \"{}\".", &words[0]),
@@ -174,15 +188,18 @@ impl Cli {
             Some(room) => {
                 let mut events_str = String::new();
                 for e in room.enemies.iter() {
-                    let e_dmg = e.1.damage();
-                    self.hp.replace((hp.0 - e_dmg, hp.1));
-                    hp = *self.hp.borrow();
-                    events_str.push_str(&format!(
-                        "\nThe {} hit you for {} damage. You have {} HP left.",
-                        e.1.name(),
-                        e_dmg,
-                        hp.0
-                    ));
+                    if e.1.is_angry() && e.1.hp() > 0 {
+                        let e_dmg = e.1.damage();
+                        self.hp.replace((hp.0 - e_dmg, hp.1));
+                        self.in_combat.replace(true);
+                        hp = *self.hp.borrow();
+                        events_str.push_str(&format!(
+                            "\nThe {} hit you for {} damage. You have {} HP left.",
+                            e.1.name(),
+                            e_dmg,
+                            hp.0
+                        ));
+                    }
                 }
                 room.enemies.retain(|_, e| e.hp() > 0);
                 if hp.0 <= 0 {
@@ -194,6 +211,7 @@ impl Cli {
         }
     }
 
+    // attack an Enemy with a chosen item in the current Room
     fn attack(&self, enemy: &str, weapon: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
         match self.world.borrow_mut().rooms.get_mut(curr_room) {
@@ -202,6 +220,7 @@ impl Cli {
                     Some(wpon) => {
                         let dmg = wpon.damage();
                         nme.get_hit(dmg);
+                        self.in_combat.replace(true);
                         if nme.hp() > 0 {
                             format!(
                                 "You hit the {} with your {} for {} damage. It has {} HP left.",
@@ -222,6 +241,30 @@ impl Cli {
                 None => format!("There is no {} here.", enemy),
             },
             None => "You are not in a room...".to_string(),
+        }
+    }
+
+    // rest for a random amount of time to regain a random amount of HP
+    fn rest(&self) -> String {
+        let hp = *self.hp.borrow();
+        if hp.0 < hp.1 {
+            thread::sleep(time::Duration::from_millis(
+                rand::thread_rng().gen_range(2000, 5001),
+            ));
+            let regained_hp = rand::thread_rng().gen_range(1, 7);
+            let new_hp = hp.0 + regained_hp;
+            if new_hp < hp.1 {
+                self.hp.replace((new_hp, hp.1));
+            } else {
+                self.hp.replace((hp.1, hp.1));
+            }
+            let hp = *self.hp.borrow();
+            format!(
+                "You regained {} HP for a total of ({} / {}) HP.",
+                regained_hp, hp.0, hp.1
+            )
+        } else {
+            "You already have full health.".to_string()
         }
     }
 

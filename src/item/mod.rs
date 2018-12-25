@@ -101,8 +101,8 @@ impl Item {
 
     pub fn damage(&self) -> i32 {
         match self.damage {
-            Some(damage) => rand::thread_rng().gen_range(1, damage),
-            None => 1,
+            Some(damage) => rand::thread_rng().gen_range(1, damage + 1),
+            None => rand::thread_rng().gen_range(0, 2),
         }
     }
 }

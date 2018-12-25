@@ -49,7 +49,11 @@ impl Enemy {
     }
 
     pub fn damage(&self) -> i32 {
-        rand::thread_rng().gen_range(0, self.damage)
+        rand::thread_rng().gen_range(0, self.damage + 1)
+    }
+
+    pub fn is_angry(&self) -> bool {
+        self.is_angry
     }
 
     pub fn get_hit(&mut self, damage: i32) {
