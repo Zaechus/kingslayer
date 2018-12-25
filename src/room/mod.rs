@@ -6,8 +6,6 @@ use serde_derive::Serialize;
 use crate::enemy::Enemy;
 use crate::item::Item;
 use crate::pathway::Pathway;
-use crate::properties::IsLocked;
-use crate::properties::IsOpen;
 
 // A section of the world connected by paths
 #[derive(Serialize, Deserialize)]
@@ -53,14 +51,15 @@ impl Room {
     }
 
     // add Pathway pointing to another Room
-    pub fn add_path(
+    #[cfg(test)]
+    fn add_path(
         &mut self,
         direction: &str,
         name: &str,
         desc: &str,
         inspection: &str,
-        is_open: IsOpen,
-        is_locked: IsLocked,
+        is_open: crate::properties::IsOpen,
+        is_locked: crate::properties::IsLocked,
     ) {
         self.paths.insert(
             direction.to_string(),

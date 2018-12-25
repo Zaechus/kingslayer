@@ -10,7 +10,7 @@ use serde_derive::Serialize;
 
 use crate::item::Item;
 use crate::room::Room;
-use crate::utils::read_line::read_line;
+use crate::utils::read_line;
 use crate::world::World;
 
 // A command line interface for controlling interactions between objects in a game
@@ -41,6 +41,14 @@ impl Cli {
         }
     }
 
+    fn hp(&self) -> i32 {
+        self.hp.borrow().0
+    }
+
+    fn hp_cap(&self) -> i32 {
+        self.hp.borrow().1
+    }
+
     // prompts the user for an action
     pub fn prompt(&self) -> String {
         loop {
@@ -67,7 +75,7 @@ impl Cli {
         let mut filtered = Vec::with_capacity(words.len());
         for w in words {
             match w.as_str() {
-                "the" | "a" | "an" | "go" | "of" | "to" => (),
+                "a" | "an" | "go" | "my" | "of" | "the" | "to" => (),
                 _ => filtered.push(w.to_string()),
             }
         }
@@ -147,7 +155,7 @@ impl Cli {
             "status" | "diagnostic" => self.status(),
             "put" | "place" => {
                 if words.len() > 1 {
-                    match words.iter().position(|r| r == "in") {
+                    match words.iter().position(|r| r == "in" || r == "inside") {
                         Some(pos) => {
                             self.put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         }
@@ -163,7 +171,11 @@ impl Cli {
                         Some(pos) => {
                             self.attack(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         }
-                        None => format!("What are you going to {} with?", &words[0]),
+                        None => format!(
+                            "What are you going to {} the {} with?",
+                            &words[0],
+                            &words[1..].join(" ")
+                        ),
                     }
                 } else {
                     format!("What do you want to {}?", &words[0])
@@ -183,26 +195,24 @@ impl Cli {
     // computes actions taken by Enemies in the current room
     fn events(&self) -> String {
         let curr_room = &self.world.borrow().curr_room();
-        let mut hp = *self.hp.borrow();
         match self.world.borrow_mut().rooms.get_mut(curr_room) {
             Some(room) => {
                 let mut events_str = String::new();
                 for e in room.enemies.iter() {
                     if e.1.is_angry() && e.1.hp() > 0 {
                         let e_dmg = e.1.damage();
-                        self.hp.replace((hp.0 - e_dmg, hp.1));
+                        self.hp.replace((self.hp() - e_dmg, self.hp_cap()));
                         self.in_combat.replace(true);
-                        hp = *self.hp.borrow();
                         events_str.push_str(&format!(
                             "\nThe {} hit you for {} damage. You have {} HP left.",
                             e.1.name(),
                             e_dmg,
-                            hp.0
+                            self.hp()
                         ));
                     }
                 }
                 room.enemies.retain(|_, e| e.hp() > 0);
-                if hp.0 <= 0 {
+                if self.hp() <= 0 {
                     events_str.push_str(" You died.");
                 }
                 events_str
@@ -236,9 +246,9 @@ impl Cli {
                             )
                         }
                     }
-                    None => format!("You do not have the {}.", weapon),
+                    None => format!("You do not have the \"{}\".", weapon),
                 },
-                None => format!("There is no {} here.", enemy),
+                None => format!("There is no \"{}\" here.", enemy),
             },
             None => "You are not in a room...".to_string(),
         }
@@ -246,22 +256,22 @@ impl Cli {
 
     // rest for a random amount of time to regain a random amount of HP
     fn rest(&self) -> String {
-        let hp = *self.hp.borrow();
-        if hp.0 < hp.1 {
+        if self.hp() < self.hp_cap() {
             thread::sleep(time::Duration::from_millis(
                 rand::thread_rng().gen_range(2000, 5001),
             ));
             let regained_hp = rand::thread_rng().gen_range(1, 7);
-            let new_hp = hp.0 + regained_hp;
-            if new_hp < hp.1 {
-                self.hp.replace((new_hp, hp.1));
+            let new_hp = self.hp() + regained_hp;
+            if new_hp < self.hp_cap() {
+                self.hp.replace((new_hp, self.hp_cap()));
             } else {
-                self.hp.replace((hp.1, hp.1));
+                self.hp.replace((self.hp_cap(), self.hp_cap()));
             }
-            let hp = *self.hp.borrow();
             format!(
                 "You regained {} HP for a total of ({} / {}) HP.",
-                regained_hp, hp.0, hp.1
+                regained_hp,
+                self.hp(),
+                self.hp_cap()
             )
         } else {
             "You already have full health.".to_string()
@@ -296,6 +306,7 @@ impl Cli {
         match self.world.borrow().rooms.get(curr_room) {
             Some(room) => match room.items.get(name) {
                 Some(item) => item.inspection(),
+
                 None => match self.inventory.borrow().get(name) {
                     Some(item) => item.inspection(),
                     None => match room.paths.get(name) {

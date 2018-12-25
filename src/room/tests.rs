@@ -38,6 +38,7 @@ fn room_addpath() {
         "You are in a long, dark hallway.",
         long_hallway_objs,
     ));
+
     start_room.add_path(
         "e",
         &next_room.name(),

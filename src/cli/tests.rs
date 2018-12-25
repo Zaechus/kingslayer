@@ -1,4 +1,4 @@
-use super::*;
+use super::{Cli, HashMap, Room};
 use crate::item::Item;
 use crate::properties::{IsLocked, IsOpen};
 
