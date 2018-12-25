@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use rand::Rng;
+
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
@@ -14,6 +16,7 @@ pub struct Item {
     pub contents: Option<HashMap<String, Box<Item>>>,
     is_locked: Option<IsLocked>,
     is_open: Option<IsOpen>,
+    damage: Option<i32>,
 }
 
 impl Item {
@@ -25,6 +28,19 @@ impl Item {
             contents: None,
             is_locked: None,
             is_open: None,
+            damage: None,
+        }
+    }
+
+    pub fn new_weapon(name: &str, desc: &str, inspection: &str, damage: i32) -> Self {
+        Self {
+            name: name.to_string(),
+            desc: desc.to_string(),
+            inspection: inspection.to_string(),
+            contents: None,
+            is_locked: None,
+            is_open: None,
+            damage: Some(damage),
         }
     }
 
@@ -43,6 +59,7 @@ impl Item {
             contents,
             is_locked,
             is_open,
+            damage: None,
         }
     }
 
@@ -80,5 +97,12 @@ impl Item {
 
     pub fn inspection(&self) -> String {
         self.inspection.clone()
+    }
+
+    pub fn damage(&self) -> i32 {
+        match self.damage {
+            Some(damage) => rand::thread_rng().gen_range(1, damage),
+            None => 1,
+        }
     }
 }

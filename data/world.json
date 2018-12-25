@@ -1,5 +1,8 @@
 {
-    "hp": 100,
+    "hp": [
+        10,
+        10
+    ],
     "world": {
         "curr_room": "Start Room",
         "rooms": {
@@ -15,6 +18,7 @@
                         "is_open": true
                     }
                 },
+                "enemies": {},
                 "items": {}
             },
             "Start Room": {
@@ -43,11 +47,13 @@
                         "is_open": true
                     }
                 },
+                "enemies": {},
                 "items": {
                     "iron sword": {
                         "name": "iron sword",
                         "desc": "There is an iron sword on the ground.",
-                        "inspection": "The iron sword is of crude workmanship, but it should be usable."
+                        "inspection": "The iron sword is of crude workmanship, but it should be usable.",
+                        "damage": 6
                     }
                 }
             },
@@ -61,6 +67,17 @@
                         "inspection": "The path expands into a larger room.",
                         "is_locked": false,
                         "is_open": true
+                    }
+                },
+                "enemies": {
+                    "troll": {
+                        "hp": 7,
+                        "damage": 4,
+                        "name": "troll",
+                        "desc": "The troll stands there menacingly with a club.",
+                        "inspection": "The troll is holding a club that is long and made of wood. He appears to be wearing nothing but a loincloth and a leather jerkin.",
+                        "loot": {},
+                        "is_angry": false
                     }
                 },
                 "items": {
@@ -83,6 +100,7 @@
                         "is_open": true
                     }
                 },
+                "enemies": {},
                 "items": {
                     "capsule": {
                         "name": "capsule",

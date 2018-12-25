@@ -13,7 +13,7 @@ use crate::world::World;
 // A command line interface for controlling interactions between objects in a game
 #[derive(Serialize, Deserialize)]
 pub struct Cli {
-    hp: i32,
+    hp: RefCell<(i32, i32)>,
     world: RefCell<World>,
     inventory: RefCell<HashMap<String, Box<Item>>>,
 }
@@ -21,7 +21,7 @@ pub struct Cli {
 impl Cli {
     pub fn new(curr_room: &str, rooms: HashMap<String, Box<Room>>) -> Self {
         Self {
-            hp: 100,
+            hp: RefCell::new((10, 10)),
             world: RefCell::new(World::new(curr_room, rooms)),
             inventory: RefCell::new(HashMap::new()),
         }
@@ -30,7 +30,7 @@ impl Cli {
     pub fn ask(&self, input: &str) -> String {
         let command = self.mod_directions(&self.filter(&self.parts(input)));
         if !command.is_empty() {
-            self.parse(&command)
+            format!("{}{}", self.parse(&command), self.events())
         } else {
             "I do not understand that phrase.".to_string()
         }
@@ -150,7 +150,78 @@ impl Cli {
                     format!("{} what?", &words[0])
                 }
             }
+            "attack" | "slay" | "kill" | "hit" => {
+                if words.len() > 1 {
+                    match words.iter().position(|r| r == "with") {
+                        Some(pos) => {
+                            self.attack(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+                        }
+                        None => format!("{} with what?", &words[0]),
+                    }
+                } else {
+                    format!("What do you want to {}?", &words[0])
+                }
+            }
             _ => format!("I don't know the word \"{}\".", &words[0]),
+        }
+    }
+
+    // computes actions taken by Enemies in the current room
+    fn events(&self) -> String {
+        let curr_room = &self.world.borrow().curr_room();
+        let mut hp = *self.hp.borrow();
+        match self.world.borrow_mut().rooms.get_mut(curr_room) {
+            Some(room) => {
+                let mut events_str = String::new();
+                for e in room.enemies.iter() {
+                    let e_dmg = e.1.damage();
+                    self.hp.replace((hp.0 - e_dmg, hp.1));
+                    hp = *self.hp.borrow();
+                    events_str.push_str(&format!(
+                        "\nThe {} hit you for {} damage. You have {} HP left.",
+                        e.1.name(),
+                        e_dmg,
+                        hp.0
+                    ));
+                }
+                room.enemies.retain(|_, e| e.hp() > 0);
+                if hp.0 <= 0 {
+                    events_str.push_str("You died.");
+                }
+                events_str
+            }
+            None => "You are not in a room...".to_string(),
+        }
+    }
+
+    fn attack(&self, enemy: &str, weapon: &str) -> String {
+        let curr_room = &self.world.borrow().curr_room();
+        match self.world.borrow_mut().rooms.get_mut(curr_room) {
+            Some(room) => match room.enemies.get_mut(enemy) {
+                Some(nme) => match self.inventory.borrow().get(weapon) {
+                    Some(wpon) => {
+                        let dmg = wpon.damage();
+                        nme.get_hit(dmg);
+                        if nme.hp() > 0 {
+                            format!(
+                                "You hit the {} with your {} for {} damage. It has {} HP left.",
+                                enemy,
+                                weapon,
+                                dmg,
+                                nme.hp()
+                            )
+                        } else {
+                            format!(
+                                "You hit the {} with your {} for {} damage. It is dead.",
+                                enemy, weapon, dmg
+                            )
+                        }
+                    }
+                    None => format!("You do not have the {}.", weapon),
+                },
+                None => format!("There is no {} here.", enemy),
+            },
+            None => "You are not in a room...".to_string(),
         }
     }
 
@@ -169,7 +240,11 @@ impl Cli {
 
     // returns HP
     fn status(&self) -> String {
-        format!("You have {} HP.", self.hp)
+        format!(
+            "You have ({} / {}) HP.",
+            self.hp.borrow().0,
+            self.hp.borrow().1
+        )
     }
 
     // returns the special properties of an object or path

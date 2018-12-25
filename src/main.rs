@@ -3,6 +3,12 @@ fn main() {
 
     println!("{}", cli.ask("l"));
     loop {
-        println!("{}", cli.ask(&cli.prompt()));
+        match cli.ask(&cli.prompt()).as_str() {
+            ref s if s.contains("You died.") => {
+                println!("{}", s);
+                break;
+            }
+            ref s => println!("{}", s),
+        }
     }
 }
