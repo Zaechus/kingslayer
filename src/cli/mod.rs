@@ -33,7 +33,7 @@ impl Cli {
     }
 
     pub fn ask(&self, input: &str) -> String {
-        let filter_out = vec!["a", "an", "at", "go", "my", "of", "the", "to"];
+        let filter_out = vec!["a", "an", "at", "go", "my", "of", "that", "the", "to"];
         let mut command = self.parts(input);
         command.retain(|w| !(&filter_out).contains(&w.as_str()));
         let command = self.mod_directions(&command);
@@ -112,11 +112,11 @@ impl Cli {
                 if words.len() > 1 {
                     self.world.borrow_mut().move_room(&words[1])
                 } else {
-                    format!("Where do you want to {}?", words[0])
+                    format!("Where do you want to {}?", &words[0])
                 }
             }
             "i" | "inventory" => self.inventory(),
-            "take" | "get" => {
+            "take" | "get" | "pick" => {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "from" || r == "out") {
                         Some(pos) => {
@@ -125,27 +125,29 @@ impl Cli {
                         None => {
                             if words[1] == "all" {
                                 self.take_all()
+                            } else if &words[1] == "u" {
+                                self.take(&words[2..].join(" "))
                             } else {
                                 self.take(&words[1..].join(" "))
                             }
                         }
                     }
                 } else {
-                    format!("What do you want to {}?", words[0])
+                    format!("What do you want to {}?", &words[0])
                 }
             }
-            "drop" => {
+            "drop" | "throw" | "remove" => {
                 if words.len() > 1 {
-                    self.drop(&words[1..].join(" "))
+                    self.remove(&words[0], &words[1..].join(" "))
                 } else {
-                    format!("What do you want to {}?", words[0])
+                    format!("What do you want to {} from your inventory?", &words[0])
                 }
             }
             "examine" | "inspect" | "read" => {
                 if words.len() > 1 {
                     self.inspect(&words[1..].join(" "))
                 } else {
-                    format!("{} what?", &words[0])
+                    format!("What do you want to {}?", &words[0])
                 }
             }
             "status" | "diagnostic" => self.status(),
@@ -153,12 +155,25 @@ impl Cli {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "in" || r == "inside") {
                         Some(pos) => {
-                            self.put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+                            if pos != 1 {
+                                self.put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+                            } else if words.len() < 3 {
+                                format!("What do you want to {}?", &words[0])
+                            } else {
+                                format!(
+                                    "What do you want to place in the {}?",
+                                    &words[1..].join(" ")
+                                )
+                            }
                         }
-                        None => format!("{} in what?", words.join(" ")),
+                        None => format!(
+                            "What do you want to {} the {} in?",
+                            &words[0],
+                            &words[1..].join(" ")
+                        ),
                     }
                 } else {
-                    format!("{} what?", &words[0])
+                    format!("What do you want to {}?", &words[0])
                 }
             }
             "attack" | "slay" | "kill" | "hit" => {
@@ -236,6 +251,7 @@ impl Cli {
                                 nme.hp()
                             )
                         } else {
+                            self.in_combat.replace(false);
                             format!(
                                 "You hit the {} with your {} for {} damage. It is dead.",
                                 enemy, weapon, dmg
@@ -370,10 +386,10 @@ impl Cli {
                         Some(ref mut contents) => contents.remove(item),
                         None => None,
                     },
-                    None => return format!("There is no {} here.", container),
+                    None => return format!("There is no \"{}\" here.", container),
                 },
             },
-            None => None,
+            None => return format!("There is no \"{}\" here.", container),
         };
         match taken {
             Some(ob) => {
@@ -384,15 +400,18 @@ impl Cli {
         }
     }
 
-    // drop an Item from inventory into the current Room
-    fn drop(&self, name: &str) -> String {
+    // remove an Item from inventory into the current Room
+    fn remove(&self, cmd: &str, name: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
         let dropped = self.inventory.borrow_mut().remove(name);
         match dropped {
             Some(obj) => {
                 if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
                     room.items.insert(obj.name(), obj);
-                    "Dropped.".to_string()
+                    match cmd {
+                        "throw" => format!("You throw the {} across the room.", name),
+                        _ => "Dropped.".to_string(),
+                    }
                 } else {
                     String::new()
                 }
@@ -404,7 +423,9 @@ impl Cli {
     // place an Item into a container Item
     fn put_in(&self, item: &str, container: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
-        let placed = self.inventory.borrow_mut().remove(item);
+        let mut inventory = self.inventory.borrow_mut();
+
+        let placed = inventory.remove(item);
         match placed {
             Some(obj) => {
                 if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
@@ -415,23 +436,23 @@ impl Cli {
                                 "Placed.".to_string()
                             }
                             None => {
-                                self.inventory.borrow_mut().insert(obj.name(), obj);
+                                inventory.insert(obj.name(), obj);
                                 format!("You can't place anything in the {}.", container)
                             }
                         },
-                        None => match self.inventory.borrow_mut().get_mut(container) {
+                        None => match inventory.get_mut(container) {
                             Some(cont) => match cont.contents {
                                 Some(ref mut contents) => {
                                     contents.insert(obj.name(), obj);
                                     "Placed.".to_string()
                                 }
                                 None => {
-                                    self.inventory.borrow_mut().insert(obj.name(), obj);
+                                    inventory.insert(obj.name(), obj);
                                     format!("You can't place anything in the {}.", container)
                                 }
                             },
                             None => {
-                                self.inventory.borrow_mut().insert(obj.name(), obj);
+                                inventory.insert(obj.name(), obj);
                                 format!("There is no \"{}\" here.", container)
                             }
                         },
@@ -444,6 +465,3 @@ impl Cli {
         }
     }
 }
-
-#[cfg(test)]
-mod tests;
