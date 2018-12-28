@@ -49,24 +49,4 @@ impl Room {
         }
         desc
     }
-
-    // add Pathway pointing to another Room
-    #[cfg(test)]
-    fn add_path(
-        &mut self,
-        direction: &str,
-        name: &str,
-        desc: &str,
-        inspection: &str,
-        is_open: crate::properties::IsOpen,
-        is_locked: crate::properties::IsLocked,
-    ) {
-        self.paths.insert(
-            direction.to_string(),
-            Pathway::new(name, desc, inspection, is_open, is_locked),
-        );
-    }
 }
-
-#[cfg(test)]
-mod tests;

@@ -1,5 +1,9 @@
 {
-    "hp": 100,
+    "hp": [
+        10,
+        10
+    ],
+    "in_combat": false,
     "world": {
         "curr_room": "",
         "rooms": {}

@@ -17,7 +17,6 @@ env:
 matrix:
   allow_failures:
     - rust: nightly
-    - os: osx
   fast_finish: true
 
 script:
