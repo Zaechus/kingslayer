@@ -33,7 +33,7 @@
                 "name": "Start Room",
                 "desc": "You stand at the beginning.",
                 "paths": {
-                    "closet": {
+                    "door": {
                         "name": "Closet",
                         "desc": "A door leads to a closet in the corner.",
                         "inspection": "The door is plain and wooden.",

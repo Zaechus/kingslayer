@@ -118,7 +118,7 @@ impl Cli {
             "i" | "inventory" => self.inventory(),
             "take" | "get" | "pick" => {
                 if words.len() > 1 {
-                    match words.iter().position(|r| r == "from" || r == "out") {
+                    match words.iter().position(|r| r == "from" || r == "out" || r == "in") {
                         Some(pos) => {
                             self.take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         }
