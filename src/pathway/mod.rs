@@ -13,22 +13,6 @@ pub struct Pathway {
 }
 
 impl Pathway {
-    pub fn new(
-        name: &str,
-        desc: &str,
-        inspection: &str,
-        is_open: IsOpen,
-        is_locked: IsLocked,
-    ) -> Self {
-        Self {
-            name: name.to_string(),
-            desc: desc.to_string(),
-            inspection: inspection.to_string(),
-            is_open,
-            is_locked,
-        }
-    }
-
     pub fn name(&self) -> String {
         self.name.clone()
     }

@@ -78,12 +78,12 @@
                     }
                 },
                 "enemies": {
-                    "troll": {
+                    "ogre": {
                         "hp": 7,
                         "damage": 4,
-                        "name": "troll",
-                        "desc": "The troll stands there menacingly with a club.",
-                        "inspection": "The troll is holding a club that is long and made of wood. He appears to be wearing nothing but a loincloth and a leather jerkin.",
+                        "name": "ogre",
+                        "desc": "The ogre stands there menacingly with a club.",
+                        "inspection": "The ogre is holding a club that is long and made of wood. He appears to be wearing nothing but a loincloth and a leather jerkin.",
                         "loot": {},
                         "is_angry": false
                     },

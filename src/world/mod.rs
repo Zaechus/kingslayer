@@ -14,13 +14,6 @@ pub struct World {
 }
 
 impl World {
-    pub fn new(curr_room: &str, rooms: HashMap<String, Box<Room>>) -> Self {
-        Self {
-            curr_room: curr_room.to_string(),
-            rooms,
-        }
-    }
-
     pub fn curr_room(&self) -> String {
         self.curr_room.clone()
     }

@@ -20,49 +20,6 @@ pub struct Item {
 }
 
 impl Item {
-    pub fn new(name: &str, desc: &str, inspection: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            desc: desc.to_string(),
-            inspection: inspection.to_string(),
-            contents: None,
-            is_locked: None,
-            is_open: None,
-            damage: None,
-        }
-    }
-
-    pub fn new_weapon(name: &str, desc: &str, inspection: &str, damage: i32) -> Self {
-        Self {
-            name: name.to_string(),
-            desc: desc.to_string(),
-            inspection: inspection.to_string(),
-            contents: None,
-            is_locked: None,
-            is_open: None,
-            damage: Some(damage),
-        }
-    }
-
-    pub fn new_container(
-        name: &str,
-        desc: &str,
-        inspection: &str,
-        contents: Option<HashMap<String, Box<Item>>>,
-        is_locked: Option<IsLocked>,
-        is_open: Option<IsOpen>,
-    ) -> Self {
-        Self {
-            name: name.to_string(),
-            desc: desc.to_string(),
-            inspection: inspection.to_string(),
-            contents,
-            is_locked,
-            is_open,
-            damage: None,
-        }
-    }
-
     pub fn name(&self) -> String {
         match self.contents {
             Some(ref contents) => {

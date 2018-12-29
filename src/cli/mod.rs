@@ -9,7 +9,6 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
 use crate::item::Item;
-use crate::room::Room;
 use crate::utils::read_line;
 use crate::world::World;
 
@@ -18,20 +17,12 @@ use crate::world::World;
 pub struct Cli {
     hp: RefCell<(i32, i32)>,
     in_combat: RefCell<bool>,
+    main_hand: Option<String>,
     inventory: RefCell<HashMap<String, Box<Item>>>,
     world: RefCell<World>,
 }
 
 impl Cli {
-    pub fn new(curr_room: &str, rooms: HashMap<String, Box<Room>>) -> Self {
-        Self {
-            hp: RefCell::new((10, 10)),
-            world: RefCell::new(World::new(curr_room, rooms)),
-            inventory: RefCell::new(HashMap::new()),
-            in_combat: RefCell::new(false),
-        }
-    }
-
     pub fn ask(&self, input: &str) -> String {
         let filter_out = vec!["a", "an", "at", "go", "my", "of", "that", "the", "to"];
         let mut command = self.parts(input);
@@ -118,7 +109,10 @@ impl Cli {
             "i" | "inventory" => self.inventory(),
             "take" | "get" | "pick" => {
                 if words.len() > 1 {
-                    match words.iter().position(|r| r == "from" || r == "out" || r == "in") {
+                    match words
+                        .iter()
+                        .position(|r| r == "from" || r == "out" || r == "in")
+                    {
                         Some(pos) => {
                             self.take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         }
@@ -244,11 +238,8 @@ impl Cli {
                         self.in_combat.replace(true);
                         if nme.hp() > 0 {
                             format!(
-                                "You hit the {} with your {} for {} damage. It has {} HP left.",
-                                enemy,
-                                weapon,
-                                dmg,
-                                nme.hp()
+                                "You hit the {} with your {} for {} damage.",
+                                enemy, weapon, dmg,
                             )
                         } else {
                             self.in_combat.replace(false);
@@ -324,9 +315,14 @@ impl Cli {
 
                     None => match self.inventory.borrow().get(name) {
                         Some(item) => item.inspection(),
+
                         None => match room.paths.get(name) {
                             Some(item) => item.inspection(),
-                            None => format!("There is no \"{}\" here.", name),
+
+                            None => match room.enemies.get(name) {
+                                Some(enemy) => enemy.inspection(),
+                                None => format!("There is no \"{}\" here.", name),
+                            },
                         },
                     },
                 },

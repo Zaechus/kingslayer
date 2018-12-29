@@ -21,20 +21,6 @@ pub struct Room {
 }
 
 impl Room {
-    pub fn new(name: &str, desc: &str, items: HashMap<String, Box<Item>>) -> Self {
-        Self {
-            name: name.to_string(),
-            desc: desc.to_string(),
-            paths: HashMap::new(),
-            enemies: HashMap::new(),
-            items,
-        }
-    }
-
-    pub fn name(&self) -> String {
-        self.name.clone()
-    }
-
     // compiles all descriptions in the Room for printing
     pub fn desc(&self) -> String {
         let mut desc = format!("{}\n{}", self.name, self.desc);

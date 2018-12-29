@@ -15,23 +15,11 @@ pub struct Enemy {
     name: String,
     desc: String,
     inspection: String,
-    loot: RefCell<HashMap<String, Box<Item>>>,
     is_angry: bool,
+    pub loot: RefCell<HashMap<String, Box<Item>>>,
 }
 
 impl Enemy {
-    pub fn new(name: &str, desc: &str, inspection: &str) -> Self {
-        Self {
-            hp: 100,
-            damage: 4,
-            name: name.to_string(),
-            desc: desc.to_string(),
-            inspection: inspection.to_string(),
-            loot: RefCell::new(HashMap::new()),
-            is_angry: false,
-        }
-    }
-
     pub fn hp(&self) -> i32 {
         self.hp
     }
