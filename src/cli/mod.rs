@@ -24,7 +24,8 @@ pub struct Cli {
 
 impl Cli {
     pub fn ask(&self, input: &str) -> String {
-        let filter_out = vec!["a", "an", "at", "go", "my", "of", "that", "the", "to"];
+        let filter_out = ["a", "an", "at", "go", "my", "of", "that", "the", "to"];
+
         let mut command = self.parts(input);
         command.retain(|w| !(&filter_out).contains(&w.as_str()));
         let command = self.mod_directions(&command);
@@ -193,6 +194,13 @@ impl Cli {
                     "You cannot rest while in combat.".to_string()
                 }
             }
+            "equip" => {
+                if words.len() > 1 {
+                    self.equip(&words[1..].join(" "))
+                } else {
+                    format!("What do you want to {}", &words[0])
+                }
+            }
             _ => format!("I don't know the word \"{}\".", &words[0]),
         }
     }
@@ -200,6 +208,7 @@ impl Cli {
     // computes actions taken by Enemies in the current room
     fn events(&self) -> String {
         let curr_room = &self.world.borrow().curr_room();
+
         match self.world.borrow_mut().rooms.get_mut(curr_room) {
             Some(room) => {
                 let mut events_str = String::new();
@@ -229,6 +238,7 @@ impl Cli {
     // attack an Enemy with a chosen item in the current Room
     fn attack(&self, enemy: &str, weapon: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
+
         match self.world.borrow_mut().rooms.get_mut(curr_room) {
             Some(room) => match room.enemies.get_mut(enemy) {
                 Some(nme) => match self.inventory.borrow().get(weapon) {
@@ -296,19 +306,16 @@ impl Cli {
 
     // returns HP
     fn status(&self) -> String {
-        format!(
-            "You have ({} / {}) HP.",
-            self.hp.borrow().0,
-            self.hp.borrow().1
-        )
+        format!("You have ({} / {}) HP.", self.hp(), self.hp_cap())
     }
 
     // returns the special properties of an object or path
-    pub fn inspect(&self, name: &str) -> String {
+    fn inspect(&self, name: &str) -> String {
         if name == "me" || name == "self" || name == "myself" {
             self.status()
         } else {
             let curr_room = &self.world.borrow().curr_room();
+
             match self.world.borrow().rooms.get(curr_room) {
                 Some(room) => match room.items.get(name) {
                     Some(item) => item.inspection(),
@@ -351,6 +358,7 @@ impl Cli {
     fn take_all(&self) -> String {
         let curr_room = &self.world.borrow().curr_room();
         let mut taken_str = String::new();
+
         if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
             for item in &room.items {
                 self.inventory
@@ -371,6 +379,7 @@ impl Cli {
     // take an item from a container in the room or inventory
     fn take_from(&self, item: &str, container: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
+
         let taken = match self.world.borrow_mut().rooms.get_mut(curr_room) {
             Some(room) => match room.items.get_mut(container) {
                 Some(cont) => match cont.contents {
@@ -399,6 +408,7 @@ impl Cli {
     // remove an Item from inventory into the current Room
     fn remove(&self, cmd: &str, name: &str) -> String {
         let curr_room = &self.world.borrow().curr_room();
+
         let dropped = self.inventory.borrow_mut().remove(name);
         match dropped {
             Some(obj) => {
@@ -459,5 +469,10 @@ impl Cli {
             }
             None => format!("You don't have the \"{}\".", item),
         }
+    }
+
+    // equip an item to fight with
+    fn equip(&self, weapon: &str) -> String {
+        format!("TODO: equip \"{}\"", weapon)
     }
 }

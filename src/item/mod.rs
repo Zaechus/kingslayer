@@ -13,10 +13,10 @@ pub struct Item {
     name: String,
     desc: String,
     inspection: String,
-    pub contents: Option<HashMap<String, Box<Item>>>,
     is_locked: Option<IsLocked>,
     is_open: Option<IsOpen>,
     damage: Option<i32>,
+    pub contents: Option<HashMap<String, Box<Item>>>,
 }
 
 impl Item {
@@ -44,9 +44,10 @@ impl Item {
                     for x in contents.iter() {
                         desc = format!("{}\n  {}", desc, x.1.name());
                     }
-                    return desc;
+                    desc
+                } else {
+                    self.desc.clone()
                 }
-                self.desc.clone()
             }
             None => self.desc.clone(),
         }

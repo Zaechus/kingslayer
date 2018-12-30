@@ -15,6 +15,7 @@ mod tests {
                 && !cli.ask("i").contains("leaf")
         );
 
+        cli.ask("take the iron sword");
         cli.ask("take iron sword");
         assert!(
             cli.ask("i").contains("iron sword")
@@ -24,6 +25,8 @@ mod tests {
         );
 
         cli.ask("take leaf");
+        cli.ask("take that leaf");
+        cli.ask("take that leaf over there");
         assert!(
             cli.ask("i").contains("iron sword")
                 && cli.ask("i").contains("leaf")
@@ -32,6 +35,7 @@ mod tests {
         );
 
         cli.ask("drop iron sword");
+        cli.ask("drop iron of sword");
         assert!(
             !cli.ask("i").contains("iron sword")
                 && !cli.ask("l").contains("leaf")
