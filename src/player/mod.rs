@@ -44,10 +44,17 @@ impl Player {
                             )
                         } else {
                             self.in_combat = false;
-                            format!(
-                                "You hit the {} with your {} for {} damage. It is dead.",
+                            let mut res = format!(
+                                "You hit the {} with your {} for {} damage. It is dead.\n",
                                 enemy, weapon, dmg
-                            )
+                            );
+                            if !nme.loot.is_empty() {
+                                res.push_str("It dropped:\n");
+                                for x in nme.loot.iter() {
+                                    res.push_str(&format!(" {},", x.1.name()));
+                                }
+                            }
+                            res
                         }
                     }
                     None => format!("You do not have the \"{}\".", weapon),

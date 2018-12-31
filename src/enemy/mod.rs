@@ -15,7 +15,7 @@ pub struct Enemy {
     desc: String,
     inspection: String,
     is_angry: bool,
-    loot: HashMap<String, Box<Item>>,
+    pub loot: HashMap<String, Box<Item>>,
 }
 
 impl Enemy {

@@ -86,8 +86,15 @@
                         "name": "ogre",
                         "desc": "The ogre stands there menacingly with a club.",
                         "inspection": "The ogre is holding a club that is long and made of wood. He appears to be wearing nothing but a loincloth and a leather jerkin.",
-                        "loot": {},
-                        "is_angry": false
+                        "is_angry": false,
+                        "loot": {
+                            "club": {
+                                "name": "club",
+                                "desc": "There is a club on the ground.",
+                                "inspection": "The club is very thick and heavy looking.",
+                                "damage": 4
+                            }
+                        }
                     },
                     "goblin": {
                         "hp": 5,
@@ -95,8 +102,8 @@
                         "name": "goblin",
                         "desc": "The goblin cowers in a corner holding a knife.",
                         "inspection": "The goblin is small, grey, and skinny. He is brandishing a knife.",
-                        "loot": {},
-                        "is_angry": false
+                        "is_angry": false,
+                        "loot": {}
                     }
                 },
                 "items": {
