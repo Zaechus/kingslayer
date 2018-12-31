@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn cli_put_in() {
-        let cli = get_world("data/test_world.json");
+        let mut cli = get_world("data/test_world.json");
 
         cli.ask("s");
         cli.ask("drop leaf");

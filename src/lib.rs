@@ -5,6 +5,7 @@ mod cli;
 mod enemy;
 mod item;
 mod pathway;
+mod player;
 mod properties;
 mod room;
 mod utils;

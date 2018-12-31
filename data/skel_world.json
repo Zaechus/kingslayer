@@ -1,0 +1,14 @@
+{
+    "player": {
+        "hp": [
+            10,
+            10
+        ],
+        "in_combat": false,
+        "inventory": {}
+    },
+    "world": {
+        "curr_room": "",
+        "rooms": {}
+    }
+}

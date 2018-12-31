@@ -1,14 +1,16 @@
 {
-    "hp": [
-        10,
-        10
-    ],
-    "in_combat": false,
-    "inventory": {
-        "leaf": {
-            "name": "leaf",
-            "desc": "A leaf lies on the ground.",
-            "inspection": "It's small, brown, and dry."
+    "player": {
+        "hp": [
+            10,
+            10
+        ],
+        "in_combat": false,
+        "inventory": {
+            "leaf": {
+                "name": "leaf",
+                "desc": "A leaf lies on the ground.",
+                "inspection": "It's small, brown, and dry."
+            }
         }
     },
     "world": {

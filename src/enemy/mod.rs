@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 
 use rand::Rng;
@@ -16,7 +15,7 @@ pub struct Enemy {
     desc: String,
     inspection: String,
     is_angry: bool,
-    pub loot: RefCell<HashMap<String, Box<Item>>>,
+    loot: HashMap<String, Box<Item>>,
 }
 
 impl Enemy {
@@ -46,6 +45,10 @@ impl Enemy {
 
     pub fn get_hit(&mut self, damage: i32) {
         self.is_angry = true;
-        self.hp -= damage
+        self.hp -= damage;
+    }
+
+    pub fn drop_loot(&mut self) -> HashMap<String, Box<Item>> {
+        self.loot.clone()
     }
 }
