@@ -21,83 +21,84 @@ impl World {
 
     // displays description of the current Room
     pub fn look(&self) -> String {
-        match self.rooms.get(&self.curr_room) {
-            Some(room) => room.desc(),
-            None => "You are not in a room...".to_string(),
+        if let Some(room) = self.rooms.get(&self.curr_room) {
+            room.desc()
+        } else {
+            "You are not in a room...".to_string()
         }
     }
 
     pub fn inspect(&self, name: &str) -> Option<String> {
-        match self.rooms.get(&self.curr_room) {
-            Some(room) => match room.items.get(name) {
-                Some(item) => Some(item.inspection()),
-
-                None => match room.paths.get(name) {
-                    Some(item) => Some(item.inspection()),
-
-                    None => match room.enemies.get(name) {
-                        Some(enemy) => Some(enemy.inspection()),
-                        None => None,
-                    },
-                },
-            },
-            None => None,
+        if let Some(room) = self.rooms.get(&self.curr_room) {
+            if let Some(item) = room.items.get(name) {
+                Some(item.inspection())
+            } else if let Some(item) = room.paths.get(name) {
+                Some(item.inspection())
+            } else if let Some(enemy) = room.enemies.get(name) {
+                Some(enemy.inspection())
+            } else {
+                None
+            }
+        } else {
+            None
         }
     }
 
     // changes the current Room to the target of the current Room's chosen path
     pub fn move_room(&mut self, direction: &str) -> String {
-        match self.rooms.get(&self.curr_room) {
-            Some(room) => match room.paths.get(direction) {
-                Some(new_room_name) => {
-                    self.curr_room = new_room_name.name();
-                    self.look()
-                }
-                None => "You cannot go that way.".to_string(),
-            },
-            None => "You are not in a room...".to_string(),
+        if let Some(room) = self.rooms.get(&self.curr_room) {
+            if let Some(new_room) = room.paths.get(direction) {
+                self.curr_room = new_room.name();
+                self.look()
+            } else {
+                "You cannot go that way.".to_string()
+            }
+        } else {
+            "You are not in a room...".to_string()
         }
     }
 
     // let an Enemy in the current Room take damage
     pub fn harm_enemy(&mut self, enemy: &str, weapon: &str, damage: Option<i32>) -> String {
-        match self.rooms.get_mut(&self.curr_room) {
-            Some(room) => match room.enemies.get_mut(enemy) {
-                Some(nme) => match damage {
-                    Some(dmg) => {
-                        nme.get_hit(dmg);
-                        if nme.hp() > 0 {
-                            format!(
-                                "You hit the {} with your {} for {} damage.",
-                                enemy, weapon, dmg,
-                            )
-                        } else {
-                            let mut res = format!(
-                                "You hit the {} with your {} for {} damage. It is dead.\n",
-                                enemy, weapon, dmg
-                            );
-                            if !nme.loot.is_empty() {
-                                res.push_str("It dropped:\n");
-                                for x in nme.loot.iter() {
-                                    res.push_str(&format!(" {},", x.1.name()));
-                                }
+        if let Some(room) = self.rooms.get_mut(&self.curr_room) {
+            if let Some(nme) = room.enemies.get_mut(enemy) {
+                if let Some(dmg) = damage {
+                    nme.get_hit(dmg);
+                    if nme.hp() > 0 {
+                        format!(
+                            "You hit the {} with your {} for {} damage.",
+                            enemy, weapon, dmg,
+                        )
+                    } else {
+                        let mut res = format!(
+                            "You hit the {} with your {} for {} damage. It is dead.\n",
+                            enemy, weapon, dmg
+                        );
+                        if !nme.loot.is_empty() {
+                            res.push_str("It dropped:\n");
+                            for x in nme.loot.iter() {
+                                res.push_str(&format!(" {},", x.1.name()));
                             }
-                            res
                         }
+                        res
                     }
-                    None => format!("You do not have the \"{}\". {:?} ", weapon, damage),
-                },
-                None => format!("There is no \"{}\" here.", enemy),
-            },
-            None => "You are not in a room...".to_string(),
+                } else {
+                    format!("You do not have the \"{}\". {:?} ", weapon, damage)
+                }
+            } else {
+                format!("There is no \"{}\" here.", enemy)
+            }
+        } else {
+            "You are not in a room...".to_string()
         }
     }
 
     // move an Item out of the current Room
     pub fn give(&mut self, name: &str) -> Option<Box<Item>> {
-        match self.rooms.get_mut(&self.curr_room) {
-            Some(room) => room.items.remove(name),
-            None => None,
+        if let Some(room) = self.rooms.get_mut(&self.curr_room) {
+            room.items.remove(name)
+        } else {
+            None
         }
     }
 
@@ -130,18 +131,18 @@ impl World {
 
     // insert an Item into the current Room
     pub fn insert(&mut self, cmd: &str, name: &str, item: Option<Box<Item>>) -> String {
-        match self.rooms.get_mut(&self.curr_room) {
-            Some(room) => match item {
-                Some(obj) => {
-                    room.items.insert(obj.name(), obj);
-                    match cmd {
-                        "throw" => format!("You throw the {} across the room.", name),
-                        _ => "Dropped".to_string(),
-                    }
+        if let Some(room) = self.rooms.get_mut(&self.curr_room) {
+            if let Some(obj) = item {
+                room.items.insert(obj.name(), obj);
+                match cmd {
+                    "throw" => format!("You throw the {} across the room.", name),
+                    _ => "Dropped".to_string(),
                 }
-                None => format!("You do not have the \"{}\".", name),
-            },
-            None => "You are not in a room...".to_string(),
+            } else {
+                format!("You do not have the \"{}\".", name)
+            }
+        } else {
+            "You are not in a room...".to_string()
         }
     }
 

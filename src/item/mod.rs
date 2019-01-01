@@ -21,35 +21,33 @@ pub struct Item {
 
 impl Item {
     pub fn name(&self) -> String {
-        match self.contents {
-            Some(ref contents) => {
-                if !contents.is_empty() {
-                    let mut desc = format!("{}; it contains:", self.name);
-                    for x in contents.iter() {
-                        desc = format!("{}\n    {}", desc, x.1.name());
-                    }
-                    return desc;
+        if let Some(ref contents) = self.contents {
+            if !contents.is_empty() {
+                let mut desc = format!("{}; it contains:", self.name);
+                for x in contents.iter() {
+                    desc = format!("{}\n    {}", desc, x.1.name());
                 }
-                self.name.clone()
+                return desc;
             }
-            None => self.name.clone(),
+            self.name.clone()
+        } else {
+            self.name.clone()
         }
     }
 
     pub fn desc(&self) -> String {
-        match self.contents {
-            Some(ref contents) => {
-                if !contents.is_empty() {
-                    let mut desc = format!("{}\nThe {} contains:", self.desc, self.name);
-                    for x in contents.iter() {
-                        desc = format!("{}\n  {}", desc, x.1.name());
-                    }
-                    desc
-                } else {
-                    self.desc.clone()
+        if let Some(ref contents) = self.contents {
+            if !contents.is_empty() {
+                let mut desc = format!("{}\nThe {} contains:", self.desc, self.name);
+                for x in contents.iter() {
+                    desc = format!("{}\n  {}", desc, x.1.name());
                 }
+                desc
+            } else {
+                self.desc.clone()
             }
-            None => self.desc.clone(),
+        } else {
+            self.desc.clone()
         }
     }
 
@@ -58,9 +56,10 @@ impl Item {
     }
 
     pub fn damage(&self) -> i32 {
-        match self.damage {
-            Some(damage) => rand::thread_rng().gen_range(1, damage + 1),
-            None => rand::thread_rng().gen_range(0, 2),
+        if let Some(damage) = self.damage {
+            rand::thread_rng().gen_range(1, damage + 1)
+        } else {
+            rand::thread_rng().gen_range(0, 2)
         }
     }
 }

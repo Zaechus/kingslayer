@@ -27,12 +27,11 @@ impl Player {
 
     // attack an Enemy with a chosen item in the current Room
     pub fn attack(&mut self, weapon: &str) -> Option<i32> {
-        match self.inventory.get(weapon) {
-            Some(wpon) => {
-                self.in_combat = true;
-                Some(wpon.damage())
-            }
-            None => None,
+        if let Some(wpon) = self.inventory.get(weapon) {
+            self.in_combat = true;
+            Some(wpon.damage())
+        } else {
+            None
         }
     }
 
@@ -83,22 +82,20 @@ impl Player {
     pub fn inspect(&self, name: &str) -> Option<String> {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.status())
+        } else if let Some(item) = self.inventory.get(name) {
+            Some(item.inspection())
         } else {
-            match self.inventory.get(name) {
-                Some(item) => Some(item.inspection()),
-                None => None,
-            }
+            None
         }
     }
 
     // take an Item from the current Room
     pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> String {
-        match item {
-            Some(obj) => {
-                self.inventory.insert(obj.name(), obj);
-                "Taken.".to_string()
-            }
-            None => format!("There is no \"{}\" here.", name),
+        if let Some(obj) = item {
+            self.inventory.insert(obj.name(), obj);
+            "Taken.".to_string()
+        } else {
+            format!("There is no \"{}\" here.", name)
         }
     }
 
@@ -111,9 +108,10 @@ impl Player {
     // remove an item from inventory and into the current Room
     pub fn remove(&mut self, name: &str) -> Option<Box<Item>> {
         let dropped = self.inventory.remove(name);
-        match dropped {
-            Some(item) => Some(item),
-            None => None,
+        if let Some(item) = dropped {
+            Some(item)
+        } else {
+            None
         }
     }
 

@@ -48,7 +48,7 @@ impl Enemy {
         self.hp -= damage;
     }
 
-    pub fn drop_loot(&mut self) -> HashMap<String, Box<Item>> {
+    pub fn drop_loot(&self) -> HashMap<String, Box<Item>> {
         self.loot.clone()
     }
 }
