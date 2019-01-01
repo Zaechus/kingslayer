@@ -76,13 +76,7 @@ impl Cli {
     // interprets words as game commands
     fn parse(&mut self, words: &[String]) -> String {
         match words[0].as_str() {
-            "l" | "look" => {
-                if words.len() < 2 {
-                    self.world.look()
-                } else {
-                    self.player.inspect(&self.world, &words[1..].join(" "))
-                }
-            }
+            "l" | "look" => self.world.look(),
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                 self.world.move_room(&words[0])
             }
@@ -100,18 +94,24 @@ impl Cli {
                         .iter()
                         .position(|r| r == "from" || r == "out" || r == "in")
                     {
-                        Some(pos) => self.player.take_from(
-                            &mut self.world,
+                        Some(pos) => self.player.take(
                             &words[1..pos].join(" "),
-                            &words[pos + 1..].join(" "),
+                            self.world
+                                .give_from(&words[1..pos].join(" "), &words[pos + 1..].join(" ")),
                         ),
                         None => {
                             if words[1] == "all" {
-                                self.player.take_all(&mut self.world)
+                                self.player.take_all(self.world.give_all())
                             } else if &words[1] == "u" {
-                                self.player.take(&mut self.world, &words[2..].join(" "))
+                                self.player.take(
+                                    &words[2..].join(" "),
+                                    self.world.give(&words[2..].join(" ")),
+                                )
                             } else {
-                                self.player.take(&mut self.world, &words[1..].join(" "))
+                                self.player.take(
+                                    &words[1..].join(" "),
+                                    self.world.give(&words[1..].join(" ")),
+                                )
                             }
                         }
                     }
@@ -121,15 +121,24 @@ impl Cli {
             }
             "drop" | "throw" | "remove" => {
                 if words.len() > 1 {
-                    self.player
-                        .remove(&mut self.world, &words[0], &words[1..].join(" "))
+                    self.world.insert(
+                        &words[0],
+                        &words[1..].join(" "),
+                        self.player.remove(&words[1..].join(" ")),
+                    )
                 } else {
                     format!("What do you want to {} from your inventory?", &words[0])
                 }
             }
             "examine" | "inspect" | "read" => {
                 if words.len() > 1 {
-                    self.player.inspect(&self.world, &words[1..].join(" "))
+                    match self.player.inspect(&words[1..].join(" ")) {
+                        Some(s) => s,
+                        None => match self.world.inspect(&words[1..].join(" ")) {
+                            Some(s) => s,
+                            None => format!("There is no \"{}\" here.", &words[1..].join(" ")),
+                        },
+                    }
                 } else {
                     format!("What do you want to {}?", &words[0])
                 }
@@ -140,10 +149,10 @@ impl Cli {
                     match words.iter().position(|r| r == "in" || r == "inside") {
                         Some(pos) => {
                             if pos != 1 {
-                                self.player.put_in(
-                                    &mut self.world,
+                                self.world.insert_into(
                                     &words[1..pos].join(" "),
                                     &words[pos + 1..].join(" "),
+                                    self.player.remove(&words[1..pos].join(" ")),
                                 )
                             } else if words.len() < 3 {
                                 format!("What do you want to {}?", &words[0])
@@ -167,13 +176,16 @@ impl Cli {
             "attack" | "slay" | "kill" | "hit" => {
                 if words.len() > 1 {
                     match words.iter().position(|r| r == "with") {
-                        Some(pos) => self.player.attack(
-                            &mut self.world,
-                            &words[1..pos].join(" "),
-                            &words[pos + 1..].join(" "),
-                        ),
+                        Some(pos) => {
+                            let damage = self.player.attack(&words[pos + 1..].join(" "));
+                            self.world.harm_enemy(
+                                &words[1..pos].join(" "),
+                                &words[pos + 1..].join(" "),
+                                damage,
+                            )
+                        }
                         None => format!(
-                            "What are you going to {} the {} with?",
+                            "What do you want to {} the {} with?",
                             &words[0],
                             &words[1..].join(" ")
                         ),
@@ -208,20 +220,23 @@ impl Cli {
             Some(room) => {
                 let mut events_str = String::new();
                 let mut dropped_loot: HashMap<String, Box<Item>> = HashMap::new();
-                for e in room.enemies.iter_mut() {
-                    if e.1.is_angry() && e.1.hp() > 0 {
-                        let e_dmg = e.1.damage();
-                        self.player.hp = (self.player.hp() - e_dmg, self.player.hp_cap());
+                for enemy in room.enemies.iter_mut() {
+                    if enemy.1.is_angry() && enemy.1.hp() > 0 {
+                        let enemy_damage = enemy.1.damage();
+
+                        self.player.take_damage(enemy_damage);
                         self.player.in_combat = true;
+
                         events_str.push_str(&format!(
                             "\nThe {} hit you for {} damage. You have {} HP left.",
-                            e.1.name(),
-                            e_dmg,
+                            enemy.1.name(),
+                            enemy_damage,
                             self.player.hp()
                         ));
                     }
-                    if e.1.hp() <= 0 {
-                        dropped_loot.extend(e.1.drop_loot());
+                    if enemy.1.hp() <= 0 {
+                        self.player.in_combat = false;
+                        dropped_loot.extend(enemy.1.drop_loot());
                     }
                 }
                 room.items.extend(dropped_loot);
