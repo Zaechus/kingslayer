@@ -12,7 +12,13 @@ use crate::item::Item;
 pub struct Player {
     pub hp: (i32, i32),
     pub in_combat: bool,
-    main_hand: Option<String>,
+    strength: i32,
+    dexterity: i32,
+    constitution: i32,
+    intelligence: i32,
+    wisdom: i32,
+    charisma: i32,
+    pub main_hand: Option<Box<Item>>,
     inventory: HashMap<String, Box<Item>>,
 }
 
@@ -26,10 +32,20 @@ impl Player {
     }
 
     // attack an Enemy with a chosen item in the current Room
-    pub fn attack(&mut self, weapon: &str) -> Option<i32> {
+    pub fn attack(&mut self) -> Option<i32> {
+        if let Some(weapon) = &self.main_hand {
+            self.in_combat = true;
+            Some(weapon.damage() + ((self.strength - 10) as f32 / 2.0).floor() as i32)
+        } else {
+            None
+        }
+    }
+
+    // attack an Enemy with a chosen item in the current Room
+    pub fn attack_with(&mut self, weapon: &str) -> Option<i32> {
         if let Some(wpon) = self.inventory.get(weapon) {
             self.in_combat = true;
-            Some(wpon.damage())
+            Some(wpon.damage() + ((self.strength - 10) as f32 / 2.0).floor() as i32)
         } else {
             None
         }
@@ -63,7 +79,11 @@ impl Player {
         if self.inventory.is_empty() {
             "You are empty-handed.".to_string()
         } else {
-            let mut items_carried = String::from("You are carrying:");
+            let mut items_carried = String::new();
+            if let Some(weapon) = &self.main_hand {
+                items_carried.push_str(&format!("Main hand: {}\n", weapon.name()));
+            }
+            items_carried.push_str("You are carrying:");
             for x in self.inventory.iter() {
                 items_carried = format!("{}\n  {}", items_carried, x.1.name());
             }
@@ -116,7 +136,12 @@ impl Player {
     }
 
     // equip an item to fight with
-    pub fn equip(&self, weapon: &str) -> String {
-        format!("TODO: equip \"{}\"", weapon)
+    pub fn equip(&mut self, weapon: &str) -> String {
+        if let Some(item) = self.inventory.remove(weapon) {
+            self.main_hand = Some(item);
+            "Equipped.".to_string()
+        } else {
+            format!("You do not have the \"{}\".", weapon)
+        }
     }
 }

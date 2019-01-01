@@ -1,10 +1,16 @@
 {
     "player": {
         "hp": [
-            10,
-            10
+            13,
+            13
         ],
         "in_combat": false,
+        "strength": 13,
+        "dexterity": 13,
+        "constitution": 13,
+        "intelligence": 13,
+        "wisdom": 13,
+        "charisma": 13,
         "inventory": {
             "leaf": {
                 "name": "leaf",

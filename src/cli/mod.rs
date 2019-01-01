@@ -84,7 +84,7 @@ impl Cli {
                 if words.len() > 1 {
                     self.world.move_room(&words[1])
                 } else {
-                    format!("Where do you want to {}?", &words[0])
+                    format!("Where do you want to {}?", words[0])
                 }
             }
             "i" | "inventory" => self.player.inventory(),
@@ -113,7 +113,7 @@ impl Cli {
                         )
                     }
                 } else {
-                    format!("What do you want to {}?", &words[0])
+                    format!("What do you want to {}?", words[0])
                 }
             }
             "drop" | "throw" | "remove" => {
@@ -124,7 +124,7 @@ impl Cli {
                         self.player.remove(&words[1..].join(" ")),
                     )
                 } else {
-                    format!("What do you want to {} from your inventory?", &words[0])
+                    format!("What do you want to {} from your inventory?", words[0])
                 }
             }
             "examine" | "inspect" | "read" => {
@@ -137,7 +137,7 @@ impl Cli {
                         format!("There is no \"{}\" here.", &words[1..].join(" "))
                     }
                 } else {
-                    format!("What do you want to {}?", &words[0])
+                    format!("What do you want to {}?", words[0])
                 }
             }
             "status" | "diagnostic" => self.player.status(),
@@ -151,7 +151,7 @@ impl Cli {
                                 self.player.remove(&words[1..pos].join(" ")),
                             )
                         } else if words.len() < 3 {
-                            format!("What do you want to {}?", &words[0])
+                            format!("What do you want to {}?", words[0])
                         } else {
                             format!(
                                 "What do you want to place in the {}?",
@@ -161,32 +161,36 @@ impl Cli {
                     } else {
                         format!(
                             "What do you want to {} the {} in?",
-                            &words[0],
+                            words[0],
                             &words[1..].join(" ")
                         )
                     }
                 } else {
-                    format!("What do you want to {}?", &words[0])
+                    format!("What do you want to {}?", words[0])
                 }
             }
             "attack" | "slay" | "kill" | "hit" => {
                 if words.len() > 1 {
                     if let Some(pos) = words.iter().position(|r| r == "with") {
-                        let damage = self.player.attack(&words[pos + 1..].join(" "));
+                        let damage = self.player.attack_with(&words[pos + 1..].join(" "));
                         self.world.harm_enemy(
                             &words[1..pos].join(" "),
                             &words[pos + 1..].join(" "),
                             damage,
                         )
+                    } else if self.player.main_hand.is_some() {
+                        let damage = self.player.attack();
+                        self.world
+                            .harm_enemy(&words[1..].join(" "), "equipped weapon", damage)
                     } else {
                         format!(
                             "What do you want to {} the {} with?",
-                            &words[0],
+                            words[0],
                             &words[1..].join(" ")
                         )
                     }
                 } else {
-                    format!("What do you want to {}?", &words[0])
+                    format!("What do you want to {}?", words[0])
                 }
             }
             "rest" | "sleep" | "heal" => {
@@ -200,10 +204,10 @@ impl Cli {
                 if words.len() > 1 {
                     self.player.equip(&words[1..].join(" "))
                 } else {
-                    format!("What do you want to {}", &words[0])
+                    format!("What do you want to {}", words[0])
                 }
             }
-            _ => format!("I don't know the word \"{}\".", &words[0]),
+            _ => format!("I don't know the word \"{}\".", words[0]),
         }
     }
 
