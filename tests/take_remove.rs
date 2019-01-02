@@ -3,10 +3,10 @@ mod tests {
     use kingslayer::get_world;
 
     #[test]
-    fn cli_take_remove() {
+    fn take_remove() {
         let mut cli = get_world("data/world.json");
 
-        cli.ask("remove leaf");
+        assert_eq!(cli.ask("remove leaf"), "Dropped.".to_string());
         assert_eq!(cli.ask("i"), "You are empty-handed.");
         assert!(
             cli.ask("l").contains("iron sword")

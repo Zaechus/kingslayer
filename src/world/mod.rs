@@ -136,7 +136,7 @@ impl World {
                 room.items.insert(obj.name(), obj);
                 match cmd {
                     "throw" => format!("You throw the {} across the room.", name),
-                    _ => "Dropped".to_string(),
+                    _ => "Dropped.".to_string(),
                 }
             } else {
                 format!("You do not have the \"{}\".", name)

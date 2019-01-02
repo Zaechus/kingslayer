@@ -112,10 +112,28 @@ impl Player {
     // take an Item from the current Room
     pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> String {
         if let Some(obj) = item {
-            self.inventory.insert(obj.name(), obj);
+            self.inventory.insert(name.to_string(), obj);
             "Taken.".to_string()
         } else {
             format!("There is no \"{}\" here.", name)
+        }
+    }
+
+    // take an Item from a container Item in the inventory
+    pub fn take_from(&mut self, item: &str, container: &str) -> String {
+        if let Some(cont) = self.inventory.get_mut(container) {
+            if let Some(ref mut contents) = cont.contents {
+                if let Some(itm) = contents.remove(item) {
+                    self.inventory.insert(item.to_string(), itm);
+                    "Taken.".to_string()
+                } else {
+                    format!("There is no \"{}\" inside of the \"{}\".", item, container)
+                }
+            } else {
+                format!("You cannot put anything \"{}\".", container)
+            }
+        } else {
+            format!("You do not have the \"{}\".", container)
         }
     }
 
@@ -127,8 +145,9 @@ impl Player {
 
     // remove an item from inventory and into the current Room
     pub fn remove(&mut self, name: &str) -> Option<Box<Item>> {
-        let dropped = self.inventory.remove(name);
-        if let Some(item) = dropped {
+        if let Some(item) = self.inventory.remove(name) {
+            Some(item)
+        } else if let Some(item) = self.main_hand.take() {
             Some(item)
         } else {
             None
@@ -138,10 +157,30 @@ impl Player {
     // equip an item to fight with
     pub fn equip(&mut self, weapon: &str) -> String {
         if let Some(item) = self.inventory.remove(weapon) {
+            if let Some(wpon) = self.main_hand.take() {
+                self.take(&wpon.name(), Some(wpon));
+            }
             self.main_hand = Some(item);
             "Equipped.".to_string()
         } else {
             format!("You do not have the \"{}\".", weapon)
+        }
+    }
+
+    pub fn put_in(&mut self, item: &str, container: &str) -> String {
+        if let Some(itm) = self.inventory.remove(item) {
+            if let Some(cont) = self.inventory.get_mut(container) {
+                if let Some(ref mut contents) = cont.contents {
+                    contents.insert(item.to_string(), itm);
+                    "Placed.".to_string()
+                } else {
+                    format!("You cannot put anything in the {}.", container)
+                }
+            } else {
+                format!("You do not have the \"{}\".", container)
+            }
+        } else {
+            format!("You do not have the \"{}\".", item)
         }
     }
 }

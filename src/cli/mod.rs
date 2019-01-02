@@ -94,11 +94,22 @@ impl Cli {
                         .iter()
                         .position(|r| r == "from" || r == "out" || r == "in")
                     {
-                        self.player.take(
-                            &words[1..pos].join(" "),
-                            self.world
-                                .give_from(&words[1..pos].join(" "), &words[pos + 1..].join(" ")),
-                        )
+                        if self
+                            .player
+                            .inventory()
+                            .contains(&words[pos + 1..].join(" "))
+                        {
+                            self.player
+                                .take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+                        } else {
+                            self.player.take(
+                                &words[1..pos].join(" "),
+                                self.world.give_from(
+                                    &words[1..pos].join(" "),
+                                    &words[pos + 1..].join(" "),
+                                ),
+                            )
+                        }
                     } else if words[1] == "all" {
                         self.player.take_all(self.world.give_all())
                     } else if &words[1] == "u" {
@@ -145,11 +156,20 @@ impl Cli {
                 if words.len() > 1 {
                     if let Some(pos) = words.iter().position(|r| r == "in" || r == "inside") {
                         if pos != 1 {
-                            self.world.insert_into(
-                                &words[1..pos].join(" "),
-                                &words[pos + 1..].join(" "),
-                                self.player.remove(&words[1..pos].join(" ")),
-                            )
+                            if self
+                                .player
+                                .inventory()
+                                .contains(&words[pos + 1..].join(" "))
+                            {
+                                self.player
+                                    .put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+                            } else {
+                                self.world.insert_into(
+                                    &words[1..pos].join(" "),
+                                    &words[pos + 1..].join(" "),
+                                    self.player.remove(&words[1..pos].join(" ")),
+                                )
+                            }
                         } else if words.len() < 3 {
                             format!("What do you want to {}?", words[0])
                         } else {
@@ -200,7 +220,7 @@ impl Cli {
                     "You cannot rest while in combat.".to_string()
                 }
             }
-            "equip" => {
+            "hold" | "draw" | "equip" => {
                 if words.len() > 1 {
                     self.player.equip(&words[1..].join(" "))
                 } else {

@@ -20,14 +20,14 @@
         }
     },
     "world": {
-        "curr_room": "Start Room",
+        "curr_room": "Circle Room",
         "rooms": {
             "Closet": {
                 "name": "Closet",
                 "desc": "This isn't a very large or clean closet.",
                 "paths": {
                     "door": {
-                        "name": "Start Room",
+                        "name": "Circle Room",
                         "desc": "The door leads back into the room.",
                         "inspection": "The door is plain and wooden.",
                         "is_locked": false,
@@ -37,9 +37,9 @@
                 "enemies": {},
                 "items": {}
             },
-            "Start Room": {
-                "name": "Start Room",
-                "desc": "You stand at the beginning.",
+            "Circle Room": {
+                "name": "Circle Room",
+                "desc": "You stand in a circular room crafted in stone.",
                 "paths": {
                     "door": {
                         "name": "Closet",
@@ -78,7 +78,7 @@
                 "desc": "You are in the next room over.",
                 "paths": {
                     "w": {
-                        "name": "Start Room",
+                        "name": "Circle Room",
                         "desc": "There is a pathway to the west.",
                         "inspection": "The path expands into a larger room.",
                         "is_locked": false,
@@ -107,16 +107,16 @@
                         "damage": 2,
                         "name": "goblin",
                         "desc": "The goblin cowers in a corner holding a knife.",
-                        "inspection": "The goblin is small, grey, and skinny. He is brandishing a knife.",
+                        "inspection": "The goblin is small, grey-green, and skinny. He is brandishing a knife.",
                         "is_angry": false,
                         "loot": {}
                     }
                 },
                 "items": {
                     "large red block": {
-                        "name": "large red block",
-                        "desc": "A large red block rests on the ground.",
-                        "inspection": "Well... it's just a large red block."
+                        "name": "shiny red block",
+                        "desc": "A shiny red block is on the ground.",
+                        "inspection": "Well... it's shiny and red."
                     }
                 }
             },
@@ -125,7 +125,7 @@
                 "desc": "You are in a long, dark hallway.",
                 "paths": {
                     "n": {
-                        "name": "Start Room",
+                        "name": "Circle Room",
                         "desc": "There is a room to the north",
                         "inspection": "The hallway seems narrow and foreboding.",
                         "is_locked": false,

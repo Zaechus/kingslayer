@@ -59,7 +59,7 @@ impl Item {
         if let Some(damage) = self.damage {
             rand::thread_rng().gen_range(1, damage + 1)
         } else {
-            rand::thread_rng().gen_range(0, 2)
+            0
         }
     }
 }
