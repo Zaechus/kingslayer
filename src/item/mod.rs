@@ -55,6 +55,10 @@ impl Item {
         self.inspection.clone()
     }
 
+    pub fn is_weapon(&self) -> bool {
+        self.damage.is_some()
+    }
+
     pub fn damage(&self) -> i32 {
         if let Some(damage) = self.damage {
             rand::thread_rng().gen_range(1, damage + 1)

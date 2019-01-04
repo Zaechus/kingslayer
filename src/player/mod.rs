@@ -112,8 +112,12 @@ impl Player {
     // take an Item from the current Room
     pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> String {
         if let Some(obj) = item {
+            let mut res = String::from("Taken.");
+            if obj.is_weapon() {
+                res.push_str("\n(You can equip weapons with \"equip\", \"draw\", or \"hold\")");
+            }
             self.inventory.insert(name.to_string(), obj);
-            "Taken.".to_string()
+            res
         } else {
             format!("There is no \"{}\" here.", name)
         }
@@ -161,7 +165,8 @@ impl Player {
                 self.take(&wpon.name(), Some(wpon));
             }
             self.main_hand = Some(item);
-            "Equipped.".to_string()
+            "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
+                .to_string()
         } else {
             format!("You do not have the \"{}\".", weapon)
         }
