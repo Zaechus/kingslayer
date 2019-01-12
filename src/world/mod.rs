@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
+use crate::errors::WorldError;
 use crate::item::Item;
 use crate::room::Room;
 
@@ -20,11 +21,11 @@ impl World {
     }
 
     // displays description of the current Room
-    pub fn look(&self) -> String {
+    pub fn look(&self) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
-            room.desc()
+            Ok(room.desc())
         } else {
-            "You are not in a room...".to_string()
+            Err(WorldError::NoRoom)
         }
     }
 
@@ -45,30 +46,35 @@ impl World {
     }
 
     // changes the current Room to the target of the current Room's chosen path
-    pub fn move_room(&mut self, direction: &str) -> String {
+    pub fn move_room(&mut self, direction: &str) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
             if let Some(new_room) = room.paths.get(direction) {
                 self.curr_room = new_room.name();
-                self.look()
+                Ok(self.look()?)
             } else {
-                "You cannot go that way.".to_string()
+                Ok("You cannot go that way.".to_string())
             }
         } else {
-            "You are not in a room...".to_string()
+            Err(WorldError::NoRoom)
         }
     }
 
     // let an Enemy in the current Room take damage
-    pub fn harm_enemy(&mut self, enemy: &str, weapon: &str, damage: Option<i32>) -> String {
+    pub fn harm_enemy(
+        &mut self,
+        enemy: &str,
+        weapon: &str,
+        damage: Option<i32>,
+    ) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(nme) = room.enemies.get_mut(enemy) {
                 if let Some(dmg) = damage {
                     nme.get_hit(dmg);
                     if nme.hp() > 0 {
-                        format!(
+                        Ok(format!(
                             "You hit the {} with your {} for {} damage.",
                             enemy, weapon, dmg,
-                        )
+                        ))
                     } else {
                         let mut res = format!(
                             "You hit the {} with your {} for {} damage. It is dead.\n",
@@ -80,16 +86,16 @@ impl World {
                                 res.push_str(&format!(" {},", x.1.name()));
                             }
                         }
-                        res
+                        Ok(res)
                     }
                 } else {
-                    format!("You do not have the \"{}\". {:?} ", weapon, damage)
+                    Ok(format!("You do not have the \"{}\". {:?} ", weapon, damage))
                 }
             } else {
-                format!("There is no \"{}\" here.", enemy)
+                Ok(format!("There is no \"{}\" here.", enemy))
             }
         } else {
-            "You are not in a room...".to_string()
+            Err(WorldError::NoRoom)
         }
     }
 
@@ -130,41 +136,51 @@ impl World {
     }
 
     // insert an Item into the current Room
-    pub fn insert(&mut self, cmd: &str, name: &str, item: Option<Box<Item>>) -> String {
+    pub fn insert(
+        &mut self,
+        cmd: &str,
+        name: &str,
+        item: Option<Box<Item>>,
+    ) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(obj) = item {
                 room.items.insert(obj.name(), obj);
                 match cmd {
-                    "throw" => format!("You throw the {} across the room.", name),
-                    _ => "Dropped.".to_string(),
+                    "throw" => Ok(format!("You throw the {} across the room.", name)),
+                    _ => Ok("Dropped.".to_string()),
                 }
             } else {
-                format!("You do not have the \"{}\".", name)
+                Ok(format!("You do not have the \"{}\".", name))
             }
         } else {
-            "You are not in a room...".to_string()
+            Err(WorldError::NoRoom)
         }
     }
 
     // insert an Item into a container Item in the current Room
-    pub fn insert_into(&mut self, name: &str, container: &str, item: Option<Box<Item>>) -> String {
+    pub fn insert_into(
+        &mut self,
+        name: &str,
+        container: &str,
+        item: Option<Box<Item>>,
+    ) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(obj) = item {
                 if let Some(cont) = room.items.get_mut(container) {
                     if let Some(ref mut contents) = cont.contents {
                         contents.insert(obj.name(), obj);
-                        "Placed.".to_string()
+                        Ok("Placed.".to_string())
                     } else {
-                        "You can not put anything in there.".to_string()
+                        Ok("You can not put anything in there.".to_string())
                     }
                 } else {
-                    format!("There is no \"{}\" here.", container)
+                    Ok(format!("There is no \"{}\" here.", container))
                 }
             } else {
-                format!("You do not have the \"{}\".", name)
+                Ok(format!("You do not have the \"{}\".", name))
             }
         } else {
-            "You are not in a room...".to_string()
+            Err(WorldError::NoRoom)
         }
     }
 }

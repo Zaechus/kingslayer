@@ -5,6 +5,7 @@ use std::io::{self, Write};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
+use crate::errors::WorldError;
 use crate::item::Item;
 use crate::player::Player;
 use crate::utils::read_line;
@@ -18,6 +19,7 @@ pub struct Cli {
 }
 
 impl Cli {
+    // handle user input
     pub fn ask(&self, input: &str) -> String {
         let filter_out = ["a", "an", "at", "go", "my", "of", "that", "the", "to"];
 
@@ -26,13 +28,13 @@ impl Cli {
         let command = self.mod_directions(&command);
 
         if !command.is_empty() {
-            format!("{}{}", self.parse(&command), self.events())
+            format!("{}{}", self.parse(&command), self.events().unwrap())
         } else {
             "I do not understand that phrase.".to_string()
         }
     }
 
-    // prompts the user for an action
+    // prompts the user for an action from stdin
     pub fn prompt(&self) -> String {
         loop {
             print!("\n> ");
@@ -77,13 +79,13 @@ impl Cli {
     // interprets words as game commands
     fn parse(&self, words: &[String]) -> String {
         match words[0].as_str() {
-            "l" | "look" => self.world.borrow().look(),
+            "l" | "look" => self.world.borrow().look().unwrap(),
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
-                self.world.borrow_mut().move_room(&words[0])
+                self.world.borrow_mut().move_room(&words[0]).unwrap()
             }
             "enter" => {
                 if words.len() > 1 {
-                    self.world.borrow_mut().move_room(&words[1])
+                    self.world.borrow_mut().move_room(&words[1]).unwrap()
                 } else {
                     format!("Where do you want to {}?", words[0])
                 }
@@ -134,11 +136,14 @@ impl Cli {
             }
             "drop" | "throw" | "remove" => {
                 if words.len() > 1 {
-                    self.world.borrow_mut().insert(
-                        &words[0],
-                        &words[1..].join(" "),
-                        self.player.borrow_mut().remove(&words[1..].join(" ")),
-                    )
+                    self.world
+                        .borrow_mut()
+                        .insert(
+                            &words[0],
+                            &words[1..].join(" "),
+                            self.player.borrow_mut().remove(&words[1..].join(" ")),
+                        )
+                        .unwrap()
                 } else {
                     format!("What do you want to {} from your inventory?", words[0])
                 }
@@ -171,11 +176,14 @@ impl Cli {
                                     .borrow_mut()
                                     .put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                             } else {
-                                self.world.borrow_mut().insert_into(
-                                    &words[1..pos].join(" "),
-                                    &words[pos + 1..].join(" "),
-                                    self.player.borrow_mut().remove(&words[1..pos].join(" ")),
-                                )
+                                self.world
+                                    .borrow_mut()
+                                    .insert_into(
+                                        &words[1..pos].join(" "),
+                                        &words[pos + 1..].join(" "),
+                                        self.player.borrow_mut().remove(&words[1..pos].join(" ")),
+                                    )
+                                    .unwrap()
                             }
                         } else if words.len() < 3 {
                             format!("What do you want to {}?", words[0])
@@ -203,18 +211,20 @@ impl Cli {
                             .player
                             .borrow_mut()
                             .attack_with(&words[pos + 1..].join(" "));
-                        self.world.borrow_mut().harm_enemy(
-                            &words[1..pos].join(" "),
-                            &words[pos + 1..].join(" "),
-                            damage,
-                        )
+                        self.world
+                            .borrow_mut()
+                            .harm_enemy(
+                                &words[1..pos].join(" "),
+                                &words[pos + 1..].join(" "),
+                                damage,
+                            )
+                            .unwrap()
                     } else if self.player.borrow().main_hand.is_some() {
                         let damage = self.player.borrow_mut().attack();
-                        self.world.borrow_mut().harm_enemy(
-                            &words[1..].join(" "),
-                            "equipped weapon",
-                            damage,
-                        )
+                        self.world
+                            .borrow_mut()
+                            .harm_enemy(&words[1..].join(" "), "equipped weapon", damage)
+                            .unwrap()
                     } else {
                         format!(
                             "What do you want to {} the {} with?",
@@ -245,7 +255,7 @@ impl Cli {
     }
 
     // computes actions taken by Enemies in the current room
-    fn events(&self) -> String {
+    fn events(&self) -> Result<String, WorldError> {
         let curr_room = &self.world.borrow().curr_room();
 
         if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
@@ -275,9 +285,9 @@ impl Cli {
             if self.player.borrow().hp() <= 0 {
                 events_str.push_str(" You died.");
             }
-            events_str
+            Ok(events_str)
         } else {
-            "You are not in a room...".to_string()
+            Err(WorldError::NoRoom)
         }
     }
 }
