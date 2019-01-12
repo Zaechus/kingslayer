@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::{self, Write};
 
@@ -12,12 +13,12 @@ use crate::world::World;
 // A command line interface for controlling interactions between objects in a game
 #[derive(Serialize, Deserialize)]
 pub struct Cli {
-    player: Player,
-    world: World,
+    player: RefCell<Player>,
+    world: RefCell<World>,
 }
 
 impl Cli {
-    pub fn ask(&mut self, input: &str) -> String {
+    pub fn ask(&self, input: &str) -> String {
         let filter_out = ["a", "an", "at", "go", "my", "of", "that", "the", "to"];
 
         let mut command = self.parts(input);
@@ -74,20 +75,20 @@ impl Cli {
     }
 
     // interprets words as game commands
-    fn parse(&mut self, words: &[String]) -> String {
+    fn parse(&self, words: &[String]) -> String {
         match words[0].as_str() {
-            "l" | "look" => self.world.look(),
+            "l" | "look" => self.world.borrow().look(),
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
-                self.world.move_room(&words[0])
+                self.world.borrow_mut().move_room(&words[0])
             }
             "enter" => {
                 if words.len() > 1 {
-                    self.world.move_room(&words[1])
+                    self.world.borrow_mut().move_room(&words[1])
                 } else {
                     format!("Where do you want to {}?", words[0])
                 }
             }
-            "i" | "inventory" => self.player.inventory(),
+            "i" | "inventory" => self.player.borrow().inventory(),
             "take" | "get" | "pick" => {
                 if words.len() > 1 {
                     if let Some(pos) = words
@@ -96,31 +97,35 @@ impl Cli {
                     {
                         if self
                             .player
+                            .borrow()
                             .inventory()
                             .contains(&words[pos + 1..].join(" "))
                         {
                             self.player
+                                .borrow_mut()
                                 .take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                         } else {
-                            self.player.take(
+                            self.player.borrow_mut().take(
                                 &words[1..pos].join(" "),
-                                self.world.give_from(
+                                self.world.borrow_mut().give_from(
                                     &words[1..pos].join(" "),
                                     &words[pos + 1..].join(" "),
                                 ),
                             )
                         }
                     } else if words[1] == "all" {
-                        self.player.take_all(self.world.give_all())
+                        self.player
+                            .borrow_mut()
+                            .take_all(self.world.borrow_mut().give_all())
                     } else if &words[1] == "u" {
-                        self.player.take(
+                        self.player.borrow_mut().take(
                             &words[2..].join(" "),
-                            self.world.give(&words[2..].join(" ")),
+                            self.world.borrow_mut().give(&words[2..].join(" ")),
                         )
                     } else {
-                        self.player.take(
+                        self.player.borrow_mut().take(
                             &words[1..].join(" "),
-                            self.world.give(&words[1..].join(" ")),
+                            self.world.borrow_mut().give(&words[1..].join(" ")),
                         )
                     }
                 } else {
@@ -129,10 +134,10 @@ impl Cli {
             }
             "drop" | "throw" | "remove" => {
                 if words.len() > 1 {
-                    self.world.insert(
+                    self.world.borrow_mut().insert(
                         &words[0],
                         &words[1..].join(" "),
-                        self.player.remove(&words[1..].join(" ")),
+                        self.player.borrow_mut().remove(&words[1..].join(" ")),
                     )
                 } else {
                     format!("What do you want to {} from your inventory?", words[0])
@@ -140,9 +145,9 @@ impl Cli {
             }
             "examine" | "inspect" | "read" => {
                 if words.len() > 1 {
-                    if let Some(s) = self.player.inspect(&words[1..].join(" ")) {
+                    if let Some(s) = self.player.borrow().inspect(&words[1..].join(" ")) {
                         s
-                    } else if let Some(s) = self.world.inspect(&words[1..].join(" ")) {
+                    } else if let Some(s) = self.world.borrow().inspect(&words[1..].join(" ")) {
                         s
                     } else {
                         format!("There is no \"{}\" here.", &words[1..].join(" "))
@@ -151,23 +156,25 @@ impl Cli {
                     format!("What do you want to {}?", words[0])
                 }
             }
-            "status" | "diagnostic" => self.player.status(),
+            "status" | "diagnostic" => self.player.borrow().status(),
             "put" | "place" => {
                 if words.len() > 1 {
                     if let Some(pos) = words.iter().position(|r| r == "in" || r == "inside") {
                         if pos != 1 {
                             if self
                                 .player
+                                .borrow()
                                 .inventory()
                                 .contains(&words[pos + 1..].join(" "))
                             {
                                 self.player
+                                    .borrow_mut()
                                     .put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                             } else {
-                                self.world.insert_into(
+                                self.world.borrow_mut().insert_into(
                                     &words[1..pos].join(" "),
                                     &words[pos + 1..].join(" "),
-                                    self.player.remove(&words[1..pos].join(" ")),
+                                    self.player.borrow_mut().remove(&words[1..pos].join(" ")),
                                 )
                             }
                         } else if words.len() < 3 {
@@ -192,16 +199,22 @@ impl Cli {
             "attack" | "slay" | "kill" | "hit" => {
                 if words.len() > 1 {
                     if let Some(pos) = words.iter().position(|r| r == "with") {
-                        let damage = self.player.attack_with(&words[pos + 1..].join(" "));
-                        self.world.harm_enemy(
+                        let damage = self
+                            .player
+                            .borrow_mut()
+                            .attack_with(&words[pos + 1..].join(" "));
+                        self.world.borrow_mut().harm_enemy(
                             &words[1..pos].join(" "),
                             &words[pos + 1..].join(" "),
                             damage,
                         )
-                    } else if self.player.main_hand.is_some() {
-                        let damage = self.player.attack();
-                        self.world
-                            .harm_enemy(&words[1..].join(" "), "equipped weapon", damage)
+                    } else if self.player.borrow().main_hand.is_some() {
+                        let damage = self.player.borrow_mut().attack();
+                        self.world.borrow_mut().harm_enemy(
+                            &words[1..].join(" "),
+                            "equipped weapon",
+                            damage,
+                        )
                     } else {
                         format!(
                             "What do you want to {} the {} with?",
@@ -214,15 +227,15 @@ impl Cli {
                 }
             }
             "rest" | "sleep" | "heal" => {
-                if !self.player.in_combat {
-                    self.player.rest()
+                if !self.player.borrow().in_combat {
+                    self.player.borrow_mut().rest()
                 } else {
                     "You cannot rest while in combat.".to_string()
                 }
             }
             "hold" | "draw" | "equip" => {
                 if words.len() > 1 {
-                    self.player.equip(&words[1..].join(" "))
+                    self.player.borrow_mut().equip(&words[1..].join(" "))
                 } else {
                     format!("What do you want to {}", words[0])
                 }
@@ -232,34 +245,34 @@ impl Cli {
     }
 
     // computes actions taken by Enemies in the current room
-    fn events(&mut self) -> String {
-        let curr_room = &self.world.curr_room();
+    fn events(&self) -> String {
+        let curr_room = &self.world.borrow().curr_room();
 
-        if let Some(room) = self.world.rooms.get_mut(curr_room) {
+        if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
             let mut events_str = String::new();
             let mut dropped_loot: HashMap<String, Box<Item>> = HashMap::new();
             for enemy in room.enemies.iter_mut() {
                 if enemy.1.is_angry() && enemy.1.hp() > 0 {
                     let enemy_damage = enemy.1.damage();
 
-                    self.player.take_damage(enemy_damage);
-                    self.player.in_combat = true;
+                    self.player.borrow_mut().take_damage(enemy_damage);
+                    self.player.borrow_mut().in_combat = true;
 
                     events_str.push_str(&format!(
                         "\nThe {} hit you for {} damage. You have {} HP left.",
                         enemy.1.name(),
                         enemy_damage,
-                        self.player.hp()
+                        self.player.borrow().hp()
                     ));
                 }
                 if enemy.1.hp() <= 0 {
-                    self.player.in_combat = false;
+                    self.player.borrow_mut().in_combat = false;
                     dropped_loot.extend(enemy.1.drop_loot());
                 }
             }
             room.items.extend(dropped_loot);
             room.enemies.retain(|_, e| e.hp() > 0);
-            if self.player.hp() <= 0 {
+            if self.player.borrow().hp() <= 0 {
                 events_str.push_str(" You died.");
             }
             events_str

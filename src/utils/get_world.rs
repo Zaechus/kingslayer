@@ -10,7 +10,7 @@ use crate::cli::Cli;
 /// use kingslayer::get_world;
 ///
 /// fn main() {
-///     let mut cli = kingslayer::get_world("data/world.json");
+///     let cli = kingslayer::get_world("data/world.json");
 ///
 ///     println!("{}", cli.ask("l"));
 ///     loop {

@@ -1,5 +1,5 @@
 fn main() {
-    let mut cli = kingslayer::get_world("data/world.json");
+    let cli = kingslayer::get_world("data/world.json");
 
     println!("{}", cli.ask("l"));
     loop {

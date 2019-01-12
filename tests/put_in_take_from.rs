@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn put_in_take_from() {
-        let mut cli = get_world("data/world.json");
+        let cli = get_world("data/world.json");
 
         cli.ask("s");
         assert!(

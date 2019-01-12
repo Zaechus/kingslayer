@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn take_remove() {
-        let mut cli = get_world("data/world.json");
+        let cli = get_world("data/world.json");
 
         assert_eq!(cli.ask("remove leaf"), "Dropped.".to_string());
         assert_eq!(cli.ask("i"), "You are empty-handed.");
@@ -55,7 +55,7 @@ mod tests {
 
     #[test]
     fn cli_take_all() {
-        let mut cli = get_world("data/world.json");
+        let cli = get_world("data/world.json");
 
         cli.ask("drop leaf");
         assert_eq!(cli.ask("i"), "You are empty-handed.");
