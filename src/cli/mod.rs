@@ -11,6 +11,8 @@ use crate::player::Player;
 use crate::utils::read_line;
 use crate::world::World;
 
+type IsAction = bool;
+
 // A command line interface for controlling interactions between objects in a game
 #[derive(Serialize, Deserialize)]
 pub struct Cli {
@@ -28,7 +30,12 @@ impl Cli {
         let command = self.mod_directions(&command);
 
         if !command.is_empty() {
-            format!("{}{}", self.parse(&command), self.events().unwrap())
+            let (is_action, output) = self.parse(&command);
+            if is_action {
+                format!("{}{}", output, self.events().unwrap())
+            } else {
+                output
+            }
         } else {
             "I do not understand that phrase.".to_string()
         }
@@ -77,20 +84,20 @@ impl Cli {
     }
 
     // interprets words as game commands
-    fn parse(&self, words: &[String]) -> String {
+    fn parse(&self, words: &[String]) -> (IsAction, String) {
         match words[0].as_str() {
-            "l" | "look" => self.world.borrow().look().unwrap(),
+            "l" | "look" => (true, self.world.borrow().look().unwrap()),
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
-                self.world.borrow_mut().move_room(&words[0]).unwrap()
+                (true, self.world.borrow_mut().move_room(&words[0]).unwrap())
             }
             "enter" => {
                 if words.len() > 1 {
-                    self.world.borrow_mut().move_room(&words[1]).unwrap()
+                    (true, self.world.borrow_mut().move_room(&words[1]).unwrap())
                 } else {
-                    format!("Where do you want to {}?", words[0])
+                    (false, format!("Where do you want to {}?", words[0]))
                 }
             }
-            "i" | "inventory" => self.player.borrow().inventory(),
+            "i" | "inventory" => (true, self.player.borrow().inventory()),
             "take" | "get" | "pick" => {
                 if words.len() > 1 {
                     if let Some(pos) = words
@@ -103,65 +110,90 @@ impl Cli {
                             .inventory()
                             .contains(&words[pos + 1..].join(" "))
                         {
-                            self.player
-                                .borrow_mut()
-                                .take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
-                        } else {
-                            self.player.borrow_mut().take(
-                                &words[1..pos].join(" "),
-                                self.world.borrow_mut().give_from(
+                            (
+                                true,
+                                self.player.borrow_mut().take_from(
                                     &words[1..pos].join(" "),
                                     &words[pos + 1..].join(" "),
                                 ),
                             )
+                        } else {
+                            (
+                                true,
+                                self.player.borrow_mut().take(
+                                    &words[1..pos].join(" "),
+                                    self.world.borrow_mut().give_from(
+                                        &words[1..pos].join(" "),
+                                        &words[pos + 1..].join(" "),
+                                    ),
+                                ),
+                            )
                         }
                     } else if words[1] == "all" {
-                        self.player
-                            .borrow_mut()
-                            .take_all(self.world.borrow_mut().give_all())
+                        (
+                            true,
+                            self.player
+                                .borrow_mut()
+                                .take_all(self.world.borrow_mut().give_all()),
+                        )
                     } else if &words[1] == "u" {
-                        self.player.borrow_mut().take(
-                            &words[2..].join(" "),
-                            self.world.borrow_mut().give(&words[2..].join(" ")),
+                        (
+                            true,
+                            self.player.borrow_mut().take(
+                                &words[2..].join(" "),
+                                self.world.borrow_mut().give(&words[2..].join(" ")),
+                            ),
                         )
                     } else {
-                        self.player.borrow_mut().take(
-                            &words[1..].join(" "),
-                            self.world.borrow_mut().give(&words[1..].join(" ")),
+                        (
+                            true,
+                            self.player.borrow_mut().take(
+                                &words[1..].join(" "),
+                                self.world.borrow_mut().give(&words[1..].join(" ")),
+                            ),
                         )
                     }
                 } else {
-                    format!("What do you want to {}?", words[0])
+                    (false, format!("What do you want to {}?", words[0]))
                 }
             }
             "drop" | "throw" | "remove" => {
                 if words.len() > 1 {
-                    self.world
-                        .borrow_mut()
-                        .insert(
-                            &words[0],
-                            &words[1..].join(" "),
-                            self.player.borrow_mut().remove(&words[1..].join(" ")),
-                        )
-                        .unwrap()
+                    (
+                        true,
+                        self.world
+                            .borrow_mut()
+                            .insert(
+                                &words[0],
+                                &words[1..].join(" "),
+                                self.player.borrow_mut().remove(&words[1..].join(" ")),
+                            )
+                            .unwrap(),
+                    )
                 } else {
-                    format!("What do you want to {} from your inventory?", words[0])
+                    (
+                        false,
+                        format!("What do you want to {} from your inventory?", words[0]),
+                    )
                 }
             }
             "examine" | "inspect" | "read" => {
                 if words.len() > 1 {
                     if let Some(s) = self.player.borrow().inspect(&words[1..].join(" ")) {
-                        s
+                        (true, s)
                     } else if let Some(s) = self.world.borrow().inspect(&words[1..].join(" ")) {
-                        s
+                        (true, s)
                     } else {
-                        format!("There is no \"{}\" here.", &words[1..].join(" "))
+                        (
+                            false,
+                            format!("There is no \"{}\" here.", &words[1..].join(" ")),
+                        )
                     }
                 } else {
-                    format!("What do you want to {}?", words[0])
+                    (false, format!("What do you want to {}?", words[0]))
                 }
             }
-            "status" | "diagnostic" => self.player.borrow().status(),
+            "status" | "diagnostic" => (true, self.player.borrow().status()),
             "put" | "place" => {
                 if words.len() > 1 {
                     if let Some(pos) = words.iter().position(|r| r == "in" || r == "inside") {
@@ -172,36 +204,51 @@ impl Cli {
                                 .inventory()
                                 .contains(&words[pos + 1..].join(" "))
                             {
-                                self.player
-                                    .borrow_mut()
-                                    .put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
-                            } else {
-                                self.world
-                                    .borrow_mut()
-                                    .insert_into(
+                                (
+                                    true,
+                                    self.player.borrow_mut().put_in(
                                         &words[1..pos].join(" "),
                                         &words[pos + 1..].join(" "),
-                                        self.player.borrow_mut().remove(&words[1..pos].join(" ")),
-                                    )
-                                    .unwrap()
+                                    ),
+                                )
+                            } else {
+                                (
+                                    true,
+                                    self.world
+                                        .borrow_mut()
+                                        .insert_into(
+                                            &words[1..pos].join(" "),
+                                            &words[pos + 1..].join(" "),
+                                            self.player
+                                                .borrow_mut()
+                                                .remove(&words[1..pos].join(" ")),
+                                        )
+                                        .unwrap(),
+                                )
                             }
                         } else if words.len() < 3 {
-                            format!("What do you want to {}?", words[0])
+                            (false, format!("What do you want to {}?", words[0]))
                         } else {
-                            format!(
-                                "What do you want to place in the {}?",
-                                &words[1..].join(" ")
+                            (
+                                false,
+                                format!(
+                                    "What do you want to place in the {}?",
+                                    &words[1..].join(" ")
+                                ),
                             )
                         }
                     } else {
-                        format!(
-                            "What do you want to {} the {} in?",
-                            words[0],
-                            &words[1..].join(" ")
+                        (
+                            false,
+                            format!(
+                                "What do you want to {} the {} in?",
+                                words[0],
+                                &words[1..].join(" ")
+                            ),
                         )
                     }
                 } else {
-                    format!("What do you want to {}?", words[0])
+                    (false, format!("What do you want to {}?", words[0]))
                 }
             }
             "attack" | "slay" | "kill" | "hit" => {
@@ -211,46 +258,55 @@ impl Cli {
                             .player
                             .borrow_mut()
                             .attack_with(&words[pos + 1..].join(" "));
-                        self.world
-                            .borrow_mut()
-                            .harm_enemy(
-                                &words[1..pos].join(" "),
-                                &words[pos + 1..].join(" "),
-                                damage,
-                            )
-                            .unwrap()
+                        (
+                            true,
+                            self.world
+                                .borrow_mut()
+                                .harm_enemy(
+                                    &words[1..pos].join(" "),
+                                    &words[pos + 1..].join(" "),
+                                    damage,
+                                )
+                                .unwrap(),
+                        )
                     } else if self.player.borrow().main_hand.is_some() {
                         let damage = self.player.borrow_mut().attack();
-                        self.world
-                            .borrow_mut()
-                            .harm_enemy(&words[1..].join(" "), "equipped weapon", damage)
-                            .unwrap()
+                        (
+                            true,
+                            self.world
+                                .borrow_mut()
+                                .harm_enemy(&words[1..].join(" "), "equipped weapon", damage)
+                                .unwrap(),
+                        )
                     } else {
-                        format!(
-                            "What do you want to {} the {} with?",
-                            words[0],
-                            &words[1..].join(" ")
+                        (
+                            false,
+                            format!(
+                                "What do you want to {} the {} with?",
+                                words[0],
+                                &words[1..].join(" ")
+                            ),
                         )
                     }
                 } else {
-                    format!("What do you want to {}?", words[0])
+                    (false, format!("What do you want to {}?", words[0]))
                 }
             }
             "rest" | "sleep" | "heal" => {
                 if !self.player.borrow().in_combat {
-                    self.player.borrow_mut().rest()
+                    (true, self.player.borrow_mut().rest())
                 } else {
-                    "You cannot rest while in combat.".to_string()
+                    (false, "You cannot rest while in combat.".to_string())
                 }
             }
             "hold" | "draw" | "equip" => {
                 if words.len() > 1 {
-                    self.player.borrow_mut().equip(&words[1..].join(" "))
+                    (true, self.player.borrow_mut().equip(&words[1..].join(" ")))
                 } else {
-                    format!("What do you want to {}", words[0])
+                    (false, format!("What do you want to {}", words[0]))
                 }
             }
-            _ => format!("I don't know the word \"{}\".", words[0]),
+            _ => (false, format!("I don't know the word \"{}\".", words[0])),
         }
     }
 

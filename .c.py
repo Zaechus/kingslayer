@@ -4,7 +4,7 @@ call(["cargo", "fmt"])
 call(["cargo", "update"])
 
 call(["cargo", "clippy"])
-call(["cargo", "check"])
+call(["cargo", "c"])
 
 call(["cargo", "doc"])
 call(["cargo", "build"])
