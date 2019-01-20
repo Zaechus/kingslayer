@@ -49,10 +49,31 @@ impl World {
     pub fn move_room(&mut self, direction: &str) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
             if let Some(new_room) = room.paths.get(direction) {
-                self.curr_room = new_room.name();
-                Ok(self.look()?)
+                if !new_room.is_locked() {
+                    if new_room.is_open {
+                        self.curr_room = new_room.name();
+                        Ok(self.look()?)
+                    } else {
+                        Ok("The way is closed.".to_string())
+                    }
+                } else {
+                    Ok("The way is locked.".to_string())
+                }
             } else {
                 Ok("You cannot go that way.".to_string())
+            }
+        } else {
+            Err(WorldError::NoRoom)
+        }
+    }
+
+    pub fn open_path(&mut self, path: &str) -> Result<String, WorldError> {
+        if let Some(room) = self.rooms.get_mut(&self.curr_room) {
+            if let Some(p) = room.paths.get_mut(path) {
+                p.is_open = true;
+                Ok("Opened.".to_string())
+            } else {
+                Ok(format!("There is no \"{}\".", path))
             }
         } else {
             Err(WorldError::NoRoom)

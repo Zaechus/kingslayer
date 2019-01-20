@@ -43,10 +43,10 @@
                 "paths": {
                     "door": {
                         "name": "Closet",
-                        "desc": "A door leads to a closet in the corner.",
+                        "desc": "There is a door on one side that is closed.",
                         "inspection": "The door is plain and wooden.",
                         "is_locked": false,
-                        "is_open": true
+                        "is_open": false
                     },
                     "e": {
                         "name": "Next Room",

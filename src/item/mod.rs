@@ -5,16 +5,14 @@ use rand::Rng;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use crate::properties::{IsLocked, IsOpen};
-
 // An object to be interacted with by the user
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Item {
     name: String,
     desc: String,
     inspection: String,
-    is_locked: Option<IsLocked>,
-    is_open: Option<IsOpen>,
+    is_locked: Option<bool>,
+    is_open: Option<bool>,
     damage: Option<i32>,
     pub contents: Option<HashMap<String, Box<Item>>>,
 }

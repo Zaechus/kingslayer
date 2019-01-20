@@ -1,15 +1,13 @@
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use crate::properties::{IsLocked, IsOpen};
-
 #[derive(Serialize, Deserialize)]
 pub struct Pathway {
     name: String,
     desc: String,
     inspection: String,
-    is_open: IsOpen,
-    is_locked: IsLocked,
+    pub is_open: bool,
+    is_locked: bool,
 }
 
 impl Pathway {
@@ -23,5 +21,9 @@ impl Pathway {
 
     pub fn inspection(&self) -> String {
         self.inspection.clone()
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.is_locked
     }
 }

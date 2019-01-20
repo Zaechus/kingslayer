@@ -23,7 +23,9 @@ pub struct Cli {
 impl Cli {
     // handle user input
     pub fn ask(&self, input: &str) -> String {
-        let filter_out = ["a", "an", "at", "go", "my", "of", "that", "the", "to"];
+        let filter_out = [
+            "a", "an", "at", "go", "my", "of", "that", "the", "through", "to",
+        ];
 
         let mut command = self.parts(input);
         command.retain(|w| !(&filter_out).contains(&w.as_str()));
@@ -90,7 +92,7 @@ impl Cli {
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                 (true, self.world.borrow_mut().move_room(&words[0]).unwrap())
             }
-            "enter" => {
+            "enter" | "go" => {
                 if words.len() > 1 {
                     (true, self.world.borrow_mut().move_room(&words[1]).unwrap())
                 } else {
@@ -302,6 +304,19 @@ impl Cli {
             "hold" | "draw" | "equip" => {
                 if words.len() > 1 {
                     (true, self.player.borrow_mut().equip(&words[1..].join(" ")))
+                } else {
+                    (false, format!("What do you want to {}", words[0]))
+                }
+            }
+            "open" => {
+                if words.len() > 1 {
+                    (
+                        true,
+                        self.world
+                            .borrow_mut()
+                            .open_path(&words[1..].join(" "))
+                            .unwrap(),
+                    )
                 } else {
                     (false, format!("What do you want to {}", words[0]))
                 }
