@@ -7,6 +7,7 @@ mod errors;
 mod item;
 mod pathway;
 mod player;
+mod results;
 mod room;
 mod utils;
 mod world;
