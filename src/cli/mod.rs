@@ -42,7 +42,6 @@ impl Cli {
         }
     }
 
-    // prompts the user for an action from stdin
     pub fn prompt(&self) -> String {
         loop {
             print!("\n> ");
@@ -56,7 +55,6 @@ impl Cli {
         }
     }
 
-    // splits a string into a vector of individual words
     fn parts(&self, s: &str) -> Vec<String> {
         s.split_whitespace()
             .map(|x| x.to_lowercase().to_string())
@@ -67,19 +65,20 @@ impl Cli {
     fn mod_directions(&self, words: &[String]) -> Vec<String> {
         let mut modified = Vec::with_capacity(words.len());
         for w in words {
-            match w.as_str() {
-                "north" => modified.push("n".to_string()),
-                "south" => modified.push("s".to_string()),
-                "east" => modified.push("e".to_string()),
-                "west" => modified.push("w".to_string()),
-                "northeast" => modified.push("ne".to_string()),
-                "northwest" => modified.push("nw".to_string()),
-                "southeast" => modified.push("se".to_string()),
-                "southwest" => modified.push("sw".to_string()),
-                "up" => modified.push("u".to_string()),
-                "down" => modified.push("d".to_string()),
-                _ => modified.push(w.to_string()),
-            }
+            let direction = match w.as_str() {
+                "north" => "n",
+                "south" => "s",
+                "east" => "e",
+                "west" => "w",
+                "northeast" => "ne",
+                "northwest" => "nw",
+                "southeast" => "se",
+                "southwest" => "sw",
+                "up" => "u",
+                "down" => "d",
+                _ => w,
+            };
+            modified.push(direction.to_string());
         }
         modified
     }
