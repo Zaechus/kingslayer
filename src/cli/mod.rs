@@ -20,6 +20,20 @@ pub struct Cli {
 }
 
 impl Cli {
+    pub fn start(&self) {
+        println!("{}", self.ask("l"));
+        loop {
+            match self.ask(&self.prompt()) {
+                s => {
+                    println!("{}", s);
+                    if s.contains("You died.") {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     // handle user input
     pub fn ask(&self, input: &str) -> String {
         let filter_out = [

@@ -13,6 +13,16 @@ use kingslayer::get_world;
 fn main() {
     let cli = kingslayer::get_world("data/world.json");
 
+    cli.start();
+}
+```
+or the loop can be managed manually like this:
+```
+use kingslayer::get_world;
+
+fn main() {
+    let cli = kingslayer::get_world("data/world.json");
+
     println!("{}", cli.ask("l"));
     loop {
         match cli.ask(&cli.prompt()) {
