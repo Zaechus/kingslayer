@@ -65,25 +65,26 @@ impl Cli {
     fn mod_directions(&self, words: &[String]) -> Vec<String> {
         let mut modified = Vec::with_capacity(words.len());
         for w in words {
-            let direction = match w.as_str() {
-                "north" => "n",
-                "south" => "s",
-                "east" => "e",
-                "west" => "w",
-                "northeast" => "ne",
-                "northwest" => "nw",
-                "southeast" => "se",
-                "southwest" => "sw",
-                "up" => "u",
-                "down" => "d",
-                _ => w,
-            };
-            modified.push(direction.to_string());
+            modified.push(
+                match w.as_str() {
+                    "north" => "n",
+                    "south" => "s",
+                    "east" => "e",
+                    "west" => "w",
+                    "northeast" => "ne",
+                    "northwest" => "nw",
+                    "southeast" => "se",
+                    "southwest" => "sw",
+                    "up" => "u",
+                    "down" => "d",
+                    _ => w,
+                }
+                .to_string(),
+            );
         }
         modified
     }
 
-    // interprets words as game commands
     fn parse(&self, words: &[String]) -> CmdResult {
         match words[0].as_str() {
             "l" | "look" => CmdResult::new(true, &self.world.borrow().look().unwrap()),
@@ -329,7 +330,7 @@ impl Cli {
         }
     }
 
-    // computes actions taken by Enemies in the current room
+    // manages actions taken by Enemies in the current room
     fn events(&self) -> Result<String, WorldError> {
         let curr_room = &self.world.borrow().curr_room();
 

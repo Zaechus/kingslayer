@@ -3,8 +3,8 @@ fn main() {
 
     println!("{}", cli.ask("l"));
     loop {
-        match cli.ask(&cli.prompt()).as_str() {
-            ref s => {
+        match cli.ask(&cli.prompt()) {
+            s => {
                 println!("{}", s);
                 if s.contains("You died.") {
                     break;

@@ -5,7 +5,11 @@ use crate::cli::Cli;
 
 /// Creates a Cli from the given file
 ///
-/// A game should be setup and started like so:
+/// A full game requires a loop, printing the result
+/// of cli.ask(&cli.prompt()), and handling a death case.
+/// All other properties are managed in the world JSON.
+///
+/// A game can be setup and started like so:
 /// ```
 /// use kingslayer::get_world;
 ///
@@ -15,8 +19,8 @@ use crate::cli::Cli;
 ///     println!("{}", cli.ask("l"));
 ///     loop {
 ///         # break;
-///         match cli.ask(&cli.prompt()).as_str() {
-///             ref s => {
+///         match cli.ask(&cli.prompt()) {
+///             s => {
 ///                 println!("{}", s);
 ///                 if s.contains("You died.") {
 ///                     break;
@@ -27,7 +31,7 @@ use crate::cli::Cli;
 /// }
 /// ```
 /// The string parameter should link to an existing file with
-/// the proper JSON setup for creating a working game
+/// the proper JSON setup for creating a working game.
 pub fn get_world(path: &str) -> Cli {
     let world_file = File::open(path).expect("Unable to open world file");
     let mut world_file_reader = BufReader::new(world_file);
@@ -39,7 +43,10 @@ pub fn get_world(path: &str) -> Cli {
     serde_json::from_str(&data).expect("Error when creating world from file.")
 }
 
-/// Creates a Cli from JSON already in str form
+/// Creates a Cli from JSON already in str form.
+///
+/// Game implementation is the same as `get_world`
+/// except without using a JSON file.
 pub fn get_world_from_str(data: &str) -> Cli {
     serde_json::from_str(data).expect("Error when creating world from file.")
 }

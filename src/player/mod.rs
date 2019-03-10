@@ -31,21 +31,26 @@ impl Player {
         self.hp.1
     }
 
-    // attack an Enemy with a chosen item in the current Room
     pub fn attack(&mut self) -> Option<i32> {
         if let Some(weapon) = &self.main_hand {
             self.in_combat = true;
-            Some(weapon.damage() + ((self.strength - 10) as f32 / 2.0).floor() as i32)
+            Some(self.deal_damage(weapon.damage()))
         } else {
             None
         }
     }
 
-    // attack an Enemy with a chosen item in the current Room
-    pub fn attack_with(&mut self, weapon: &str) -> Option<i32> {
-        if let Some(wpon) = self.inventory.get(weapon) {
+    pub fn attack_with(&mut self, weapon_name: &str) -> Option<i32> {
+        if let Some(weapon) = self.inventory.get(weapon_name) {
             self.in_combat = true;
-            Some(wpon.damage() + ((self.strength - 10) as f32 / 2.0).floor() as i32)
+            Some(self.deal_damage(weapon.damage()))
+        } else if let Some(equipped_weapon) = &self.main_hand {
+            if weapon_name == equipped_weapon.name() {
+                self.in_combat = true;
+                Some(self.deal_damage(equipped_weapon.damage()))
+            } else {
+                None
+            }
         } else {
             None
         }
@@ -109,7 +114,6 @@ impl Player {
         }
     }
 
-    // take an Item from the current Room
     pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> String {
         if let Some(obj) = item {
             let mut res = String::from("Taken.");
@@ -141,7 +145,6 @@ impl Player {
         }
     }
 
-    // take all Items in the current Room
     pub fn take_all(&mut self, items: HashMap<String, Box<Item>>) -> String {
         self.inventory.extend(items);
         "Taken.".to_string()
@@ -158,7 +161,7 @@ impl Player {
         }
     }
 
-    // equip an item to fight with
+    // equip an item into main hand to simplify fighting
     pub fn equip(&mut self, weapon: &str) -> String {
         if let Some(item) = self.inventory.remove(weapon) {
             if let Some(wpon) = self.main_hand.take() {
@@ -172,6 +175,7 @@ impl Player {
         }
     }
 
+    // place an item into a container item
     pub fn put_in(&mut self, item: &str, container: &str) -> String {
         if let Some(itm) = self.inventory.remove(item) {
             if let Some(cont) = self.inventory.get_mut(container) {
@@ -187,5 +191,9 @@ impl Player {
         } else {
             format!("You do not have the \"{}\".", item)
         }
+    }
+
+    fn deal_damage(&self, weapon_damage: i32) -> i32 {
+        weapon_damage + ((self.strength - 10) as f32 / 2.0).floor() as i32
     }
 }
