@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+
+#[cfg(not(target_arch = "wasm32"))]
 use std::{thread, time};
 
 use rand::Rng;
@@ -57,11 +59,32 @@ impl Player {
     }
 
     // rest for a random amount of time to regain a random amount of HP
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn rest(&mut self) -> String {
         if self.hp() < self.hp_cap() {
             thread::sleep(time::Duration::from_millis(
                 rand::thread_rng().gen_range(2000, 5001),
             ));
+            let regained_hp = rand::thread_rng().gen_range(1, 7);
+            let new_hp = self.hp() + regained_hp;
+            if new_hp < self.hp_cap() {
+                self.hp = (new_hp, self.hp_cap());
+            } else {
+                self.hp = (self.hp_cap(), self.hp_cap());
+            }
+            format!(
+                "You regained {} HP for a total of ({} / {}) HP.",
+                regained_hp,
+                self.hp(),
+                self.hp_cap()
+            )
+        } else {
+            "You already have full health.".to_string()
+        }
+    }
+    #[cfg(target_arch = "wasm32")]
+    pub fn rest(&mut self) -> String {
+        if self.hp() < self.hp_cap() {
             let regained_hp = rand::thread_rng().gen_range(1, 7);
             let new_hp = self.hp() + regained_hp;
             if new_hp < self.hp_cap() {

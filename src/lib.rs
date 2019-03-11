@@ -1,7 +1,6 @@
-pub use crate::utils::get_world::get_world;
-pub use crate::utils::get_world::get_world_from_str;
+pub use cli::Cli;
 
-mod cli;
+pub mod cli;
 mod enemy;
 mod errors;
 mod item;

@@ -8,20 +8,20 @@ A text adventure dungeon crawler game written in Rust.
 
 Worlds are defined with JSON. An example can be found on the ![wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file).  Deploying the world file in Rust looks like this:
 ```
-use kingslayer::get_world;
+use kingslayer::Cli;
 
 fn main() {
-    let cli = kingslayer::get_world("data/world.json");
+    let cli = Cli::from_json_file("data/world.json");
 
     cli.start();
 }
 ```
 or the loop can be managed manually like this:
 ```
-use kingslayer::get_world;
+use kingslayer::Cli;
 
 fn main() {
-    let cli = kingslayer::get_world("data/world.json");
+    let cli = Cli::from_json_file("data/world.json");
 
     println!("{}", cli.ask("l"));
     loop {

@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use kingslayer::get_world;
+    use kingslayer::Cli;
 
     #[test]
     fn put_in_take_from() {
-        let cli = get_world("data/world.json");
+        let cli = Cli::from_json_file("data/world.json");
 
         cli.ask("s");
         assert!(

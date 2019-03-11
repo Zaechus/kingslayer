@@ -1,5 +1,3 @@
-pub mod get_world;
-
 use std::io;
 
 pub fn read_line() -> String {

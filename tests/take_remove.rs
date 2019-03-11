@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod tests {
-    use kingslayer::get_world;
+    use kingslayer::Cli;
 
     #[test]
     fn take_remove() {
-        let cli = get_world("data/world.json");
+        let cli = Cli::from_json_file("data/world.json");
 
         assert_eq!(cli.ask("remove leaf"), "Dropped.".to_string());
         assert_eq!(cli.ask("i"), "You are empty-handed.");
@@ -55,7 +55,7 @@ mod tests {
 
     #[test]
     fn cli_take_all() {
-        let cli = get_world("data/world.json");
+        let cli = Cli::from_json_file("data/world.json");
 
         cli.ask("drop leaf");
         assert_eq!(cli.ask("i"), "You are empty-handed.");

@@ -1,6 +1,8 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fs::File;
 use std::io::{self, Write};
+use std::io::{BufReader, Read};
 
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -20,6 +22,21 @@ pub struct Cli {
 }
 
 impl Cli {
+    pub fn from_json_file(path: &str) -> Self {
+        let world_file = File::open(path).expect("Unable to open world file");
+        let mut world_file_reader = BufReader::new(world_file);
+        let mut data = String::new();
+        world_file_reader
+            .read_to_string(&mut data)
+            .expect("Unable to read string from world file");
+
+        serde_json::from_str(&data).expect("Error when creating world from file.")
+    }
+
+    pub fn from_json_str(json: &str) -> Self {
+        serde_json::from_str(json).expect("Error when creating world from file.")
+    }
+
     pub fn start(&self) {
         println!("{}", self.ask("l"));
         loop {
