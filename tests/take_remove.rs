@@ -6,6 +6,7 @@ mod tests {
     fn take_remove() {
         let cli = Cli::from_json_file("data/world.json");
 
+        cli.ask("take leaf");
         assert_eq!(cli.ask("remove leaf"), "Dropped.".to_string());
         assert_eq!(cli.ask("i"), "You are empty-handed.");
         assert!(
@@ -57,6 +58,7 @@ mod tests {
     fn cli_take_all() {
         let cli = Cli::from_json_file("data/world.json");
 
+        cli.ask("take leaf");
         cli.ask("drop leaf");
         assert_eq!(cli.ask("i"), "You are empty-handed.");
         cli.ask("take all");

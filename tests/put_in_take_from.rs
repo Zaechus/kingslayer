@@ -6,6 +6,7 @@ mod tests {
     fn put_in_take_from() {
         let cli = Cli::from_json_file("data/world.json");
 
+        cli.ask("take leaf");
         cli.ask("s");
         assert!(
             cli.ask("i").contains("leaf")

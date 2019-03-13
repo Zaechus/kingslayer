@@ -9,7 +9,7 @@ readme = "README.md"
 repository = "https://github.com/Maxgy/kingslayer"
 keywords = ["text", "adventure", "game", "dungeon", "crawler"]
 categories = ["games", "game-engines"]
-exclude = ["data/world.json", "src/main.rs", "*.py", "*.yml"]
+exclude = ["data/world.json", "*.py", "*.yml"]
 
 [dependencies]
 serde = "1.0"

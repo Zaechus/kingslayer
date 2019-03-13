@@ -1,28 +1,44 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::fs::File;
-use std::io::{self, Write};
-use std::io::{BufReader, Read};
+use std::io::{self, BufReader, Read, Write};
 
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
 use crate::errors::WorldError;
-use crate::item::Item;
+use crate::lexer::Lexer;
 use crate::player::Player;
 use crate::results::CmdResult;
 use crate::utils::read_line;
+
 use crate::world::World;
 
 // A command line interface for controlling interactions between objects in a game
 #[derive(Serialize, Deserialize)]
 pub struct Cli {
+    lexer: Lexer,
     player: RefCell<Player>,
     world: RefCell<World>,
 }
 
 impl Cli {
     pub fn from_json_file(path: &str) -> Self {
+        Self {
+            lexer: Lexer::new(),
+            player: RefCell::new(Player::new()),
+            world: Cli::get_world_json(path),
+        }
+    }
+
+    pub fn from_json_str(json: &str) -> Self {
+        Self {
+            lexer: Lexer::new(),
+            player: RefCell::new(Player::new()),
+            world: Cli::get_world_str(json),
+        }
+    }
+
+    fn get_world_json(path: &str) -> RefCell<World> {
         let world_file = File::open(path).expect("Unable to open world file");
         let mut world_file_reader = BufReader::new(world_file);
         let mut data = String::new();
@@ -33,7 +49,7 @@ impl Cli {
         serde_json::from_str(&data).expect("Error when creating world from file.")
     }
 
-    pub fn from_json_str(json: &str) -> Self {
+    fn get_world_str(json: &str) -> RefCell<World> {
         serde_json::from_str(json).expect("Error when creating world from file.")
     }
 
@@ -51,28 +67,6 @@ impl Cli {
         }
     }
 
-    // handle user input
-    pub fn ask(&self, input: &str) -> String {
-        let filter_out = [
-            "a", "an", "at", "go", "my", "of", "that", "the", "through", "to",
-        ];
-
-        let mut command = self.parts(input);
-        command.retain(|w| !(&filter_out).contains(&w.as_str()));
-        let command = self.mod_directions(&command);
-
-        if !command.is_empty() {
-            let res = self.parse(&command);
-            if res.is_action {
-                format!("{}{}", res.command, self.events().unwrap())
-            } else {
-                res.command
-            }
-        } else {
-            "I do not understand that phrase.".to_string()
-        }
-    }
-
     pub fn prompt(&self) -> String {
         loop {
             print!("\n> ");
@@ -86,34 +80,24 @@ impl Cli {
         }
     }
 
-    fn parts(&self, s: &str) -> Vec<String> {
-        s.split_whitespace()
-            .map(|x| x.to_lowercase().to_string())
-            .collect()
-    }
+    // handle user input
+    pub fn ask(&self, input: &str) -> String {
+        let command = self.lexer.lex(input);
 
-    // modify path directives
-    fn mod_directions(&self, words: &[String]) -> Vec<String> {
-        let mut modified = Vec::with_capacity(words.len());
-        for w in words {
-            modified.push(
-                match w.as_str() {
-                    "north" => "n",
-                    "south" => "s",
-                    "east" => "e",
-                    "west" => "w",
-                    "northeast" => "ne",
-                    "northwest" => "nw",
-                    "southeast" => "se",
-                    "southwest" => "sw",
-                    "up" => "u",
-                    "down" => "d",
-                    _ => w,
-                }
-                .to_string(),
-            );
+        if !command.is_empty() {
+            let res = self.parse(&command);
+            if res.is_action {
+                format!(
+                    "{}{}",
+                    res.command,
+                    self.events().expect("There is no room.")
+                )
+            } else {
+                res.command
+            }
+        } else {
+            "I do not understand that phrase.".to_string()
         }
-        modified
     }
 
     fn parse(&self, words: &[String]) -> CmdResult {
@@ -367,7 +351,6 @@ impl Cli {
 
         if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
             let mut events_str = String::new();
-            let mut dropped_loot: HashMap<String, Box<Item>> = HashMap::new();
             for enemy in room.enemies.iter_mut() {
                 if enemy.1.is_angry() && enemy.1.hp() > 0 {
                     let enemy_damage = enemy.1.damage();
@@ -384,10 +367,9 @@ impl Cli {
                 }
                 if enemy.1.hp() <= 0 {
                     self.player.borrow_mut().in_combat = false;
-                    dropped_loot.extend(enemy.1.drop_loot());
+                    room.items.extend(enemy.1.drop_loot());
                 }
             }
-            room.items.extend(dropped_loot);
             room.enemies.retain(|_, e| e.hp() > 0);
             if self.player.borrow().hp() <= 0 {
                 events_str.push_str(" You died.");

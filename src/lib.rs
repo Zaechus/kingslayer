@@ -4,6 +4,7 @@ pub mod cli;
 mod enemy;
 mod errors;
 mod item;
+mod lexer;
 mod pathway;
 mod player;
 mod results;

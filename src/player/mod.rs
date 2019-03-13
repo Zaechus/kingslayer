@@ -25,6 +25,21 @@ pub struct Player {
 }
 
 impl Player {
+    pub fn new() -> Self {
+        Self {
+            hp: (13, 13),
+            in_combat: false,
+            strength: 13,
+            dexterity: 13,
+            constitution: 13,
+            intelligence: 13,
+            wisdom: 13,
+            charisma: 13,
+            main_hand: None,
+            inventory: HashMap::new(),
+        }
+    }
+
     pub fn hp(&self) -> i32 {
         self.hp.0
     }
