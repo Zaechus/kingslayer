@@ -5,13 +5,9 @@ use std::io::{self, BufReader, Read, Write};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use crate::errors::WorldError;
-use crate::lexer::Lexer;
-use crate::player::Player;
-use crate::results::CmdResult;
-use crate::utils::read_line;
-
-use crate::world::World;
+use crate::{
+    errors::WorldError, input::parse, input::Lexer, player::Player, utils::read_line, world::World,
+};
 
 // A command line interface for controlling interactions between objects in a game
 #[derive(Serialize, Deserialize)]
@@ -85,7 +81,11 @@ impl Cli {
         let command = self.lexer.lex(input);
 
         if !command.is_empty() {
-            let res = self.parse(&command);
+            let res = parse(
+                &command,
+                &mut self.world.borrow_mut(),
+                &mut self.player.borrow_mut(),
+            );
             if res.is_action {
                 format!(
                     "{}{}",
@@ -97,251 +97,6 @@ impl Cli {
             }
         } else {
             "I do not understand that phrase.".to_string()
-        }
-    }
-
-    fn parse(&self, words: &[String]) -> CmdResult {
-        match words[0].as_str() {
-            "l" | "look" => CmdResult::new(true, &self.world.borrow().look().unwrap()),
-            "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
-                CmdResult::new(true, &self.world.borrow_mut().move_room(&words[0]).unwrap())
-            }
-            "enter" | "go" => {
-                if words.len() > 1 {
-                    CmdResult::new(true, &self.world.borrow_mut().move_room(&words[1]).unwrap())
-                } else {
-                    CmdResult::new(false, &format!("Where do you want to {}?", words[0]))
-                }
-            }
-            "i" | "inventory" => CmdResult::new(true, &self.player.borrow().inventory()),
-            "take" | "get" | "pick" => {
-                if words.len() > 1 {
-                    if let Some(pos) = words
-                        .iter()
-                        .position(|r| r == "from" || r == "out" || r == "in")
-                    {
-                        if self
-                            .player
-                            .borrow()
-                            .inventory()
-                            .contains(&words[pos + 1..].join(" "))
-                        {
-                            CmdResult::new(
-                                true,
-                                &self.player.borrow_mut().take_from(
-                                    &words[1..pos].join(" "),
-                                    &words[pos + 1..].join(" "),
-                                ),
-                            )
-                        } else {
-                            CmdResult::new(
-                                true,
-                                &self.player.borrow_mut().take(
-                                    &words[1..pos].join(" "),
-                                    self.world.borrow_mut().give_from(
-                                        &words[1..pos].join(" "),
-                                        &words[pos + 1..].join(" "),
-                                    ),
-                                ),
-                            )
-                        }
-                    } else if words[1] == "all" {
-                        CmdResult::new(
-                            true,
-                            &self
-                                .player
-                                .borrow_mut()
-                                .take_all(self.world.borrow_mut().give_all()),
-                        )
-                    } else if &words[1] == "u" {
-                        CmdResult::new(
-                            true,
-                            &self.player.borrow_mut().take(
-                                &words[2..].join(" "),
-                                self.world.borrow_mut().give(&words[2..].join(" ")),
-                            ),
-                        )
-                    } else {
-                        CmdResult::new(
-                            true,
-                            &self.player.borrow_mut().take(
-                                &words[1..].join(" "),
-                                self.world.borrow_mut().give(&words[1..].join(" ")),
-                            ),
-                        )
-                    }
-                } else {
-                    CmdResult::new(false, &format!("What do you want to {}?", words[0]))
-                }
-            }
-            "drop" | "throw" | "remove" => {
-                if words.len() > 1 {
-                    CmdResult::new(
-                        true,
-                        &self
-                            .world
-                            .borrow_mut()
-                            .insert(
-                                &words[0],
-                                &words[1..].join(" "),
-                                self.player.borrow_mut().remove(&words[1..].join(" ")),
-                            )
-                            .unwrap(),
-                    )
-                } else {
-                    CmdResult::new(
-                        false,
-                        &format!("What do you want to {} from your inventory?", words[0]),
-                    )
-                }
-            }
-            "examine" | "inspect" | "read" => {
-                if words.len() > 1 {
-                    if let Some(s) = self.player.borrow().inspect(&words[1..].join(" ")) {
-                        CmdResult::new(true, &s)
-                    } else if let Some(s) = self.world.borrow().inspect(&words[1..].join(" ")) {
-                        CmdResult::new(true, &s)
-                    } else {
-                        CmdResult::new(
-                            false,
-                            &format!("There is no \"{}\" here.", &words[1..].join(" ")),
-                        )
-                    }
-                } else {
-                    CmdResult::new(false, &format!("What do you want to {}?", words[0]))
-                }
-            }
-            "status" | "diagnostic" => CmdResult::new(true, &self.player.borrow().status()),
-            "put" | "place" => {
-                if words.len() > 1 {
-                    if let Some(pos) = words.iter().position(|r| r == "in" || r == "inside") {
-                        if pos != 1 {
-                            if self
-                                .player
-                                .borrow()
-                                .inventory()
-                                .contains(&words[pos + 1..].join(" "))
-                            {
-                                CmdResult::new(
-                                    true,
-                                    &self.player.borrow_mut().put_in(
-                                        &words[1..pos].join(" "),
-                                        &words[pos + 1..].join(" "),
-                                    ),
-                                )
-                            } else {
-                                CmdResult::new(
-                                    true,
-                                    &self
-                                        .world
-                                        .borrow_mut()
-                                        .insert_into(
-                                            &words[1..pos].join(" "),
-                                            &words[pos + 1..].join(" "),
-                                            self.player
-                                                .borrow_mut()
-                                                .remove(&words[1..pos].join(" ")),
-                                        )
-                                        .unwrap(),
-                                )
-                            }
-                        } else if words.len() < 3 {
-                            CmdResult::new(false, &format!("What do you want to {}?", words[0]))
-                        } else {
-                            CmdResult::new(
-                                false,
-                                &format!(
-                                    "What do you want to place in the {}?",
-                                    &words[1..].join(" ")
-                                ),
-                            )
-                        }
-                    } else {
-                        CmdResult::new(
-                            false,
-                            &format!(
-                                "What do you want to {} the {} in?",
-                                words[0],
-                                &words[1..].join(" ")
-                            ),
-                        )
-                    }
-                } else {
-                    CmdResult::new(false, &format!("What do you want to {}?", words[0]))
-                }
-            }
-            "attack" | "slay" | "kill" | "hit" => {
-                if words.len() > 1 {
-                    if let Some(pos) = words.iter().position(|r| r == "with") {
-                        let damage = self
-                            .player
-                            .borrow_mut()
-                            .attack_with(&words[pos + 1..].join(" "));
-                        CmdResult::new(
-                            true,
-                            &self
-                                .world
-                                .borrow_mut()
-                                .harm_enemy(
-                                    &words[1..pos].join(" "),
-                                    &words[pos + 1..].join(" "),
-                                    damage,
-                                )
-                                .unwrap(),
-                        )
-                    } else if self.player.borrow().main_hand.is_some() {
-                        let damage = self.player.borrow_mut().attack();
-                        CmdResult::new(
-                            true,
-                            &self
-                                .world
-                                .borrow_mut()
-                                .harm_enemy(&words[1..].join(" "), "equipped weapon", damage)
-                                .unwrap(),
-                        )
-                    } else {
-                        CmdResult::new(
-                            false,
-                            &format!(
-                                "What do you want to {} the {} with?",
-                                words[0],
-                                &words[1..].join(" ")
-                            ),
-                        )
-                    }
-                } else {
-                    CmdResult::new(false, &format!("What do you want to {}?", words[0]))
-                }
-            }
-            "rest" | "sleep" | "heal" => {
-                if !self.player.borrow().in_combat {
-                    CmdResult::new(true, &self.player.borrow_mut().rest())
-                } else {
-                    CmdResult::new(false, "You cannot rest while in combat.")
-                }
-            }
-            "hold" | "draw" | "equip" => {
-                if words.len() > 1 {
-                    CmdResult::new(true, &self.player.borrow_mut().equip(&words[1..].join(" ")))
-                } else {
-                    CmdResult::new(false, &format!("What do you want to {}", words[0]))
-                }
-            }
-            "open" => {
-                if words.len() > 1 {
-                    CmdResult::new(
-                        true,
-                        &self
-                            .world
-                            .borrow_mut()
-                            .open_path(&words[1..].join(" "))
-                            .unwrap(),
-                    )
-                } else {
-                    CmdResult::new(false, &format!("What do you want to {}", words[0]))
-                }
-            }
-            _ => CmdResult::new(false, &format!("I don't know the word \"{}\".", words[0])),
         }
     }
 

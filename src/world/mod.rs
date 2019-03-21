@@ -3,9 +3,7 @@ use std::collections::HashMap;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use crate::errors::WorldError;
-use crate::item::Item;
-use crate::room::Room;
+use crate::{errors::WorldError, item::Item, room::Room};
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
 // A World is a graph data structure that encapsulates a collection of Room nodes.
