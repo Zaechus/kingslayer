@@ -6,7 +6,7 @@ use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
 use crate::{
-    errors::WorldError, input::parse, input::Lexer, player::Player, utils::read_line, world::World,
+    input::parse, input::Lexer, player::Player, types::WorldError, utils::read_line, world::World,
 };
 
 // A command line interface for controlling interactions between objects in a game

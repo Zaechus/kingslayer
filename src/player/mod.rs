@@ -8,7 +8,7 @@ use rand::Rng;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use crate::item::Item;
+use crate::entities::Item;
 
 #[derive(Serialize, Deserialize)]
 pub struct Player {

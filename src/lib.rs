@@ -1,13 +1,9 @@
 pub use cli::Cli;
 
 pub mod cli;
-mod enemy;
-mod errors;
+mod entities;
 mod input;
-mod item;
-mod pathway;
 mod player;
-mod results;
-mod room;
+mod types;
 mod utils;
 mod world;

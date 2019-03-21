@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use crate::{enemy::Enemy, item::Item, pathway::Pathway};
+use crate::entities::{Enemy, Item, Pathway};
 
 // A section of the world connected by paths
 #[derive(Serialize, Deserialize)]

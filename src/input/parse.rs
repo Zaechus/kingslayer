@@ -1,4 +1,4 @@
-use crate::{player::Player, results::CmdResult, world::World};
+use crate::{player::Player, types::CmdResult, world::World};
 
 pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
     match words[0].as_str() {
