@@ -1,13 +1,18 @@
 pub struct CmdResult {
-    pub is_action: bool,
-    pub command: String,
+    is_action: bool,
+    command: String,
 }
 
 impl CmdResult {
-    pub fn new(is_action: bool, command: &str) -> Self {
-        Self {
-            is_action,
-            command: command.to_string(),
-        }
+    pub fn new(is_action: bool, command: String) -> Self {
+        Self { is_action, command }
+    }
+
+    pub fn is_action(&self) -> bool {
+        self.is_action
+    }
+
+    pub fn command(&self) -> &String {
+        &self.command
     }
 }

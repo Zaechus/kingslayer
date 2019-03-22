@@ -5,7 +5,7 @@ use serde_derive::Serialize;
 
 use crate::{
     entities::{Item, Room},
-    types::WorldError,
+    types::{CmdResult, WorldError},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -13,12 +13,16 @@ use crate::{
 #[derive(Serialize, Deserialize)]
 pub struct World {
     curr_room: String,
-    pub rooms: HashMap<String, Box<Room>>,
+    rooms: HashMap<String, Box<Room>>,
 }
 
 impl World {
     pub fn curr_room(&self) -> String {
         self.curr_room.clone()
+    }
+
+    pub fn rooms_mut(&mut self) -> &mut HashMap<String, Box<Room>> {
+        &mut self.rooms
     }
 
     // displays description of the current Room
@@ -32,12 +36,12 @@ impl World {
 
     pub fn inspect(&self, name: &str) -> Option<String> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
-            if let Some(item) = room.items.get(name) {
-                Some(item.inspection())
-            } else if let Some(item) = room.paths.get(name) {
-                Some(item.inspection())
-            } else if let Some(enemy) = room.enemies.get(name) {
-                Some(enemy.inspection())
+            if let Some(item) = room.items().get(name) {
+                Some(item.inspection().to_string())
+            } else if let Some(item) = room.paths().get(name) {
+                Some(item.inspection().to_string())
+            } else if let Some(enemy) = room.enemies().get(name) {
+                Some(enemy.inspection().to_string())
             } else {
                 None
             }
@@ -49,10 +53,10 @@ impl World {
     // changes the current Room to the target of the current Room's chosen path
     pub fn move_room(&mut self, direction: &str) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
-            if let Some(new_room) = room.paths.get(direction) {
+            if let Some(new_room) = room.paths().get(direction) {
                 if !new_room.is_locked() {
-                    if new_room.is_open {
-                        self.curr_room = new_room.name();
+                    if new_room.is_open() {
+                        self.curr_room = new_room.name().to_string();
                         Ok(self.look()?)
                     } else {
                         Ok("The way is closed.".to_string())
@@ -70,9 +74,30 @@ impl World {
 
     pub fn open_path(&mut self, path: &str) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
-            if let Some(p) = room.paths.get_mut(path) {
-                p.is_open = true;
-                Ok("Opened.".to_string())
+            if let Some(p) = room.paths_mut().get_mut(path) {
+                if p.is_open() {
+                    Ok(format!("The {} is already opened.", path))
+                } else {
+                    p.open();
+                    Ok("Opened.".to_string())
+                }
+            } else {
+                Ok(format!("There is no \"{}\".", path))
+            }
+        } else {
+            Err(WorldError::NoRoom)
+        }
+    }
+
+    pub fn close_path(&mut self, path: &str) -> Result<String, WorldError> {
+        if let Some(room) = self.rooms.get_mut(&self.curr_room) {
+            if let Some(p) = room.paths_mut().get_mut(path) {
+                if p.is_open() {
+                    p.close();
+                    Ok("Closed.".to_string())
+                } else {
+                    Ok(format!("The {} is already closed.", path))
+                }
             } else {
                 Ok(format!("There is no \"{}\".", path))
             }
@@ -87,34 +112,43 @@ impl World {
         enemy: &str,
         weapon: &str,
         damage: Option<i32>,
-    ) -> Result<String, WorldError> {
+    ) -> Result<CmdResult, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
-            if let Some(nme) = room.enemies.get_mut(enemy) {
+            if let Some(nme) = room.enemies_mut().get_mut(enemy) {
                 if let Some(dmg) = damage {
                     nme.get_hit(dmg);
                     if nme.hp() > 0 {
-                        Ok(format!(
-                            "You hit the {} with your {} for {} damage.",
-                            enemy, weapon, dmg,
+                        Ok(CmdResult::new(
+                            true,
+                            format!(
+                                "You hit the {} with your {} for {} damage.",
+                                enemy, weapon, dmg,
+                            ),
                         ))
                     } else {
                         let mut res = format!(
                             "You hit the {} with your {} for {} damage. It is dead.\n",
                             enemy, weapon, dmg
                         );
-                        if !nme.loot.is_empty() {
+                        if !nme.loot().is_empty() {
                             res.push_str("It dropped:\n");
-                            for x in nme.loot.iter() {
+                            for x in nme.loot().iter() {
                                 res.push_str(&format!(" {},", x.1.name()));
                             }
                         }
-                        Ok(res)
+                        Ok(CmdResult::new(true, res))
                     }
                 } else {
-                    Ok(format!("You do not have the \"{}\". {:?} ", weapon, damage))
+                    Ok(CmdResult::new(
+                        false,
+                        format!("You do not have the \"{}\". {:?} ", weapon, damage),
+                    ))
                 }
             } else {
-                Ok(format!("There is no \"{}\" here.", enemy))
+                Ok(CmdResult::new(
+                    false,
+                    format!("There is no \"{}\" here.", enemy),
+                ))
             }
         } else {
             Err(WorldError::NoRoom)
@@ -124,7 +158,7 @@ impl World {
     // move an Item out of the current Room
     pub fn give(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
-            room.items.remove(name)
+            room.items_mut().remove(name)
         } else {
             None
         }
@@ -132,8 +166,8 @@ impl World {
 
     pub fn give_from(&mut self, item: &str, container: &str) -> Option<Box<Item>> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
-            if let Some(cont) = room.items.get_mut(container) {
-                if let Some(ref mut contents) = cont.contents {
+            if let Some(cont) = room.items_mut().get_mut(container) {
+                if let Some(ref mut contents) = cont.contents_mut() {
                     contents.remove(item)
                 } else {
                     None
@@ -148,9 +182,9 @@ impl World {
 
     pub fn give_all(&mut self) -> HashMap<String, Box<Item>> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
-            let items = room.items.clone();
-            room.items.clear();
-            room.items.shrink_to_fit();
+            let items = room.items().clone();
+            room.items_mut().clear();
+            room.items_mut().shrink_to_fit();
             items
         } else {
             HashMap::new()
@@ -166,7 +200,7 @@ impl World {
     ) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(obj) = item {
-                room.items.insert(obj.name(), obj);
+                room.items_mut().insert(obj.name().to_string(), obj);
                 match cmd {
                     "throw" => Ok(format!("You throw the {} across the room.", name)),
                     _ => Ok("Dropped.".to_string()),
@@ -188,9 +222,9 @@ impl World {
     ) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(obj) = item {
-                if let Some(cont) = room.items.get_mut(container) {
-                    if let Some(ref mut contents) = cont.contents {
-                        contents.insert(obj.name(), obj);
+                if let Some(cont) = room.items_mut().get_mut(container) {
+                    if let Some(ref mut contents) = cont.contents_mut() {
+                        contents.insert(obj.name().to_string(), obj);
                         Ok("Placed.".to_string())
                     } else {
                         Ok("You can not put anything in there.".to_string())

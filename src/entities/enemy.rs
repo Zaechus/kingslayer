@@ -15,7 +15,7 @@ pub struct Enemy {
     desc: String,
     inspection: String,
     is_angry: bool,
-    pub loot: HashMap<String, Box<Item>>,
+    loot: HashMap<String, Box<Item>>,
 }
 
 impl Enemy {
@@ -23,16 +23,16 @@ impl Enemy {
         self.hp
     }
 
-    pub fn name(&self) -> String {
-        self.name.clone()
+    pub fn name(&self) -> &String {
+        &self.name
     }
 
-    pub fn desc(&self) -> String {
-        self.desc.clone()
+    pub fn desc(&self) -> &String {
+        &self.desc
     }
 
-    pub fn inspection(&self) -> String {
-        self.inspection.clone()
+    pub fn inspection(&self) -> &String {
+        &self.inspection
     }
 
     pub fn damage(&self) -> i32 {
@@ -41,6 +41,10 @@ impl Enemy {
 
     pub fn is_angry(&self) -> bool {
         self.is_angry
+    }
+
+    pub fn loot(&self) -> &HashMap<String, Box<Item>> {
+        &self.loot
     }
 
     pub fn get_hit(&mut self, damage: i32) {

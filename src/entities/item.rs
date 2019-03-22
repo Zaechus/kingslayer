@@ -14,7 +14,7 @@ pub struct Item {
     is_locked: Option<bool>,
     is_open: Option<bool>,
     damage: Option<i32>,
-    pub contents: Option<HashMap<String, Box<Item>>>,
+    contents: Option<HashMap<String, Box<Item>>>,
 }
 
 impl Item {
@@ -49,8 +49,8 @@ impl Item {
         }
     }
 
-    pub fn inspection(&self) -> String {
-        self.inspection.clone()
+    pub fn inspection(&self) -> &String {
+        &self.inspection
     }
 
     pub fn is_weapon(&self) -> bool {
@@ -63,5 +63,9 @@ impl Item {
         } else {
             0
         }
+    }
+
+    pub fn contents_mut(&mut self) -> &mut Option<HashMap<String, Box<Item>>> {
+        &mut self.contents
     }
 }

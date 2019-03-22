@@ -1,12 +1,13 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Read, Write};
 
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    input::parse, input::Lexer, player::Player, types::WorldError, utils::read_line, world::World,
+    entities::Item, input::parse, input::Lexer, player::Player, types::WorldError,
+    utils::read_line, world::World,
 };
 
 // A command line interface for controlling interactions between objects in a game
@@ -86,14 +87,14 @@ impl Cli {
                 &mut self.world.borrow_mut(),
                 &mut self.player.borrow_mut(),
             );
-            if res.is_action {
+            if res.is_action() {
                 format!(
                     "{}{}",
-                    res.command,
+                    res.command(),
                     self.events().expect("There is no room.")
                 )
             } else {
-                res.command
+                res.command().to_string()
             }
         } else {
             "I do not understand that phrase.".to_string()
@@ -104,14 +105,15 @@ impl Cli {
     fn events(&self) -> Result<String, WorldError> {
         let curr_room = &self.world.borrow().curr_room();
 
-        if let Some(room) = self.world.borrow_mut().rooms.get_mut(curr_room) {
+        if let Some(room) = self.world.borrow_mut().rooms_mut().get_mut(curr_room) {
             let mut events_str = String::new();
-            for enemy in room.enemies.iter_mut() {
+            let mut loot: Option<HashMap<String, Box<Item>>> = None;
+            for enemy in room.enemies_mut().iter_mut() {
                 if enemy.1.is_angry() && enemy.1.hp() > 0 {
                     let enemy_damage = enemy.1.damage();
 
                     self.player.borrow_mut().take_damage(enemy_damage);
-                    self.player.borrow_mut().in_combat = true;
+                    self.player.borrow_mut().engage_combat();
 
                     events_str.push_str(&format!(
                         "\nThe {} hit you for {} damage. You have {} HP left.",
@@ -121,11 +123,14 @@ impl Cli {
                     ));
                 }
                 if enemy.1.hp() <= 0 {
-                    self.player.borrow_mut().in_combat = false;
-                    room.items.extend(enemy.1.drop_loot());
+                    self.player.borrow_mut().disengage_combat();
+                    loot = Some(enemy.1.drop_loot());
                 }
             }
-            room.enemies.retain(|_, e| e.hp() > 0);
+            if let Some(loot) = loot {
+                room.items_mut().extend(loot);
+            }
+            room.enemies_mut().retain(|_, e| e.hp() > 0);
             if self.player.borrow().hp() <= 0 {
                 events_str.push_str(" You died.");
             }

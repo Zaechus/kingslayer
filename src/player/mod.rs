@@ -8,19 +8,19 @@ use rand::Rng;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 
-use crate::entities::Item;
+use crate::{entities::Item, types::CmdResult};
 
 #[derive(Serialize, Deserialize)]
 pub struct Player {
-    pub hp: (i32, i32),
-    pub in_combat: bool,
+    hp: (i32, i32),
+    in_combat: bool,
     strength: i32,
     dexterity: i32,
     constitution: i32,
     intelligence: i32,
     wisdom: i32,
     charisma: i32,
-    pub main_hand: Option<Box<Item>>,
+    main_hand: Option<Box<Item>>,
     inventory: HashMap<String, Box<Item>>,
 }
 
@@ -46,6 +46,14 @@ impl Player {
 
     pub fn hp_cap(&self) -> i32 {
         self.hp.1
+    }
+
+    pub fn engage_combat(&mut self) {
+        self.in_combat = true;
+    }
+
+    pub fn disengage_combat(&mut self) {
+        self.in_combat = false;
     }
 
     pub fn attack(&mut self) -> Option<i32> {
@@ -75,26 +83,33 @@ impl Player {
 
     // rest for a random amount of time to regain a random amount of HP
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn rest(&mut self) -> String {
+    pub fn rest(&mut self) -> CmdResult {
         if self.hp() < self.hp_cap() {
-            thread::sleep(time::Duration::from_millis(
-                rand::thread_rng().gen_range(2000, 5001),
-            ));
-            let regained_hp = rand::thread_rng().gen_range(1, 7);
-            let new_hp = self.hp() + regained_hp;
-            if new_hp < self.hp_cap() {
-                self.hp = (new_hp, self.hp_cap());
+            if !self.in_combat {
+                thread::sleep(time::Duration::from_millis(
+                    rand::thread_rng().gen_range(2000, 5001),
+                ));
+                let regained_hp = rand::thread_rng().gen_range(1, 7);
+                let new_hp = self.hp() + regained_hp;
+                if new_hp < self.hp_cap() {
+                    self.hp = (new_hp, self.hp_cap());
+                } else {
+                    self.hp = (self.hp_cap(), self.hp_cap());
+                }
+                CmdResult::new(
+                    true,
+                    format!(
+                        "You regained {} HP for a total of ({} / {}) HP.",
+                        regained_hp,
+                        self.hp(),
+                        self.hp_cap()
+                    ),
+                )
             } else {
-                self.hp = (self.hp_cap(), self.hp_cap());
+                CmdResult::new(false, "You cannot rest while in combat.".to_string())
             }
-            format!(
-                "You regained {} HP for a total of ({} / {}) HP.",
-                regained_hp,
-                self.hp(),
-                self.hp_cap()
-            )
         } else {
-            "You already have full health.".to_string()
+            CmdResult::new(false, "You already have full health.".to_string())
         }
     }
     #[cfg(target_arch = "wasm32")]
@@ -119,19 +134,25 @@ impl Player {
     }
 
     pub fn inventory(&self) -> String {
-        if self.inventory.is_empty() {
+        if self.inventory.is_empty() && self.main_hand.is_none() {
             "You are empty-handed.".to_string()
         } else {
             let mut items_carried = String::new();
             if let Some(weapon) = &self.main_hand {
                 items_carried.push_str(&format!("Main hand: {}\n", weapon.name()));
             }
-            items_carried.push_str("You are carrying:");
-            for x in self.inventory.iter() {
-                items_carried = format!("{}\n  {}", items_carried, x.1.name());
+            if !self.inventory.is_empty() {
+                items_carried.push_str("You are carrying:");
+                for x in self.inventory.iter() {
+                    items_carried = format!("{}\n  {}", items_carried, x.1.name());
+                }
             }
             items_carried
         }
+    }
+
+    pub fn main_hand(&self) -> &Option<Box<Item>> {
+        &self.main_hand
     }
 
     pub fn status(&self) -> String {
@@ -146,7 +167,7 @@ impl Player {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.status())
         } else if let Some(item) = self.inventory.get(name) {
-            Some(item.inspection())
+            Some(item.inspection().to_string())
         } else {
             None
         }
@@ -168,7 +189,7 @@ impl Player {
     // take an Item from a container Item in the inventory
     pub fn take_from(&mut self, item: &str, container: &str) -> String {
         if let Some(cont) = self.inventory.get_mut(container) {
-            if let Some(ref mut contents) = cont.contents {
+            if let Some(ref mut contents) = cont.contents_mut() {
                 if let Some(itm) = contents.remove(item) {
                     self.inventory.insert(item.to_string(), itm);
                     "Taken.".to_string()
@@ -217,7 +238,7 @@ impl Player {
     pub fn put_in(&mut self, item: &str, container: &str) -> String {
         if let Some(itm) = self.inventory.remove(item) {
             if let Some(cont) = self.inventory.get_mut(container) {
-                if let Some(ref mut contents) = cont.contents {
+                if let Some(ref mut contents) = cont.contents_mut() {
                     contents.insert(item.to_string(), itm);
                     "Placed.".to_string()
                 } else {

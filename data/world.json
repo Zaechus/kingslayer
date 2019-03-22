@@ -22,7 +22,7 @@
             "paths": {
                 "door": {
                     "name": "Closet",
-                    "desc": "There is a door on one side that is closed.",
+                    "desc": "There is a door on one side.",
                     "inspection": "The door is plain and wooden.",
                     "is_locked": false,
                     "is_open": false
@@ -97,7 +97,7 @@
                 }
             },
             "items": {
-                "large red block": {
+                "shiny red block": {
                     "name": "shiny red block",
                     "desc": "A shiny red block is on the ground.",
                     "inspection": "Well... it's shiny and red."
