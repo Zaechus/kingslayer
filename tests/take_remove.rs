@@ -7,7 +7,7 @@ mod tests {
         let cli = Cli::from_json_file("data/world.json");
 
         cli.ask("take leaf");
-        assert_eq!(cli.ask("remove leaf"), "Dropped.".to_string());
+        assert_eq!(cli.ask("remove leaf"), "Dropped.");
         assert_eq!(cli.ask("i"), "You are empty-handed.");
         assert!(
             cli.ask("l").contains("iron sword")

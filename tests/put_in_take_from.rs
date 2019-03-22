@@ -14,7 +14,7 @@ mod tests {
                 && cli.ask("l").contains("capsule")
         );
 
-        assert_eq!(cli.ask("put leaf in capsule"), "Placed.".to_string());
+        assert_eq!(cli.ask("put leaf in capsule"), "Placed.");
         assert!(
             cli.ask("l").contains("leaf")
                 && cli.ask("l").contains("capsule")
@@ -23,11 +23,8 @@ mod tests {
         );
         assert_eq!(cli.ask("i"), "You are empty-handed.");
 
-        assert_eq!(cli.ask("take leaf from capsule"), "Taken.".to_string());
-        assert_eq!(
-            cli.ask("take curious object from capsule"),
-            "Taken.".to_string()
-        );
+        assert_eq!(cli.ask("take leaf from capsule"), "Taken.");
+        assert_eq!(cli.ask("take curious object from capsule"), "Taken.");
         assert!(
             cli.ask("i").contains("leaf")
                 && cli.ask("l").contains("capsule")
@@ -35,10 +32,10 @@ mod tests {
                 && !cli.ask("l").contains("leaf")
         );
 
-        assert_eq!(cli.ask("take all"), "Taken.".to_string());
+        assert_eq!(cli.ask("take all"), "Taken.");
         assert!(cli.ask("i").contains("leaf") && cli.ask("i").contains("capsule"));
 
-        assert_eq!(cli.ask("put leaf in capsule"), "Placed.".to_string());
+        assert_eq!(cli.ask("put leaf in capsule"), "Placed.");
         assert!(
             cli.ask("i").contains("leaf")
                 && cli.ask("i").contains("capsule")
@@ -46,7 +43,7 @@ mod tests {
         );
         assert!(!cli.ask("l").contains("leaf") && !cli.ask("l").contains("capsule"));
 
-        assert_eq!(cli.ask("take leaf from capsule"), "Taken.".to_string());
+        assert_eq!(cli.ask("take leaf from capsule"), "Taken.");
         assert!(cli.ask("i").contains("leaf"));
     }
 }
