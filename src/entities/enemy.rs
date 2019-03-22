@@ -1,11 +1,8 @@
-use std::collections::HashMap;
-
 use rand::Rng;
 
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 
-use crate::entities::Item;
+use crate::types::ItemMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct Enemy {
@@ -15,7 +12,7 @@ pub struct Enemy {
     desc: String,
     inspection: String,
     is_angry: bool,
-    loot: HashMap<String, Box<Item>>,
+    loot: ItemMap,
 }
 
 impl Enemy {
@@ -43,7 +40,7 @@ impl Enemy {
         self.is_angry
     }
 
-    pub fn loot(&self) -> &HashMap<String, Box<Item>> {
+    pub fn loot(&self) -> &ItemMap {
         &self.loot
     }
 
@@ -52,7 +49,7 @@ impl Enemy {
         self.hp -= damage;
     }
 
-    pub fn drop_loot(&self) -> HashMap<String, Box<Item>> {
+    pub fn drop_loot(&self) -> ItemMap {
         self.loot.clone()
     }
 }

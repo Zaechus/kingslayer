@@ -1,5 +1,4 @@
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Lexer {
@@ -24,10 +23,7 @@ impl Lexer {
     }
 
     fn filter_parts(&self, s: &str) -> Vec<String> {
-        let mut words: Vec<String> = s
-            .split_whitespace()
-            .map(|x| x.to_lowercase().to_string())
-            .collect();
+        let mut words: Vec<String> = s.split_whitespace().map(|x| x.to_lowercase()).collect();
         words.retain(|w| !(&self.filter_out).contains(&w));
         words
     }

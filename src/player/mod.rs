@@ -1,14 +1,14 @@
-use std::collections::HashMap;
-
 #[cfg(not(target_arch = "wasm32"))]
 use std::{thread, time};
 
 use rand::Rng;
 
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 
-use crate::{entities::Item, types::CmdResult};
+use crate::{
+    entities::Item,
+    types::{CmdResult, ItemMap},
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct Player {
@@ -21,7 +21,7 @@ pub struct Player {
     wisdom: i32,
     charisma: i32,
     main_hand: Option<Box<Item>>,
-    inventory: HashMap<String, Box<Item>>,
+    inventory: ItemMap,
 }
 
 impl Player {
@@ -36,7 +36,7 @@ impl Player {
             wisdom: 13,
             charisma: 13,
             main_hand: None,
-            inventory: HashMap::new(),
+            inventory: ItemMap::new(),
         }
     }
 
@@ -204,7 +204,7 @@ impl Player {
         }
     }
 
-    pub fn take_all(&mut self, items: HashMap<String, Box<Item>>) -> String {
+    pub fn take_all(&mut self, items: ItemMap) -> String {
         self.inventory.extend(items);
         "Taken.".to_string()
     }

@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
 use rand::Rng;
 
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
+
+use crate::types::ItemMap;
 
 // An object to be interacted with by the user
 #[derive(Clone, Serialize, Deserialize)]
@@ -14,7 +13,7 @@ pub struct Item {
     is_locked: Option<bool>,
     is_open: Option<bool>,
     damage: Option<i32>,
-    contents: Option<HashMap<String, Box<Item>>>,
+    contents: Option<ItemMap>,
 }
 
 impl Item {
@@ -65,7 +64,7 @@ impl Item {
         }
     }
 
-    pub fn contents_mut(&mut self) -> &mut Option<HashMap<String, Box<Item>>> {
+    pub fn contents_mut(&mut self) -> &mut Option<ItemMap> {
         &mut self.contents
     }
 }

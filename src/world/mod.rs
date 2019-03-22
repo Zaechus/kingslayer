@@ -1,11 +1,10 @@
 use std::collections::HashMap;
 
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 
 use crate::{
     entities::{Item, Room},
-    types::{CmdResult, WorldError},
+    types::{CmdResult, ItemMap, WorldError},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -180,7 +179,7 @@ impl World {
         }
     }
 
-    pub fn give_all(&mut self) -> HashMap<String, Box<Item>> {
+    pub fn give_all(&mut self) -> ItemMap {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             let items = room.items().clone();
             room.items_mut().clear();

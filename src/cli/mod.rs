@@ -1,13 +1,16 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufReader, Read, Write};
 
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    entities::Item, input::parse, input::Lexer, player::Player, types::WorldError,
-    utils::read_line, world::World,
+    input::parse,
+    input::Lexer,
+    player::Player,
+    types::{ItemMap, WorldError},
+    utils::read_line,
+    world::World,
 };
 
 // A command line interface for controlling interactions between objects in a game
@@ -107,7 +110,7 @@ impl Cli {
 
         if let Some(room) = self.world.borrow_mut().rooms_mut().get_mut(curr_room) {
             let mut events_str = String::new();
-            let mut loot: Option<HashMap<String, Box<Item>>> = None;
+            let mut loot: Option<ItemMap> = None;
             for enemy in room.enemies_mut().iter_mut() {
                 if enemy.1.is_angry() && enemy.1.hp() > 0 {
                     let enemy_damage = enemy.1.damage();

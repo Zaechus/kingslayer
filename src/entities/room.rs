@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 
-use crate::entities::{Enemy, Item, Pathway};
+use crate::{
+    entities::{Enemy, Pathway},
+    types::ItemMap,
+};
 
 // A section of the world connected by paths
 #[derive(Serialize, Deserialize)]
@@ -12,7 +14,7 @@ pub struct Room {
     desc: String,
     paths: HashMap<String, Pathway>,
     enemies: HashMap<String, Box<Enemy>>,
-    items: HashMap<String, Box<Item>>,
+    items: ItemMap,
 }
 
 impl Room {
@@ -45,10 +47,10 @@ impl Room {
         &mut self.enemies
     }
 
-    pub fn items(&self) -> &HashMap<String, Box<Item>> {
+    pub fn items(&self) -> &ItemMap {
         &self.items
     }
-    pub fn items_mut(&mut self) -> &mut HashMap<String, Box<Item>> {
+    pub fn items_mut(&mut self) -> &mut ItemMap {
         &mut self.items
     }
 }
