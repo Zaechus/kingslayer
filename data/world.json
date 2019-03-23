@@ -8,9 +8,7 @@
                 "door": {
                     "name": "Circle Room",
                     "desc": "The door leads back into the room.",
-                    "inspection": "The door is plain and wooden.",
-                    "is_locked": false,
-                    "is_open": true
+                    "inspection": "The door is plain and wooden."
                 }
             },
             "enemies": {},
@@ -24,22 +22,17 @@
                     "name": "Closet",
                     "desc": "There is a door on one side.",
                     "inspection": "The door is plain and wooden.",
-                    "is_locked": false,
-                    "is_open": false
+                    "is_closed": true
                 },
                 "e": {
                     "name": "Next Room",
                     "desc": "There is a pathway to the east.",
-                    "inspection": "The opening is spacious.",
-                    "is_locked": false,
-                    "is_open": true
+                    "inspection": "The opening is spacious."
                 },
                 "s": {
                     "name": "Long Hallway",
                     "desc": "There is a hallway to the south.",
-                    "inspection": "The hallway seems narrow and foreboding.",
-                    "is_locked": false,
-                    "is_open": true
+                    "inspection": "The hallway seems narrow and foreboding."
                 }
             },
             "enemies": {},
@@ -64,9 +57,7 @@
                 "w": {
                     "name": "Circle Room",
                     "desc": "There is a pathway to the west.",
-                    "inspection": "The path expands into a larger room.",
-                    "is_locked": false,
-                    "is_open": true
+                    "inspection": "The path expands into a larger room."
                 }
             },
             "enemies": {
@@ -111,9 +102,7 @@
                 "n": {
                     "name": "Circle Room",
                     "desc": "There is a room to the north",
-                    "inspection": "The hallway seems narrow and foreboding.",
-                    "is_locked": false,
-                    "is_open": true
+                    "inspection": "The hallway seems narrow and foreboding."
                 }
             },
             "enemies": {},

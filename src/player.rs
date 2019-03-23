@@ -1,6 +1,3 @@
-#[cfg(not(target_arch = "wasm32"))]
-use std::{thread, time};
-
 use rand::Rng;
 
 use serde_derive::{Deserialize, Serialize};
@@ -82,13 +79,9 @@ impl Player {
     }
 
     // rest for a random amount of time to regain a random amount of HP
-    #[cfg(not(target_arch = "wasm32"))]
     pub fn rest(&mut self) -> CmdResult {
         if self.hp() < self.hp_cap() {
             if !self.in_combat {
-                thread::sleep(time::Duration::from_millis(
-                    rand::thread_rng().gen_range(2000, 5001),
-                ));
                 let regained_hp = rand::thread_rng().gen_range(1, 7);
                 let new_hp = self.hp() + regained_hp;
                 if new_hp < self.hp_cap() {
@@ -110,26 +103,6 @@ impl Player {
             }
         } else {
             CmdResult::new(false, "You already have full health.".to_string())
-        }
-    }
-    #[cfg(target_arch = "wasm32")]
-    pub fn rest(&mut self) -> String {
-        if self.hp() < self.hp_cap() {
-            let regained_hp = rand::thread_rng().gen_range(1, 7);
-            let new_hp = self.hp() + regained_hp;
-            if new_hp < self.hp_cap() {
-                self.hp = (new_hp, self.hp_cap());
-            } else {
-                self.hp = (self.hp_cap(), self.hp_cap());
-            }
-            format!(
-                "You regained {} HP for a total of ({} / {}) HP.",
-                regained_hp,
-                self.hp(),
-                self.hp_cap()
-            )
-        } else {
-            "You already have full health.".to_string()
         }
     }
 
@@ -167,6 +140,8 @@ impl Player {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.status())
         } else if let Some(item) = self.inventory.get(name) {
+            Some(item.inspection().to_string())
+        } else if let Some(item) = &self.main_hand {
             Some(item.inspection().to_string())
         } else {
             None
@@ -254,5 +229,9 @@ impl Player {
 
     fn deal_damage(&self, weapon_damage: i32) -> i32 {
         weapon_damage + ((self.strength - 10) as f32 / 2.0).floor() as i32
+    }
+
+    pub fn wait() -> CmdResult {
+        CmdResult::new(true, "Time passes...".to_string())
     }
 }

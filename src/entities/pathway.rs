@@ -5,8 +5,8 @@ pub struct Pathway {
     name: String,
     desc: String,
     inspection: String,
-    is_open: bool,
-    is_locked: bool,
+    is_closed: Option<bool>,
+    is_locked: Option<bool>,
 }
 
 impl Pathway {
@@ -15,10 +15,12 @@ impl Pathway {
     }
 
     pub fn desc(&self) -> String {
-        if self.is_open {
+        if let Some(true) = self.is_closed {
+            format!("{} The way is shut.", self.desc)
+        } else if let Some(false) = self.is_closed {
             format!("{} The way is open.", self.desc)
         } else {
-            format!("{} The way is shut.", self.desc)
+            self.desc.clone()
         }
     }
 
@@ -27,18 +29,22 @@ impl Pathway {
     }
 
     pub fn open(&mut self) {
-        self.is_open = true
+        if self.is_closed.is_some() {
+            self.is_closed = Some(false)
+        }
     }
 
     pub fn close(&mut self) {
-        self.is_open = false
+        if self.is_closed.is_some() {
+            self.is_closed = Some(true)
+        }
     }
 
-    pub fn is_open(&self) -> bool {
-        self.is_open
+    pub fn is_closed(&self) -> Option<bool> {
+        self.is_closed
     }
 
-    pub fn is_locked(&self) -> bool {
+    pub fn is_locked(&self) -> Option<bool> {
         self.is_locked
     }
 }

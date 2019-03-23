@@ -10,8 +10,8 @@ pub struct Item {
     name: String,
     desc: String,
     inspection: String,
+    is_closed: Option<bool>,
     is_locked: Option<bool>,
-    is_open: Option<bool>,
     damage: Option<i32>,
     contents: Option<ItemMap>,
 }

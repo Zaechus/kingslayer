@@ -5,8 +5,7 @@ use std::io::{self, BufReader, Read, Write};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    input::parse,
-    input::Lexer,
+    input::{parse, Lexer},
     player::Player,
     types::{ItemMap, WorldError},
     utils::read_line,
@@ -70,7 +69,9 @@ impl Cli {
     pub fn prompt(&self) -> String {
         loop {
             print!("\n> ");
-            io::stdout().flush().expect("error flushing");
+            io::stdout()
+                .flush()
+                .expect("There was a problem flushing stdout");
             let input = read_line();
             if !input.is_empty() {
                 return input;

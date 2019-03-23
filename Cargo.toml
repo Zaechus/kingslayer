@@ -1,6 +1,6 @@
 [package]
 name = "kingslayer"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -9,7 +9,7 @@ readme = "README.md"
 repository = "https://github.com/Maxgy/kingslayer"
 keywords = ["text", "adventure", "game", "dungeon", "crawler"]
 categories = ["games", "game-engines"]
-exclude = ["data/world.json", "*.py", "*.yml"]
+exclude = ["*.py", "*.yml"]
 
 [dependencies]
 serde = "1.0"

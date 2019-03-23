@@ -5,7 +5,11 @@ fn do_what(word: &str) -> String {
 }
 
 pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
-    match words[0].as_str() {
+    match if words[0].len() >= 6 {
+        &words[0][0..6]
+    } else {
+        &words[0]
+    } {
         "l" | "look" => CmdResult::new(true, world.look().unwrap()),
         "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
             CmdResult::new(true, world.move_room(&words[0]).unwrap())
@@ -17,7 +21,7 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
                 CmdResult::new(false, format!("Where do you want to {}?", words[0]))
             }
         }
-        "i" | "inventory" => CmdResult::new(true, player.inventory()),
+        "i" | "invent" => CmdResult::new(true, player.inventory()),
         "take" | "get" | "pick" => {
             if words.len() > 1 {
                 if let Some(pos) = words
@@ -77,7 +81,7 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
                 )
             }
         }
-        "examine" | "inspect" | "read" => {
+        "x" | "examin" | "inspec" | "read" => {
             if words.len() > 1 {
                 if let Some(s) = player.inspect(&words[1..].join(" ")) {
                     CmdResult::new(true, s)
@@ -93,7 +97,7 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
                 CmdResult::new(false, do_what(&words[0]))
             }
         }
-        "status" | "diagnostic" => CmdResult::new(true, player.status()),
+        "status" | "diagno" => CmdResult::new(true, player.status()),
         "put" | "place" => {
             if words.len() > 1 {
                 if let Some(pos) = words.iter().position(|r| r == "in" || r == "inside") {
@@ -141,7 +145,7 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
                 CmdResult::new(false, do_what(&words[0]))
             }
         }
-        "attack" | "slay" | "kill" | "hit" => {
+        "attack" | "slay" | "kill" | "hit" | "cut" => {
             if words.len() > 1 {
                 if let Some(pos) = words.iter().position(|r| r == "with") {
                     let damage = player.attack_with(&words[pos + 1..].join(" "));
@@ -194,6 +198,7 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
                 CmdResult::new(false, do_what(&words[0]))
             }
         }
+        "z" | "wait" => Player::wait(),
         _ => CmdResult::new(false, format!("I don't know the word \"{}\".", words[0])),
     }
 }

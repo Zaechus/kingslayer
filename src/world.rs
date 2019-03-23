@@ -53,15 +53,13 @@ impl World {
     pub fn move_room(&mut self, direction: &str) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
             if let Some(new_room) = room.paths().get(direction) {
-                if !new_room.is_locked() {
-                    if new_room.is_open() {
-                        self.curr_room = new_room.name().to_string();
-                        Ok(self.look()?)
-                    } else {
-                        Ok("The way is closed.".to_string())
-                    }
-                } else {
+                if new_room.is_locked() == Some(true) {
                     Ok("The way is locked.".to_string())
+                } else if new_room.is_closed() == Some(true) {
+                    Ok("The way is closed.".to_string())
+                } else {
+                    self.curr_room = new_room.name().to_string();
+                    Ok(self.look()?)
                 }
             } else {
                 Ok("You cannot go that way.".to_string())
@@ -74,11 +72,11 @@ impl World {
     pub fn open_path(&mut self, path: &str) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(p) = room.paths_mut().get_mut(path) {
-                if p.is_open() {
-                    Ok(format!("The {} is already opened.", path))
-                } else {
+                if p.is_closed() == Some(true) {
                     p.open();
                     Ok("Opened.".to_string())
+                } else {
+                    Ok(format!("The {} is already opened.", path))
                 }
             } else {
                 Ok(format!("There is no \"{}\".", path))
@@ -91,11 +89,11 @@ impl World {
     pub fn close_path(&mut self, path: &str) -> Result<String, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(p) = room.paths_mut().get_mut(path) {
-                if p.is_open() {
+                if p.is_closed() == Some(true) {
+                    Ok(format!("The {} is already closed.", path))
+                } else {
                     p.close();
                     Ok("Closed.".to_string())
-                } else {
-                    Ok(format!("The {} is already closed.", path))
                 }
             } else {
                 Ok(format!("There is no \"{}\".", path))
