@@ -1,10 +1,8 @@
-use std::collections::HashMap;
-
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    entities::{Item, Room},
-    types::{CmdResult, ItemMap, WorldError},
+    entities::Item,
+    types::{CmdResult, ItemMap, RoomMap, WorldError},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -12,7 +10,7 @@ use crate::{
 #[derive(Serialize, Deserialize)]
 pub struct World {
     curr_room: String,
-    rooms: HashMap<String, Box<Room>>,
+    rooms: RoomMap,
 }
 
 impl World {
@@ -20,27 +18,27 @@ impl World {
         self.curr_room.clone()
     }
 
-    pub fn rooms_mut(&mut self) -> &mut HashMap<String, Box<Room>> {
+    pub fn rooms_mut(&mut self) -> &mut RoomMap {
         &mut self.rooms
     }
 
     // displays description of the current Room
-    pub fn look(&self) -> Result<String, WorldError> {
+    pub fn look(&self) -> Result<CmdResult, WorldError> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
-            Ok(room.desc())
+            Ok(CmdResult::new(true, room.desc()))
         } else {
             Err(WorldError::NoRoom)
         }
     }
 
-    pub fn inspect(&self, name: &str) -> Option<String> {
+    pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
             if let Some(item) = room.items().get(name) {
-                Some(item.inspection().to_string())
+                Some(CmdResult::new(true, item.inspection().to_string()))
             } else if let Some(item) = room.paths().get(name) {
-                Some(item.inspection().to_string())
+                Some(CmdResult::new(true, item.inspection().to_string()))
             } else if let Some(enemy) = room.enemies().get(name) {
-                Some(enemy.inspection().to_string())
+                Some(CmdResult::new(true, enemy.inspection().to_string()))
             } else {
                 None
             }
@@ -50,53 +48,59 @@ impl World {
     }
 
     // changes the current Room to the target of the current Room's chosen path
-    pub fn move_room(&mut self, direction: &str) -> Result<String, WorldError> {
+    pub fn move_room(&mut self, direction: &str) -> Result<CmdResult, WorldError> {
         if let Some(room) = self.rooms.get(&self.curr_room) {
             if let Some(new_room) = room.paths().get(direction) {
                 if new_room.is_locked() == Some(true) {
-                    Ok("The way is locked.".to_string())
+                    Ok(CmdResult::new(true, "The way is locked.".to_string()))
                 } else if new_room.is_closed() == Some(true) {
-                    Ok("The way is closed.".to_string())
+                    Ok(CmdResult::new(true, "The way is closed.".to_string()))
                 } else {
                     self.curr_room = new_room.name().to_string();
-                    Ok(self.look()?)
+                    self.look()
                 }
             } else {
-                Ok("You cannot go that way.".to_string())
+                Ok(CmdResult::new(false, "You cannot go that way.".to_string()))
             }
         } else {
             Err(WorldError::NoRoom)
         }
     }
 
-    pub fn open_path(&mut self, path: &str) -> Result<String, WorldError> {
+    pub fn open_path(&mut self, path: &str) -> Result<CmdResult, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(p) = room.paths_mut().get_mut(path) {
                 if p.is_closed() == Some(true) {
                     p.open();
-                    Ok("Opened.".to_string())
+                    Ok(CmdResult::new(true, "Opened.".to_string()))
                 } else {
-                    Ok(format!("The {} is already opened.", path))
+                    Ok(CmdResult::new(
+                        false,
+                        format!("The {} is already opened.", path),
+                    ))
                 }
             } else {
-                Ok(format!("There is no \"{}\".", path))
+                Ok(CmdResult::new(false, format!("There is no \"{}\".", path)))
             }
         } else {
             Err(WorldError::NoRoom)
         }
     }
 
-    pub fn close_path(&mut self, path: &str) -> Result<String, WorldError> {
+    pub fn close_path(&mut self, path: &str) -> Result<CmdResult, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(p) = room.paths_mut().get_mut(path) {
                 if p.is_closed() == Some(true) {
-                    Ok(format!("The {} is already closed.", path))
+                    Ok(CmdResult::new(
+                        false,
+                        format!("The {} is already closed.", path),
+                    ))
                 } else {
                     p.close();
-                    Ok("Closed.".to_string())
+                    Ok(CmdResult::new(true, "Closed.".to_string()))
                 }
             } else {
-                Ok(format!("There is no \"{}\".", path))
+                Ok(CmdResult::new(false, format!("There is no \"{}\".", path)))
             }
         } else {
             Err(WorldError::NoRoom)
@@ -184,26 +188,21 @@ impl World {
             room.items_mut().shrink_to_fit();
             items
         } else {
-            HashMap::new()
+            ItemMap::new()
         }
     }
 
     // insert an Item into the current Room
-    pub fn insert(
-        &mut self,
-        cmd: &str,
-        name: &str,
-        item: Option<Box<Item>>,
-    ) -> Result<String, WorldError> {
+    pub fn insert(&mut self, name: &str, item: Option<Box<Item>>) -> Result<CmdResult, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(obj) = item {
                 room.items_mut().insert(obj.name().to_string(), obj);
-                match cmd {
-                    "throw" => Ok(format!("You throw the {} across the room.", name)),
-                    _ => Ok("Dropped.".to_string()),
-                }
+                Ok(CmdResult::new(true, "Dropped.".to_string()))
             } else {
-                Ok(format!("You do not have the \"{}\".", name))
+                Ok(CmdResult::new(
+                    false,
+                    format!("You do not have the \"{}\".", name),
+                ))
             }
         } else {
             Err(WorldError::NoRoom)
@@ -216,21 +215,30 @@ impl World {
         name: &str,
         container: &str,
         item: Option<Box<Item>>,
-    ) -> Result<String, WorldError> {
+    ) -> Result<CmdResult, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             if let Some(obj) = item {
                 if let Some(cont) = room.items_mut().get_mut(container) {
                     if let Some(ref mut contents) = cont.contents_mut() {
                         contents.insert(obj.name().to_string(), obj);
-                        Ok("Placed.".to_string())
+                        Ok(CmdResult::new(true, "Placed.".to_string()))
                     } else {
-                        Ok("You can not put anything in there.".to_string())
+                        Ok(CmdResult::new(
+                            true,
+                            "You can not put anything in there.".to_string(),
+                        ))
                     }
                 } else {
-                    Ok(format!("There is no \"{}\" here.", container))
+                    Ok(CmdResult::new(
+                        false,
+                        format!("There is no \"{}\" here.", container),
+                    ))
                 }
             } else {
-                Ok(format!("You do not have the \"{}\".", name))
+                Ok(CmdResult::new(
+                    false,
+                    format!("You do not have the \"{}\".", name),
+                ))
             }
         } else {
             Err(WorldError::NoRoom)

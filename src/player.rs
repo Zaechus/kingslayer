@@ -37,6 +37,10 @@ impl Player {
         }
     }
 
+    pub fn wait() -> CmdResult {
+        CmdResult::new(true, "Time passes...".to_string())
+    }
+
     pub fn hp(&self) -> i32 {
         self.hp.0
     }
@@ -106,9 +110,9 @@ impl Player {
         }
     }
 
-    pub fn inventory(&self) -> String {
+    pub fn inventory(&self) -> CmdResult {
         if self.inventory.is_empty() && self.main_hand.is_none() {
-            "You are empty-handed.".to_string()
+            CmdResult::new(true, "You are empty-handed.".to_string())
         } else {
             let mut items_carried = String::new();
             if let Some(weapon) = &self.main_hand {
@@ -120,68 +124,91 @@ impl Player {
                     items_carried = format!("{}\n  {}", items_carried, x.1.name());
                 }
             }
-            items_carried
+            CmdResult::new(true, items_carried)
         }
+    }
+
+    pub fn has(&self, name: &str) -> bool {
+        self.inventory.contains_key(name)
     }
 
     pub fn main_hand(&self) -> &Option<Box<Item>> {
         &self.main_hand
     }
 
-    pub fn status(&self) -> String {
-        format!("You have ({} / {}) HP.", self.hp(), self.hp_cap())
+    pub fn status(&self) -> CmdResult {
+        CmdResult::new(
+            false,
+            format!("You have ({} / {}) HP.", self.hp(), self.hp_cap()),
+        )
     }
 
     pub fn take_damage(&mut self, damage: i32) {
         self.hp = (self.hp.0 - damage, self.hp.1);
     }
 
-    pub fn inspect(&self, name: &str) -> Option<String> {
+    pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.status())
         } else if let Some(item) = self.inventory.get(name) {
-            Some(item.inspection().to_string())
+            Some(CmdResult::new(true, item.inspection().to_string()))
         } else if let Some(item) = &self.main_hand {
-            Some(item.inspection().to_string())
+            Some(CmdResult::new(true, item.inspection().to_string()))
         } else {
             None
         }
     }
 
-    pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> String {
+    pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
         if let Some(obj) = item {
             let mut res = String::from("Taken.");
             if obj.is_weapon() {
                 res.push_str("\n(You can equip weapons with \"equip\", \"draw\", or \"hold\")");
             }
             self.inventory.insert(name.to_string(), obj);
-            res
+            CmdResult::new(true, res)
         } else {
-            format!("There is no \"{}\" here.", name)
+            CmdResult::new(false, format!("There is no \"{}\" here.", name))
         }
     }
 
     // take an Item from a container Item in the inventory
-    pub fn take_from(&mut self, item: &str, container: &str) -> String {
+    pub fn take_from(&mut self, item: &str, container: &str) -> CmdResult {
         if let Some(cont) = self.inventory.get_mut(container) {
             if let Some(ref mut contents) = cont.contents_mut() {
                 if let Some(itm) = contents.remove(item) {
                     self.inventory.insert(item.to_string(), itm);
-                    "Taken.".to_string()
+                    CmdResult::new(true, "Taken.".to_string())
                 } else {
-                    format!("There is no \"{}\" inside of the \"{}\".", item, container)
+                    CmdResult::new(
+                        true,
+                        format!("There is no \"{}\" inside of the \"{}\".", item, container),
+                    )
                 }
             } else {
-                format!("You cannot put anything \"{}\".", container)
+                CmdResult::new(
+                    false,
+                    format!("You cannot take anything from the \"{}\".", container),
+                )
             }
         } else {
-            format!("You do not have the \"{}\".", container)
+            CmdResult::new(false, format!("You do not have the \"{}\".", container))
         }
     }
 
-    pub fn take_all(&mut self, items: ItemMap) -> String {
-        self.inventory.extend(items);
-        "Taken.".to_string()
+    pub fn take_all(&mut self, items: ItemMap) -> CmdResult {
+        if items.is_empty() {
+            CmdResult::new(false, "There is nothing to take.".to_string())
+        } else {
+            let times = items.len();
+            self.inventory.extend(items);
+
+            let mut res = String::new();
+            for _ in 0..times {
+                res.push_str("Taken. ");
+            }
+            CmdResult::new(true, res)
+        }
     }
 
     // remove an item from inventory and into the current Room
@@ -195,43 +222,45 @@ impl Player {
         }
     }
 
-    // equip an item into main hand to simplify fighting
-    pub fn equip(&mut self, weapon: &str) -> String {
+    // equip an Item into main_hand to simplify fighting
+    pub fn equip(&mut self, weapon: &str) -> CmdResult {
         if let Some(item) = self.inventory.remove(weapon) {
             if let Some(wpon) = self.main_hand.take() {
                 self.take(&wpon.name(), Some(wpon));
             }
             self.main_hand = Some(item);
-            "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
-                .to_string()
+            CmdResult::new(
+                true,
+                "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
+                    .to_string(),
+            )
         } else {
-            format!("You do not have the \"{}\".", weapon)
+            CmdResult::new(false, format!("You do not have the \"{}\".", weapon))
         }
     }
 
     // place an item into a container item
-    pub fn put_in(&mut self, item: &str, container: &str) -> String {
+    pub fn put_in(&mut self, item: &str, container: &str) -> CmdResult {
         if let Some(itm) = self.inventory.remove(item) {
             if let Some(cont) = self.inventory.get_mut(container) {
                 if let Some(ref mut contents) = cont.contents_mut() {
                     contents.insert(item.to_string(), itm);
-                    "Placed.".to_string()
+                    CmdResult::new(true, "Placed.".to_string())
                 } else {
-                    format!("You cannot put anything in the {}.", container)
+                    CmdResult::new(
+                        false,
+                        format!("You cannot put anything in the {}.", container),
+                    )
                 }
             } else {
-                format!("You do not have the \"{}\".", container)
+                CmdResult::new(false, format!("You do not have the \"{}\".", container))
             }
         } else {
-            format!("You do not have the \"{}\".", item)
+            CmdResult::new(false, format!("You do not have the \"{}\".", item))
         }
     }
 
     fn deal_damage(&self, weapon_damage: i32) -> i32 {
         weapon_damage + ((self.strength - 10) as f32 / 2.0).floor() as i32
-    }
-
-    pub fn wait() -> CmdResult {
-        CmdResult::new(true, "Time passes...".to_string())
     }
 }

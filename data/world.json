@@ -101,7 +101,7 @@
             "paths": {
                 "n": {
                     "name": "Circle Room",
-                    "desc": "There is a room to the north",
+                    "desc": "There is a room to the north.",
                     "inspection": "The hallway seems narrow and foreboding."
                 }
             },

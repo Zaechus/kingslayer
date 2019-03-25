@@ -7,7 +7,7 @@ use serde_derive::{Deserialize, Serialize};
 use crate::{
     input::{parse, Lexer},
     player::Player,
-    types::{ItemMap, WorldError},
+    types::{CmdResult, ItemMap, WorldError},
     utils::read_line,
     world::World,
 };
@@ -52,21 +52,7 @@ impl Cli {
         serde_json::from_str(json).expect("Error when creating world from file.")
     }
 
-    pub fn start(&self) {
-        println!("{}", self.ask("l"));
-        loop {
-            match self.ask(&self.prompt()) {
-                s => {
-                    println!("{}", s);
-                    if s.contains("You died.") {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    pub fn prompt(&self) -> String {
+    pub fn prompt() -> String {
         loop {
             print!("\n> ");
             io::stdout()
@@ -77,6 +63,34 @@ impl Cli {
                 return input;
             } else {
                 println!("Excuse me?");
+            }
+        }
+    }
+
+    pub fn help() -> CmdResult {
+        let mut res = String::with_capacity(333);
+        res.push_str("Some available commands:\n");
+        res.push_str("    take\t\tput an item from the room into your inventory\n");
+        res.push_str("    drop\t\tdrop an item from your inventory into the room\n");
+        res.push_str("    l, look\t\tlook around the room\n");
+        res.push_str("    i, inventory\tprint the contents of your inventory\n");
+        res.push_str("    x, examine\t\tshow additional information about an item\n");
+        res.push_str("    equip\t\tuse an item from your inventory as your default weapon\n");
+        res.push_str("    rest\t\treplenish some HP\n");
+        res.push_str("    status\t\tdisplay your HP\n");
+        CmdResult::new(false, res)
+    }
+
+    pub fn start(&self) {
+        println!("{}", self.ask("l"));
+        loop {
+            match self.ask(&Cli::prompt()) {
+                s => {
+                    println!("{}", s);
+                    if s.contains("You died.") {
+                        break;
+                    }
+                }
             }
         }
     }
@@ -94,11 +108,11 @@ impl Cli {
             if res.is_action() {
                 format!(
                     "{}{}",
-                    res.command(),
+                    res.output(),
                     self.events().expect("There is no room.")
                 )
             } else {
-                res.command().to_string()
+                res.output().to_string()
             }
         } else {
             "I do not understand that phrase.".to_string()

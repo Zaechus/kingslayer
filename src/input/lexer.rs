@@ -19,7 +19,7 @@ impl Lexer {
 
     pub fn lex(&self, s: &str) -> Vec<String> {
         let parts = self.filter_parts(s);
-        self.mod_directions(&parts)
+        self.mod_words(&parts)
     }
 
     fn filter_parts(&self, s: &str) -> Vec<String> {
@@ -28,8 +28,7 @@ impl Lexer {
         words
     }
 
-    // modify path directives
-    fn mod_directions(&self, words: &[String]) -> Vec<String> {
+    fn mod_words(&self, words: &[String]) -> Vec<String> {
         let mut modified = Vec::with_capacity(words.len());
         for w in words {
             modified.push(
@@ -44,6 +43,7 @@ impl Lexer {
                     "southwest" => "sw",
                     "up" => "u",
                     "down" => "d",
+                    "x" => "examine",
                     _ => w,
                 }
                 .to_string(),

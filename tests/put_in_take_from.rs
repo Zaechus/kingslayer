@@ -32,7 +32,7 @@ mod tests {
                 && !cli.ask("l").contains("leaf")
         );
 
-        assert_eq!(cli.ask("take all"), "Taken.");
+        assert_eq!(cli.ask("take all"), "Taken. ");
         assert!(cli.ask("i").contains("leaf") && cli.ask("i").contains("capsule"));
 
         assert_eq!(cli.ask("put leaf in capsule"), "Placed.");

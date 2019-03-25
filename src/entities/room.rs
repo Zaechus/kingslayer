@@ -1,24 +1,19 @@
-use std::collections::HashMap;
-
 use serde_derive::{Deserialize, Serialize};
 
-use crate::{
-    entities::{Enemy, Pathway},
-    types::ItemMap,
-};
+use crate::types::{EnemyMap, ItemMap, PathMap};
 
 // A section of the world connected by paths
 #[derive(Serialize, Deserialize)]
 pub struct Room {
     name: String,
     desc: String,
-    paths: HashMap<String, Pathway>,
-    enemies: HashMap<String, Box<Enemy>>,
+    paths: PathMap,
+    enemies: EnemyMap,
     items: ItemMap,
 }
 
 impl Room {
-    // compiles all descriptions in the Room for printing
+    // collects all descriptions of entities in the Room for printing
     pub fn desc(&self) -> String {
         let mut desc = format!("{}\n{}", self.name, self.desc);
         for x in self.paths.iter() {
@@ -33,17 +28,17 @@ impl Room {
         desc
     }
 
-    pub fn paths(&self) -> &HashMap<String, Pathway> {
+    pub fn paths(&self) -> &PathMap {
         &self.paths
     }
-    pub fn paths_mut(&mut self) -> &mut HashMap<String, Pathway> {
+    pub fn paths_mut(&mut self) -> &mut PathMap {
         &mut self.paths
     }
 
-    pub fn enemies(&self) -> &HashMap<String, Box<Enemy>> {
+    pub fn enemies(&self) -> &EnemyMap {
         &self.enemies
     }
-    pub fn enemies_mut(&mut self) -> &mut HashMap<String, Box<Enemy>> {
+    pub fn enemies_mut(&mut self) -> &mut EnemyMap {
         &mut self.enemies
     }
 
