@@ -14,7 +14,7 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
         "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
             world.move_room(&words[0]).unwrap()
         }
-        "enter" | "go" => {
+        "enter" | "go" | "move" => {
             if words.len() > 1 {
                 world.move_room(&words[1]).unwrap()
             } else {
@@ -148,7 +148,7 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
             }
         }
         "rest" | "sleep" | "heal" => player.rest(),
-        "hold" | "draw" | "equip" => {
+        "hold" | "draw" | "equip" | "use" => {
             if words.len() > 1 {
                 player.equip(&words[1..].join(" "))
             } else {

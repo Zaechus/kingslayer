@@ -168,7 +168,13 @@ impl Player {
             self.inventory.insert(name.to_string(), obj);
             CmdResult::new(true, res)
         } else {
-            CmdResult::new(false, format!("There is no \"{}\" here.", name))
+            CmdResult::new(
+                false,
+                format!(
+                    "There is no \"{}\" here. Make sure you are being specific.",
+                    name
+                ),
+            )
         }
     }
 

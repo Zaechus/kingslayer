@@ -6,7 +6,7 @@ A text adventure dungeon crawler game written in Rust.
 
 ### Creating and Running a World
 
-Worlds are defined with JSON. An example can be found on the ![wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file).  Deploying the world file in Rust looks like this:
+Worlds are defined with JSON. An example can be found on the ![wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file). Deploying the world file in Rust looks like this:
 ```
 use kingslayer::Cli;
 

@@ -68,21 +68,29 @@ impl Cli {
     }
 
     pub fn help() -> CmdResult {
-        let mut res = String::with_capacity(333);
+        let mut res = String::with_capacity(666);
         res.push_str("Some available commands:\n");
-        res.push_str("    take\t\tput an item from the room into your inventory\n");
-        res.push_str("    drop\t\tdrop an item from your inventory into the room\n");
-        res.push_str("    l, look\t\tlook around the room\n");
-        res.push_str("    i, inventory\tprint the contents of your inventory\n");
-        res.push_str("    x, examine\t\tshow additional information about an item\n");
-        res.push_str("    equip\t\tuse an item from your inventory as your default weapon\n");
-        res.push_str("    rest\t\treplenish some HP\n");
-        res.push_str("    status\t\tdisplay your HP\n");
+        res.push_str("\tgo, enter <direction>\tmove in through a listed entrance\n");
+        res.push_str("\t\tshort directions: n, s, e, w, ne, nw, se, sw, u, d\n");
+        res.push_str("\t\tlong directions:\n");
+        res.push_str("\t\t   north, south, east, west,\n");
+        res.push_str("\t\t   northeast, northwest, southeast, southwest,\n");
+        res.push_str("\t\t   up, down, (other listed entrance)\n");
+        res.push_str("\ttake\t\tput an item from the room into your inventory\n");
+        res.push_str("\tdrop\t\tdrop an item from your inventory into the room\n");
+        res.push_str("\tl, look\t\tlook around the room\n");
+        res.push_str("\ti, inventory\tprint the contents of your inventory\n");
+        res.push_str("\tx, examine\tshow additional information about an item\n");
+        res.push_str("\tequip\t\tuse an item from your inventory as your default weapon\n");
+        res.push_str("\tkill\t\tattack an enemy with your main hand or a chosen weapon\n");
+        res.push_str("\topen | close\topen/close a container or pathway\n");
+        res.push_str("\trest\t\treplenish some HP\n");
+        res.push_str("\tstatus\t\tdisplay your HP");
         CmdResult::new(false, res)
     }
 
     pub fn start(&self) {
-        println!("{}", self.ask("l"));
+        println!("Type \"help\" to learn come commands.\n\n{}", self.ask("l"));
         loop {
             match self.ask(&Cli::prompt()) {
                 s => {

@@ -8,12 +8,10 @@ pub struct Lexer {
 impl Lexer {
     pub fn new() -> Self {
         Self {
-            filter_out: vec![
-                "a", "an", "at", "go", "my", "of", "that", "the", "through", "to",
-            ]
-            .iter()
-            .map(|s| s.to_string())
-            .collect(),
+            filter_out: vec!["a", "an", "at", "my", "of", "that", "the", "through", "to"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
         }
     }
 
@@ -43,7 +41,6 @@ impl Lexer {
                     "southwest" => "sw",
                     "up" => "u",
                     "down" => "d",
-                    "x" => "examine",
                     _ => w,
                 }
                 .to_string(),
