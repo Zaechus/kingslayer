@@ -123,25 +123,28 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
 
                     world
                         .harm_enemy(
+                            damage,
                             &words[1..pos].join(" "),
                             &words[pos + 1..].join(" "),
-                            damage,
                         )
                         .unwrap()
-                } else if player.main_hand().is_some() {
-                    let damage = player.attack();
-                    world
-                        .harm_enemy(&words[1..].join(" "), "equipped weapon", damage)
-                        .unwrap()
                 } else {
-                    CmdResult::new(
-                        false,
-                        format!(
-                            "What do you want to {} the {} with?",
-                            words[0],
-                            &words[1..].join(" ")
-                        ),
-                    )
+                    let damage = player.attack();
+
+                    if let Some(main_hand) = player.main_hand() {
+                        world
+                            .harm_enemy(damage, &words[1..].join(" "), &main_hand.name())
+                            .unwrap()
+                    } else {
+                        CmdResult::new(
+                            false,
+                            format!(
+                                "What do you want to {} the {} with?",
+                                words[0],
+                                &words[1..].join(" ")
+                            ),
+                        )
+                    }
                 }
             } else {
                 do_what(&words[0])
@@ -167,6 +170,18 @@ pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdRes
                 world.close_path(&words[1..].join(" ")).unwrap()
             } else {
                 do_what(&words[0])
+            }
+        }
+        "increa" => {
+            if words.len() > 1 {
+                player.increase_ability_score(&words[1])
+            } else {
+                CmdResult::new(
+                    false,
+                    "What do you want to increase?
+                    \r(strength, dexterity, constitution, intellect, wisdom, charisma)"
+                        .to_string(),
+                )
             }
         }
         "z" | "wait" => Player::wait(),

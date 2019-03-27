@@ -68,38 +68,36 @@ impl Cli {
     }
 
     pub fn help() -> CmdResult {
-        let mut res = String::with_capacity(666);
-        res.push_str("Some available commands:\n");
-        res.push_str("\tgo, enter <direction>\tmove in through a listed entrance\n");
-        res.push_str("\t\tshort directions: n, s, e, w, ne, nw, se, sw, u, d\n");
-        res.push_str("\t\tlong directions:\n");
-        res.push_str("\t\t   north, south, east, west,\n");
-        res.push_str("\t\t   northeast, northwest, southeast, southwest,\n");
-        res.push_str("\t\t   up, down, (other listed entrance)\n");
-        res.push_str("\ttake\t\tput an item from the room into your inventory\n");
-        res.push_str("\tdrop\t\tdrop an item from your inventory into the room\n");
-        res.push_str("\tl, look\t\tlook around the room\n");
-        res.push_str("\ti, inventory\tprint the contents of your inventory\n");
-        res.push_str("\tx, examine\tshow additional information about an item\n");
-        res.push_str("\tequip\t\tuse an item from your inventory as your default weapon\n");
-        res.push_str("\tkill\t\tattack an enemy with your main hand or a chosen weapon\n");
-        res.push_str("\topen | close\topen/close a container or pathway\n");
-        res.push_str("\trest\t\treplenish some HP\n");
-        res.push_str("\tstatus\t\tdisplay your HP");
-        CmdResult::new(false, res)
+        CmdResult::new(
+            false,
+            "Some available commands:
+            \tgo, enter <direction>\tmove in through a listed entrance
+            \t\tshort directions: n, s, e, w, ne, nw, se, sw, u, d
+            \t\tlong directions:
+            \t\t   north, south, east, west,
+            \t\t   northeast, northwest, southeast, southwest,
+            \t\t   up, down, other listed entrance\n
+            \ttake\t\tput an item from the room into your inventory
+            \tdrop\t\tdrop an item from your inventory into the room
+            \tl, look\t\tlook around the room
+            \ti, inventory\tprint the contents of your inventory
+            \tx, examine\tshow additional information about an item
+            \tequip\t\tuse an item from your inventory as your default weapon
+            \tkill\t\tattack an enemy with your main hand or a chosen weapon
+            \topen | close\topen/close a pathway
+            \trest\t\treplenish some HP
+            \tincrease\t\tincrease a chosen ability score by 1 if stat points are available
+            \tstatus\t\tdisplay information on the state of your character"
+                .to_string(),
+        )
     }
 
     pub fn start(&self) {
-        println!("Type \"help\" to learn come commands.\n\n{}", self.ask("l"));
-        loop {
-            match self.ask(&Cli::prompt()) {
-                s => {
-                    println!("{}", s);
-                    if s.contains("You died.") {
-                        break;
-                    }
-                }
-            }
+        println!("Type \"help\" to learn come commands.\n\n");
+        println!("Use \"increase\" to use your initial stat points.\n\n");
+        println!("{}", self.ask("l"));
+        while self.player.borrow().is_alive() {
+            println!("{}", self.ask(&Cli::prompt()));
         }
     }
 
@@ -117,7 +115,7 @@ impl Cli {
                 format!(
                     "{}{}",
                     res.output(),
-                    self.events().expect("There is no room.")
+                    self.combat().expect("There is no room.")
                 )
             } else {
                 res.output().to_string()
@@ -128,37 +126,41 @@ impl Cli {
     }
 
     // manages actions taken by Enemies in the current room
-    fn events(&self) -> Result<String, WorldError> {
+    fn combat(&self) -> Result<String, WorldError> {
         let curr_room = &self.world.borrow().curr_room();
 
         if let Some(room) = self.world.borrow_mut().rooms_mut().get_mut(curr_room) {
             let mut events_str = String::new();
-            let mut loot: Option<ItemMap> = None;
-            for enemy in room.enemies_mut().iter_mut() {
-                if enemy.1.is_angry() && enemy.1.hp() > 0 {
-                    let enemy_damage = enemy.1.damage();
+            let mut loot: ItemMap = ItemMap::new();
+
+            for enemy in room.enemies_mut().values() {
+                if enemy.is_angry() && enemy.is_alive() {
+                    let enemy_damage = enemy.damage();
 
                     self.player.borrow_mut().take_damage(enemy_damage);
                     self.player.borrow_mut().engage_combat();
 
                     events_str.push_str(&format!(
                         "\nThe {} hit you for {} damage. You have {} HP left.",
-                        enemy.1.name(),
+                        enemy.name(),
                         enemy_damage,
                         self.player.borrow().hp()
                     ));
                 }
-                if enemy.1.hp() <= 0 {
+                if !enemy.is_alive() {
+                    events_str.push_str(&format!("\nYou gained {} XP.\n", enemy.xp()));
                     self.player.borrow_mut().disengage_combat();
-                    loot = Some(enemy.1.drop_loot());
+                    self.player.borrow_mut().gain_xp(enemy.xp());
+                    loot.extend(enemy.drop_loot());
                 }
             }
-            if let Some(loot) = loot {
-                room.items_mut().extend(loot);
-            }
-            room.enemies_mut().retain(|_, e| e.hp() > 0);
-            if self.player.borrow().hp() <= 0 {
-                events_str.push_str(" You died.");
+            room.items_mut().extend(loot);
+            room.enemies_mut().retain(|_, e| e.is_alive());
+
+            if !self.player.borrow().is_alive() {
+                events_str.push_str("\nYou died.");
+            } else {
+                events_str.push_str(&self.player.borrow_mut().level_up());
             }
             Ok(events_str)
         } else {

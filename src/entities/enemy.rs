@@ -7,6 +7,7 @@ use crate::types::ItemMap;
 #[derive(Serialize, Deserialize)]
 pub struct Enemy {
     hp: i32,
+    xp: i32,
     damage: i32,
     name: String,
     desc: String,
@@ -16,8 +17,8 @@ pub struct Enemy {
 }
 
 impl Enemy {
-    pub fn hp(&self) -> i32 {
-        self.hp
+    pub fn xp(&self) -> i32 {
+        self.xp
     }
 
     pub fn name(&self) -> &String {
@@ -40,13 +41,21 @@ impl Enemy {
         self.is_angry
     }
 
+    pub fn make_angry(&mut self) {
+        self.is_angry = true;
+    }
+
     pub fn loot(&self) -> &ItemMap {
         &self.loot
     }
 
     pub fn get_hit(&mut self, damage: i32) {
-        self.is_angry = true;
+        self.make_angry();
         self.hp -= damage;
+    }
+
+    pub fn is_alive(&self) -> bool {
+        self.hp > 0
     }
 
     pub fn drop_loot(&self) -> ItemMap {

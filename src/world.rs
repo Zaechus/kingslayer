@@ -56,6 +56,11 @@ impl World {
                 } else if new_room.is_closed() == Some(true) {
                     Ok(CmdResult::new(true, "The way is closed.".to_string()))
                 } else {
+                    for e in room.enemies().values() {
+                        if e.is_angry() {
+                            return Ok(CmdResult::new(false, "Enemies bar your way.".to_string()));
+                        }
+                    }
                     self.curr_room = new_room.name().to_string();
                     self.look()
                 }
@@ -110,30 +115,30 @@ impl World {
     // let an Enemy in the current Room take damage
     pub fn harm_enemy(
         &mut self,
-        enemy: &str,
-        weapon: &str,
         damage: Option<i32>,
+        enemy_name: &str,
+        weapon: &str,
     ) -> Result<CmdResult, WorldError> {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
-            if let Some(nme) = room.enemies_mut().get_mut(enemy) {
-                if let Some(dmg) = damage {
-                    nme.get_hit(dmg);
-                    if nme.hp() > 0 {
+            if let Some(enemy) = room.enemies_mut().get_mut(enemy_name) {
+                if let Some(damage) = damage {
+                    enemy.get_hit(damage);
+                    if enemy.is_alive() {
                         Ok(CmdResult::new(
                             true,
                             format!(
                                 "You hit the {} with your {} for {} damage.",
-                                enemy, weapon, dmg,
+                                enemy_name, weapon, damage,
                             ),
                         ))
                     } else {
                         let mut res = format!(
                             "You hit the {} with your {} for {} damage. It is dead.\n",
-                            enemy, weapon, dmg
+                            enemy_name, weapon, damage
                         );
-                        if !nme.loot().is_empty() {
+                        if !enemy.loot().is_empty() {
                             res.push_str("It dropped:\n");
-                            for x in nme.loot().iter() {
+                            for x in enemy.loot().iter() {
                                 res.push_str(&format!(" {},", x.1.name()));
                             }
                         }
@@ -142,13 +147,13 @@ impl World {
                 } else {
                     Ok(CmdResult::new(
                         false,
-                        format!("You do not have the \"{}\". {:?} ", weapon, damage),
+                        format!("You do not have the \"{}\".", weapon),
                     ))
                 }
             } else {
                 Ok(CmdResult::new(
                     false,
-                    format!("There is no \"{}\" here.", enemy),
+                    format!("There is no \"{}\" here.", enemy_name),
                 ))
             }
         } else {
