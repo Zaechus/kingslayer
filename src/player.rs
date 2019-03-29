@@ -21,6 +21,7 @@ pub struct Player {
     wis: i32,
     cha: i32,
     main_hand: Option<Box<Item>>,
+    armor: Option<Box<Item>>,
     inventory: ItemMap,
 }
 
@@ -32,13 +33,14 @@ impl Player {
             in_combat: false,
             lvl: 1,
             stat_pts: 4,
-            strength: 13,
-            dex: 13,
-            con: 13,
-            int: 13,
-            wis: 13,
-            cha: 13,
+            strength: 0,
+            dex: 0,
+            con: 0,
+            int: 0,
+            wis: 0,
+            cha: 0,
             main_hand: None,
+            armor: None,
             inventory: ItemMap::new(),
         }
     }
@@ -59,6 +61,14 @@ impl Player {
         self.hp.0 > 0
     }
 
+    fn ac(&self) -> i32 {
+        if let Some(armor) = &self.armor {
+            armor.armor_class() + self.dex
+        } else {
+            10 + self.dex
+        }
+    }
+
     pub fn level_up(&mut self) -> String {
         if self.xp.0 >= self.xp.1 {
             self.xp.0 -= self.xp.1;
@@ -75,12 +85,12 @@ impl Player {
         self.xp.0 += gained;
     }
 
-    pub fn increase_ability_score(&mut self, ability_score: &str) -> CmdResult {
+    pub fn increase_ability_mod(&mut self, ability_score: &str) -> CmdResult {
         if self.stat_pts >= 0 {
             match &ability_score[0..3] {
                 "str" | "dex" | "con" | "int" | "wis" | "cha" => {
                     self.stat_pts -= 1;
-                    CmdResult::new(true, "Ability increased by one.".to_string())
+                    CmdResult::new(true, "Ability modifier increased by one.".to_string())
                 }
                 _ => CmdResult::new(
                     false,
@@ -194,8 +204,31 @@ impl Player {
         )
     }
 
-    pub fn take_damage(&mut self, damage: i32) {
-        self.hp = (self.hp.0 - damage, self.hp.1);
+    pub fn take_damage(&mut self, enemy_name: &str, damage: i32) -> String {
+        if rand::thread_rng().gen_range(1, 21) > self.ac() {
+            self.hp = (self.hp.0 - damage, self.hp.1);
+            format!(
+                "\nThe {} hit you for {} damage. You have {} HP left.",
+                enemy_name,
+                damage,
+                self.hp()
+            )
+        } else {
+            match rand::thread_rng().gen_range(0, 3) {
+                0 => format!(
+                    "\nThe {} swung at you, you dodged out of the way.",
+                    enemy_name
+                ),
+                1 => format!(
+                    "\nThe {} hit you, but your armor deflected the blow.",
+                    enemy_name
+                ),
+                _ => format!(
+                    "\nThe {} struck at you, but you deftly blocked the blow.",
+                    enemy_name
+                ),
+            }
+        }
     }
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
@@ -322,6 +355,6 @@ impl Player {
     }
 
     fn deal_damage(&self, weapon_damage: i32) -> i32 {
-        weapon_damage + ((self.strength - 10) as f32 / 2.0).floor() as i32
+        weapon_damage + self.strength
     }
 }

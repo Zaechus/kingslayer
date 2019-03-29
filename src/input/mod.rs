@@ -1,5 +1,5 @@
 mod lexer;
-mod parse;
+mod parser;
 
 pub use lexer::Lexer;
-pub use parse::parse;
+pub use parser::Parser;

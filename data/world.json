@@ -43,6 +43,12 @@
                     "inspection": "The iron sword is of crude workmanship, but it should be usable.",
                     "damage": 6
                 },
+                "leather armor": {
+                    "name": "leather armor",
+                    "desc": "There is a set of leather armor lying in a heap.",
+                    "inspection": "The armor is worn but light and sturdy.",
+                    "armor_class": 11
+                },
                 "leaf": {
                     "name": "leaf",
                     "desc": "A leaf lies on the ground.",

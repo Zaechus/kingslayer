@@ -5,7 +5,7 @@ use std::io::{self, BufReader, Read, Write};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    input::{parse, Lexer},
+    input::{Lexer, Parser},
     player::Player,
     types::{CmdResult, ItemMap, WorldError},
     utils::read_line,
@@ -93,8 +93,8 @@ impl Cli {
     }
 
     pub fn start(&self) {
-        println!("Type \"help\" to learn come commands.\n\n");
-        println!("Use \"increase\" to use your initial stat points.\n\n");
+        println!("Type \"help\" to learn come commands.\n");
+        println!("Use \"increase\" to use your initial stat points.\n");
         println!("{}", self.ask("l"));
         while self.player.borrow().is_alive() {
             println!("{}", self.ask(&Cli::prompt()));
@@ -106,11 +106,12 @@ impl Cli {
         let command = self.lexer.lex(input);
 
         if !command.is_empty() {
-            let res = parse(
+            let res = Parser::parse(
                 &command,
                 &mut self.world.borrow_mut(),
                 &mut self.player.borrow_mut(),
             );
+
             if res.is_action() {
                 format!(
                     "{}{}",
@@ -137,15 +138,14 @@ impl Cli {
                 if enemy.is_angry() && enemy.is_alive() {
                     let enemy_damage = enemy.damage();
 
-                    self.player.borrow_mut().take_damage(enemy_damage);
-                    self.player.borrow_mut().engage_combat();
+                    events_str.push_str(
+                        &self
+                            .player
+                            .borrow_mut()
+                            .take_damage(enemy.name(), enemy_damage),
+                    );
 
-                    events_str.push_str(&format!(
-                        "\nThe {} hit you for {} damage. You have {} HP left.",
-                        enemy.name(),
-                        enemy_damage,
-                        self.player.borrow().hp()
-                    ));
+                    self.player.borrow_mut().engage_combat();
                 }
                 if !enemy.is_alive() {
                     events_str.push_str(&format!("\nYou gained {} XP.\n", enemy.xp()));

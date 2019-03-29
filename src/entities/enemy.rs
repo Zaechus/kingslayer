@@ -34,7 +34,7 @@ impl Enemy {
     }
 
     pub fn damage(&self) -> i32 {
-        rand::thread_rng().gen_range(0, self.damage + 1)
+        rand::thread_rng().gen_range(1, self.damage + 1)
     }
 
     pub fn is_angry(&self) -> bool {

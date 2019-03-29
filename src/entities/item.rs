@@ -13,6 +13,7 @@ pub struct Item {
     is_closed: Option<bool>,
     is_locked: Option<bool>,
     damage: Option<i32>,
+    armor_class: Option<i32>,
     contents: Option<ItemMap>,
 }
 
@@ -61,6 +62,14 @@ impl Item {
             rand::thread_rng().gen_range(1, damage + 1)
         } else {
             0
+        }
+    }
+
+    pub fn armor_class(&self) -> i32 {
+        if let Some(ac) = self.armor_class {
+            ac
+        } else {
+            10
         }
     }
 
