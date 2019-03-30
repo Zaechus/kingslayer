@@ -53,6 +53,14 @@ impl Parser {
         }
     }
 
+    fn parse_don(words: &[String], player: &mut Player) -> CmdResult {
+        if words.len() > 1 {
+            player.don_armor(&words[1..].join(" "))
+        } else {
+            Parser::do_what(&words[0])
+        }
+    }
+
     fn parse_drop(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
         if words.len() > 1 {
             world
@@ -103,7 +111,7 @@ impl Parser {
         }
     }
 
-    fn parse_place(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
+    fn parse_put(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
         if words.len() > 1 {
             if let Some(pos) = words.iter().position(|r| r == "in" || r == "inside") {
                 if pos != 1 {
@@ -131,7 +139,7 @@ impl Parser {
                 }
             } else if &words[1] == "on" {
                 if words.len() > 2 {
-                    CmdResult::new(false, "TODO: impl putting on armor".to_string())
+                    player.don_armor(&words[1..].join(" "))
                 } else {
                     Parser::do_what(&format!("{} on", &words[0]))
                 }
@@ -200,6 +208,7 @@ impl Parser {
             }
             "close" => Parser::parse_close(words, world),
             "diagno" | "status" => player.status(),
+            "don" => Parser::parse_don(words, player),
             "draw" | "equip" | "hold" | "use" => Parser::parse_equip(words, player),
             "drop" | "remove" | "throw" => Parser::parse_drop(words, world, player),
             "enter" | "go" | "move" => Parser::parse_go(words, world),
@@ -211,7 +220,7 @@ impl Parser {
             "increa" => Parser::parse_increase(words, player),
             "l" | "look" => world.look().unwrap(),
             "open" => Parser::parse_open(words, world),
-            "place" | "put" => Parser::parse_place(words, world, player),
+            "place" | "put" => Parser::parse_put(words, world, player),
             "wait" | "z" => Player::wait(),
             _ => Parser::do_what(&words[0]),
         }

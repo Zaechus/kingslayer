@@ -8,7 +8,7 @@ mod tests {
 
         cli.ask("take leaf");
         assert_eq!(cli.ask("remove leaf"), "Dropped.");
-        assert_eq!(cli.ask("i"), "You are empty-handed.");
+        assert_eq!(cli.ask("i"), "Your inventory is empty.");
         assert!(
             cli.ask("l").contains("iron sword")
                 && cli.ask("l").contains("leaf")
@@ -45,7 +45,7 @@ mod tests {
         );
 
         cli.ask("drop leaf");
-        assert_eq!(cli.ask("i"), "You are empty-handed.");
+        assert_eq!(cli.ask("i"), "Your inventory is empty.");
         assert!(
             cli.ask("l").contains("iron sword")
                 && cli.ask("l").contains("leaf")
@@ -60,7 +60,7 @@ mod tests {
 
         cli.ask("take leaf");
         cli.ask("drop leaf");
-        assert_eq!(cli.ask("i"), "You are empty-handed.");
+        assert_eq!(cli.ask("i"), "Your inventory is empty.");
         cli.ask("take all");
         assert!(
             cli.ask("i").contains("iron sword")

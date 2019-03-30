@@ -65,12 +65,8 @@ impl Item {
         }
     }
 
-    pub fn armor_class(&self) -> i32 {
-        if let Some(ac) = self.armor_class {
-            ac
-        } else {
-            10
-        }
+    pub fn armor_class(&self) -> Option<i32> {
+        self.armor_class
     }
 
     pub fn contents_mut(&mut self) -> &mut Option<ItemMap> {

@@ -63,7 +63,11 @@ impl Player {
 
     fn ac(&self) -> i32 {
         if let Some(armor) = &self.armor {
-            armor.armor_class() + self.dex
+            if let Some(ac) = armor.armor_class() {
+                ac + self.dex
+            } else {
+                10 + self.dex
+            }
         } else {
             10 + self.dex
         }
@@ -164,21 +168,22 @@ impl Player {
     }
 
     pub fn inventory(&self) -> CmdResult {
-        if self.inventory.is_empty() && self.main_hand.is_none() {
-            CmdResult::new(true, "You are empty-handed.".to_string())
-        } else {
-            let mut items_carried = String::new();
-            if let Some(weapon) = &self.main_hand {
-                items_carried.push_str(&format!("Main hand: {}\n", weapon.name()));
-            }
-            if !self.inventory.is_empty() {
-                items_carried.push_str("You are carrying:");
-                for x in self.inventory.iter() {
-                    items_carried = format!("{}\n  {}", items_carried, x.1.name());
-                }
-            }
-            CmdResult::new(true, items_carried)
+        let mut items_carried = String::new();
+        if let Some(weapon) = &self.main_hand {
+            items_carried.push_str(&format!("Main hand: {}\n", weapon.name()));
         }
+        if let Some(armor) = &self.armor {
+            items_carried.push_str(&format!("Armor: {}\n", armor.name()));
+        }
+        if self.inventory.is_empty() {
+            items_carried.push_str("Your inventory is empty.");
+        } else {
+            items_carried.push_str("You are carrying:");
+            for x in self.inventory.iter() {
+                items_carried = format!("{}\n  {}", items_carried, x.1.name());
+            }
+        }
+        CmdResult::new(true, items_carried)
     }
 
     pub fn has(&self, name: &str) -> bool {
@@ -193,10 +198,11 @@ impl Player {
         CmdResult::new(
             false,
             format!(
-                "Level: {}\nHP: ({} / {})\nXP: ({} / {})\nStat points: {}",
+                "Level: {}\nHP: ({} / {})\nAC: {}\nXP: ({} / {})\nStat points: {}",
                 self.lvl,
                 self.hp(),
                 self.hp_cap(),
+                self.ac(),
                 self.xp.0,
                 self.xp.1,
                 self.stat_pts
@@ -307,6 +313,8 @@ impl Player {
             Some(item)
         } else if let Some(item) = self.main_hand.take() {
             Some(item)
+        } else if let Some(item) = self.armor.take() {
+            Some(item)
         } else {
             None
         }
@@ -327,6 +335,34 @@ impl Player {
             )
         } else {
             CmdResult::new(false, format!("You do not have the \"{}\".", weapon_name))
+        }
+    }
+
+    pub fn don_armor(&mut self, armor_name: &str) -> CmdResult {
+        if let Some(item) = self.inventory.remove(armor_name) {
+            if item.armor_class().is_some() {
+                // move old armor back to inventory
+                if let Some(armor) = self.armor.take() {
+                    self.take(armor_name, Some(armor));
+                }
+                self.armor = Some(item);
+                CmdResult::new(
+                true,
+                "Donned.\n(You can remove armor with \"drop\" or by donning a different set or armor)"
+                    .to_string(),
+            )
+            } else {
+                self.inventory.insert(armor_name.to_string(), item);
+                CmdResult::new(
+                    false,
+                    format!(
+                        "You cannot put on the \"{}\", which isn't armor.",
+                        armor_name
+                    ),
+                )
+            }
+        } else {
+            CmdResult::new(false, format!("You do not have the \"{}\".", armor_name))
         }
     }
 

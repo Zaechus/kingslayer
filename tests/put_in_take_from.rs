@@ -21,7 +21,7 @@ mod tests {
                 && cli.ask("l").contains("contains")
                 && !cli.ask("i").contains("leaf")
         );
-        assert_eq!(cli.ask("i"), "You are empty-handed.");
+        assert_eq!(cli.ask("i"), "Your inventory is empty.");
 
         assert_eq!(cli.ask("take leaf from capsule"), "Taken.");
         assert_eq!(cli.ask("take curious object from capsule"), "Taken.");
