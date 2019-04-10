@@ -222,7 +222,7 @@ impl Parser {
             "open" => Parser::parse_open(words, world),
             "place" | "put" => Parser::parse_put(words, world, player),
             "wait" | "z" => Player::wait(),
-            _ => Parser::do_what(&words[0]),
+            _ => CmdResult::new(false, format!("I do not know the word \"{}\".", &words[0])),
         }
     }
 }

@@ -11,6 +11,6 @@ mod tests {
         assert_eq!(cli.ask("inspect leaf"), "It's small, brown, and dry.");
         cli.ask("drop leaf");
         assert!(cli.ask("l").contains("leaf") && !cli.ask("i").contains("leaf"));
-        assert_eq!(cli.ask("inspect leaf"), "It's small, brown, and dry.");
+        assert_eq!(cli.ask("x leaf"), "It's small, brown, and dry.");
     }
 }

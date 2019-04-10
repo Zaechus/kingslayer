@@ -95,13 +95,7 @@
                     "loot": {}
                 }
             },
-            "items": {
-                "shiny red block": {
-                    "name": "shiny red block",
-                    "desc": "A shiny red block is on the ground.",
-                    "inspection": "Well... it's shiny and red."
-                }
-            }
+            "items": {}
         },
         "Long Hallway": {
             "name": "Long Hallway",

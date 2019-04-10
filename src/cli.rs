@@ -33,7 +33,7 @@ impl Cli {
         Self {
             lexer: Lexer::new(),
             player: RefCell::new(Player::new()),
-            world: Cli::get_world_str(json),
+            world: Cli::get_world_json_str(json),
         }
     }
 
@@ -48,7 +48,7 @@ impl Cli {
         serde_json::from_str(&data).expect("Error when creating world from file.")
     }
 
-    fn get_world_str(json: &str) -> RefCell<World> {
+    fn get_world_json_str(json: &str) -> RefCell<World> {
         serde_json::from_str(json).expect("Error when creating world from file.")
     }
 
@@ -71,23 +71,24 @@ impl Cli {
         CmdResult::new(
             false,
             "Some available commands:
-            \tgo, enter <direction>\tmove in through a listed entrance
-            \t\tshort directions: n, s, e, w, ne, nw, se, sw, u, d
-            \t\tlong directions:
-            \t\t   north, south, east, west,
-            \t\t   northeast, northwest, southeast, southwest,
-            \t\t   up, down, other listed entrance\n
-            \ttake\t\tput an item from the room into your inventory
-            \tdrop\t\tdrop an item from your inventory into the room
-            \tl, look\t\tlook around the room
-            \ti, inventory\tprint the contents of your inventory
-            \tx, examine\tshow additional information about an item
-            \tequip\t\tuse an item from your inventory as your default weapon
-            \tkill\t\tattack an enemy with your main hand or a chosen weapon
-            \topen | close\topen/close a pathway
-            \trest\t\treplenish some HP
-            \tincrease\t\tincrease a chosen ability score by 1 if stat points are available
-            \tstatus\t\tdisplay information on the state of your character"
+        go, enter <direction>\tmove in through a listed entrance
+        \tshort directions: n, s, e, w, ne, nw, se, sw, u, d
+        \tlong directions:
+        \t   north, south, east, west,
+        \t   northeast, northwest, southeast, southwest,
+        \t   up, down, other listed entrance\n
+        take\t\tput an item from the room into your inventory
+        drop\t\tdrop an item from your inventory into the room
+        l, look\t\tlook around the room
+        i, inventory\tprint the contents of your inventory
+        x, examine\t\tshow additional information about an item
+        equip\t\tuse an item from your inventory as your default weapon
+        don, put on\tdon a set of armor to increase your armor class
+        kill\t\tattack an enemy with your main hand or a chosen weapon
+        open | close\topen/close a pathway
+        rest\t\treplenish some HP
+        increase\tincrease a chosen ability score by 1 if stat points are available
+        status\t\tdisplay information on the state of your character"
                 .to_string(),
         )
     }
