@@ -325,14 +325,22 @@ impl Player {
         if let Some(item) = self.inventory.remove(weapon_name) {
             // move old main hand back to inventory
             if let Some(weapon) = self.main_hand.take() {
-                self.take(weapon_name, Some(weapon));
+                self.take(&weapon.name(), Some(weapon));
             }
-            self.main_hand = Some(item);
-            CmdResult::new(
-                true,
-                "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
-                    .to_string(),
-            )
+            if item.armor_class().is_none() {
+                self.main_hand = Some(item);
+                CmdResult::new(
+                    true,
+                    "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
+                        .to_string(),
+                )
+            } else {
+                self.take(weapon_name, Some(item));
+                CmdResult::new(
+                    false,
+                    "You cannot equip armor. Use \"don\" instead.".to_string(),
+                )
+            }
         } else {
             CmdResult::new(false, format!("You do not have the \"{}\".", weapon_name))
         }
