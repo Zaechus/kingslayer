@@ -7,8 +7,8 @@ use crate::types::ItemMap;
 #[derive(Serialize, Deserialize)]
 pub struct Enemy {
     hp: i32,
-    xp: i32,
-    damage: i32,
+    xp: u32,
+    damage: u32,
     name: String,
     desc: String,
     inspection: String,
@@ -17,7 +17,7 @@ pub struct Enemy {
 }
 
 impl Enemy {
-    pub fn xp(&self) -> i32 {
+    pub fn xp(&self) -> u32 {
         self.xp
     }
 
@@ -33,7 +33,7 @@ impl Enemy {
         &self.inspection
     }
 
-    pub fn damage(&self) -> i32 {
+    pub fn damage(&self) -> u32 {
         rand::thread_rng().gen_range(1, self.damage + 1)
     }
 
@@ -49,16 +49,16 @@ impl Enemy {
         &self.loot
     }
 
-    pub fn get_hit(&mut self, damage: i32) {
+    pub fn get_hit(&mut self, damage: u32) {
         self.make_angry();
-        self.hp -= damage;
+        self.hp -= damage as i32;
     }
 
     pub fn is_alive(&self) -> bool {
         self.hp > 0
     }
 
-    pub fn drop_loot(&self) -> ItemMap {
-        self.loot.clone()
+    pub fn drop_loot(&mut self) -> ItemMap {
+        self.loot.drain().collect()
     }
 }

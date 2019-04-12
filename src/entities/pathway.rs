@@ -2,7 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct Pathway {
-    name: String,
+    target: String,
     desc: String,
     inspection: String,
     is_closed: Option<bool>,
@@ -10,8 +10,8 @@ pub struct Pathway {
 }
 
 impl Pathway {
-    pub fn name(&self) -> &String {
-        &self.name
+    pub fn target(&self) -> &String {
+        &self.target
     }
 
     pub fn desc(&self) -> String {

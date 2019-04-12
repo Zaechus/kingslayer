@@ -9,17 +9,17 @@ use crate::{
 
 #[derive(Serialize, Deserialize)]
 pub struct Player {
-    hp: (i32, i32),
-    xp: (i32, i32),
+    hp: (i32, u32),
+    xp: (u32, u32),
     in_combat: bool,
-    lvl: i32,
-    stat_pts: i32,
-    strength: i32,
-    dex: i32,
-    con: i32,
-    int: i32,
-    wis: i32,
-    cha: i32,
+    lvl: u32,
+    stat_pts: u32,
+    strength: u32,
+    dex: u32,
+    con: u32,
+    int: u32,
+    wis: u32,
+    cha: u32,
     main_hand: Option<Box<Item>>,
     armor: Option<Box<Item>>,
     inventory: ItemMap,
@@ -53,7 +53,7 @@ impl Player {
         self.hp.0
     }
 
-    pub fn hp_cap(&self) -> i32 {
+    pub fn hp_cap(&self) -> u32 {
         self.hp.1
     }
 
@@ -61,7 +61,7 @@ impl Player {
         self.hp.0 > 0
     }
 
-    fn ac(&self) -> i32 {
+    fn ac(&self) -> u32 {
         if let Some(armor) = &self.armor {
             if let Some(ac) = armor.armor_class() {
                 ac + self.dex
@@ -85,12 +85,12 @@ impl Player {
         }
     }
 
-    pub fn gain_xp(&mut self, gained: i32) {
+    pub fn gain_xp(&mut self, gained: u32) {
         self.xp.0 += gained;
     }
 
     pub fn increase_ability_mod(&mut self, ability_score: &str) -> CmdResult {
-        if self.stat_pts >= 0 {
+        if self.stat_pts > 0 {
             match &ability_score[0..3] {
                 "str" | "dex" | "con" | "int" | "wis" | "cha" => {
                     self.stat_pts -= 1;
@@ -114,7 +114,7 @@ impl Player {
         self.in_combat = false;
     }
 
-    pub fn attack(&mut self) -> Option<i32> {
+    pub fn attack(&mut self) -> Option<u32> {
         if let Some(weapon) = &self.main_hand {
             self.in_combat = true;
             Some(self.deal_damage(weapon.damage()))
@@ -123,7 +123,7 @@ impl Player {
         }
     }
 
-    pub fn attack_with(&mut self, weapon_name: &str) -> Option<i32> {
+    pub fn attack_with(&mut self, weapon_name: &str) -> Option<u32> {
         if let Some(weapon) = self.inventory.get(weapon_name) {
             self.in_combat = true;
             Some(self.deal_damage(weapon.damage()))
@@ -141,14 +141,14 @@ impl Player {
 
     // rest for a random amount of time to regain a random amount of HP
     pub fn rest(&mut self) -> CmdResult {
-        if self.hp() < self.hp_cap() {
+        if self.hp() < self.hp_cap() as i32 {
             if !self.in_combat {
                 let regained_hp = rand::thread_rng().gen_range(1, 7);
                 let new_hp = self.hp() + regained_hp;
-                if new_hp < self.hp_cap() {
+                if new_hp < self.hp_cap() as i32 {
                     self.hp = (new_hp, self.hp_cap());
                 } else {
-                    self.hp = (self.hp_cap(), self.hp_cap());
+                    self.hp = (self.hp_cap() as i32, self.hp_cap());
                 }
                 CmdResult::new(
                     true,
@@ -210,9 +210,9 @@ impl Player {
         )
     }
 
-    pub fn take_damage(&mut self, enemy_name: &str, damage: i32) -> String {
+    pub fn take_damage(&mut self, enemy_name: &str, damage: u32) -> String {
         if rand::thread_rng().gen_range(1, 21) > self.ac() {
-            self.hp = (self.hp.0 - damage, self.hp.1);
+            self.hp = (self.hp.0 - damage as i32, self.hp.1);
             format!(
                 "\nThe {} hit you for {} damage. You have {} HP left.",
                 enemy_name,
@@ -390,7 +390,7 @@ impl Player {
         }
     }
 
-    fn deal_damage(&self, weapon_damage: i32) -> i32 {
+    fn deal_damage(&self, weapon_damage: u32) -> u32 {
         weapon_damage + self.strength
     }
 }

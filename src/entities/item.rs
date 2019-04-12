@@ -5,15 +5,15 @@ use serde_derive::{Deserialize, Serialize};
 use crate::types::ItemMap;
 
 // An object to be interacted with by the user
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Item {
     name: String,
     desc: String,
     inspection: String,
     is_closed: Option<bool>,
     is_locked: Option<bool>,
-    damage: Option<i32>,
-    armor_class: Option<i32>,
+    damage: Option<u32>,
+    armor_class: Option<u32>,
     contents: Option<ItemMap>,
 }
 
@@ -57,7 +57,7 @@ impl Item {
         self.damage.is_some()
     }
 
-    pub fn damage(&self) -> i32 {
+    pub fn damage(&self) -> u32 {
         if let Some(damage) = self.damage {
             rand::thread_rng().gen_range(1, damage + 1)
         } else {
@@ -65,7 +65,7 @@ impl Item {
         }
     }
 
-    pub fn armor_class(&self) -> Option<i32> {
+    pub fn armor_class(&self) -> Option<u32> {
         self.armor_class
     }
 

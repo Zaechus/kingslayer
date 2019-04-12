@@ -7,7 +7,7 @@ use serde_derive::{Deserialize, Serialize};
 use crate::{
     input::{Lexer, Parser},
     player::Player,
-    types::{CmdResult, ItemMap, WorldError},
+    types::{CmdResult, ItemMap},
     utils::read_line,
     world::World,
 };
@@ -49,7 +49,7 @@ impl Cli {
     }
 
     fn get_world_json_str(json: &str) -> RefCell<World> {
-        serde_json::from_str(json).expect("Error when creating world from file.")
+        serde_json::from_str(json).expect("Error when creating world from string.")
     }
 
     pub fn prompt() -> String {
@@ -117,7 +117,7 @@ impl Cli {
                 format!(
                     "{}{}",
                     res.output(),
-                    self.combat().expect("There is no room.")
+                    self.combat(&mut self.world.borrow_mut())
                 )
             } else {
                 res.output().to_string()
@@ -128,44 +128,41 @@ impl Cli {
     }
 
     // manages actions taken by Enemies in the current room
-    fn combat(&self) -> Result<String, WorldError> {
-        let curr_room = &self.world.borrow().curr_room();
+    fn combat(&self, world: &mut World) -> String {
+        let mut events_str = String::new();
+        let mut loot: ItemMap = ItemMap::new();
 
-        if let Some(room) = self.world.borrow_mut().rooms_mut().get_mut(curr_room) {
-            let mut events_str = String::new();
-            let mut loot: ItemMap = ItemMap::new();
+        for enemy in world.get_curr_room_mut().enemies_mut().values_mut() {
+            if enemy.is_angry() && enemy.is_alive() {
+                let enemy_damage = enemy.damage();
 
-            for enemy in room.enemies_mut().values() {
-                if enemy.is_angry() && enemy.is_alive() {
-                    let enemy_damage = enemy.damage();
+                events_str.push_str(
+                    &self
+                        .player
+                        .borrow_mut()
+                        .take_damage(enemy.name(), enemy_damage),
+                );
 
-                    events_str.push_str(
-                        &self
-                            .player
-                            .borrow_mut()
-                            .take_damage(enemy.name(), enemy_damage),
-                    );
-
-                    self.player.borrow_mut().engage_combat();
-                }
-                if !enemy.is_alive() {
-                    events_str.push_str(&format!("\nYou gained {} XP.\n", enemy.xp()));
-                    self.player.borrow_mut().disengage_combat();
-                    self.player.borrow_mut().gain_xp(enemy.xp());
-                    loot.extend(enemy.drop_loot());
-                }
+                self.player.borrow_mut().engage_combat();
             }
-            room.items_mut().extend(loot);
-            room.enemies_mut().retain(|_, e| e.is_alive());
-
-            if !self.player.borrow().is_alive() {
-                events_str.push_str("\nYou died.");
-            } else {
-                events_str.push_str(&self.player.borrow_mut().level_up());
+            if !enemy.is_alive() {
+                events_str.push_str(&format!("\nYou gained {} XP.\n", enemy.xp()));
+                self.player.borrow_mut().disengage_combat();
+                self.player.borrow_mut().gain_xp(enemy.xp());
+                loot.extend(enemy.drop_loot());
             }
-            Ok(events_str)
-        } else {
-            Err(WorldError::NoRoom)
         }
+        world.get_curr_room_mut().items_mut().extend(loot);
+        world
+            .get_curr_room_mut()
+            .enemies_mut()
+            .retain(|_, e| e.is_alive());
+
+        if !self.player.borrow().is_alive() {
+            events_str.push_str("\nYou died.");
+        } else {
+            events_str.push_str(&self.player.borrow_mut().level_up());
+        }
+        events_str
     }
 }

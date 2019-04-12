@@ -6,7 +6,7 @@
             "desc": "This isn't a very large or clean closet.",
             "paths": {
                 "door": {
-                    "name": "Circle Room",
+                    "target": "Circle Room",
                     "desc": "The door leads back into the room.",
                     "inspection": "The door is plain and wooden."
                 }
@@ -19,18 +19,18 @@
             "desc": "You stand in a circular room crafted in stone.",
             "paths": {
                 "door": {
-                    "name": "Closet",
+                    "target": "Closet",
                     "desc": "There is a door on one side.",
                     "inspection": "The door is plain and wooden.",
                     "is_closed": true
                 },
                 "e": {
-                    "name": "Next Room",
+                    "target": "Next Room",
                     "desc": "There is a pathway to the east.",
                     "inspection": "The opening is spacious."
                 },
                 "s": {
-                    "name": "Long Hallway",
+                    "target": "Long Hallway",
                     "desc": "There is a hallway to the south.",
                     "inspection": "The hallway seems narrow and foreboding."
                 }
@@ -61,7 +61,7 @@
             "desc": "You are in the next room over.",
             "paths": {
                 "w": {
-                    "name": "Circle Room",
+                    "target": "Circle Room",
                     "desc": "There is a pathway to the west.",
                     "inspection": "The path expands into a larger room."
                 }
@@ -102,7 +102,7 @@
             "desc": "You are in a long, dark hallway.",
             "paths": {
                 "n": {
-                    "name": "Circle Room",
+                    "target": "Circle Room",
                     "desc": "There is a room to the north.",
                     "inspection": "The hallway seems narrow and foreboding."
                 }
