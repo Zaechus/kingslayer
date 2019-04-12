@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct CmdResult {
     is_action: bool,
     output: String,

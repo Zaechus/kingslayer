@@ -3,7 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 use crate::types::{EnemyMap, ItemMap, PathMap};
 
 // A section of the world connected by paths
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Room {
     name: String,
     desc: String,

@@ -12,8 +12,8 @@ use crate::{
     world::World,
 };
 
-// A command line interface for controlling interactions between objects in a game
-#[derive(Serialize, Deserialize)]
+/// A command line interface for controlling interactions between objects in a game
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Cli {
     lexer: Lexer,
     player: RefCell<Player>,
@@ -21,6 +21,7 @@ pub struct Cli {
 }
 
 impl Cli {
+    /// Create a Cli from a JSON file
     pub fn from_json_file(path: &str) -> Self {
         Self {
             lexer: Lexer::new(),
@@ -29,6 +30,7 @@ impl Cli {
         }
     }
 
+    /// Create a Cli from a string containing JSON
     pub fn from_json_str(json: &str) -> Self {
         Self {
             lexer: Lexer::new(),
@@ -52,6 +54,7 @@ impl Cli {
         serde_json::from_str(json).expect("Error when creating world from string.")
     }
 
+    /// Prompts the user for input with stdin
     pub fn prompt() -> String {
         loop {
             print!("\n> ");
@@ -67,6 +70,7 @@ impl Cli {
         }
     }
 
+    /// Returns a helpful list of game commands
     pub fn help() -> CmdResult {
         CmdResult::new(
             false,
@@ -93,6 +97,7 @@ impl Cli {
         )
     }
 
+    /// Start a basic Kingslayer game for the command line
     pub fn start(&self) {
         println!("Type \"help\" to learn come commands.\n");
         println!("Use \"increase\" to use your initial stat points.\n");
@@ -102,7 +107,7 @@ impl Cli {
         }
     }
 
-    // handle user input
+    /// Handle user input and return the result of commands and events
     pub fn ask(&self, input: &str) -> String {
         let command = self.lexer.lex(input);
 

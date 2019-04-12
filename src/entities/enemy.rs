@@ -4,7 +4,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::types::ItemMap;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Enemy {
     hp: i32,
     xp: u32,

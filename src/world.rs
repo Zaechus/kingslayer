@@ -7,7 +7,7 @@ use crate::{
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
 // A World is a graph data structure that encapsulates a collection of Room nodes.
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct World {
     curr_room: String,
     rooms: RoomMap,

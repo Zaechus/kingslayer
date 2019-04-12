@@ -5,7 +5,7 @@ use serde_derive::{Deserialize, Serialize};
 use crate::types::ItemMap;
 
 // An object to be interacted with by the user
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
     name: String,
     desc: String,
