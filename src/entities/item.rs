@@ -35,7 +35,7 @@ impl Item {
 
     pub fn desc(&self) -> String {
         if let Some(ref contents) = self.contents {
-            if !contents.is_empty() {
+            if !contents.is_empty() && !self.is_closed.unwrap_or(false) {
                 let mut desc = format!("{}\nThe {} contains:", self.desc, self.name);
                 for x in contents.iter() {
                     desc = format!("{}\n  {}", desc, x.1.name());
@@ -71,5 +71,15 @@ impl Item {
 
     pub fn contents_mut(&mut self) -> &mut Option<ItemMap> {
         &mut self.contents
+    }
+
+    pub fn is_closed(&self) -> Option<bool> {
+        self.is_closed
+    }
+
+    pub fn open(&mut self) {
+        if self.is_closed.is_some() {
+            self.is_closed = Some(false)
+        }
     }
 }

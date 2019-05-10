@@ -70,16 +70,23 @@ impl World {
         }
     }
 
-    pub fn open_path(&mut self, path: &str) -> CmdResult {
-        if let Some(p) = self.get_curr_room_mut().paths_mut().get_mut(path) {
-            if p.is_closed() == Some(true) {
-                p.open();
+    pub fn open(&mut self, name: &str) -> CmdResult {
+        if let Some(path) = self.get_curr_room_mut().paths_mut().get_mut(name) {
+            if path.is_closed() == Some(true) {
+                path.open();
                 CmdResult::new(true, "Opened.".to_string())
             } else {
-                CmdResult::new(false, format!("The {} is already opened.", path))
+                CmdResult::new(false, format!("The {} is already opened.", name))
+            }
+        } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
+            if item.is_closed() == Some(true) {
+                item.open();
+                CmdResult::new(true, "Opened.".to_string())
+            } else {
+                CmdResult::new(false, format!("The {} is already opened.", name))
             }
         } else {
-            CmdResult::new(false, format!("There is no \"{}\".", path))
+            CmdResult::new(false, format!("There is no \"{}\".", name))
         }
     }
 

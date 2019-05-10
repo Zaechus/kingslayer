@@ -98,8 +98,13 @@ impl Parser {
     }
 
     fn parse_open(words: &[String], world: &mut World) -> CmdResult {
+        let obj = &words[1..].join(" ");
         if words.len() > 1 {
-            world.open_path(&words[1..].join(" "))
+            if world.get_curr_room().has_path(obj) || world.get_curr_room().has_item(obj) {
+                world.open(obj)
+            } else {
+                CmdResult::new(false, "TODO: Player open".to_string())
+            }
         } else {
             Parser::do_what(&words[0])
         }
