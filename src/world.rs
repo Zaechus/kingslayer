@@ -1,7 +1,9 @@
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    entities::{Item, Room},
+    entity::{Item, Room},
+    player::Player,
+    response::dont_have,
     types::{CmdResult, ItemMap, RoomMap},
 };
 
@@ -90,16 +92,23 @@ impl World {
         }
     }
 
-    pub fn close_path(&mut self, path: &str) -> CmdResult {
-        if let Some(p) = self.get_curr_room_mut().paths_mut().get_mut(path) {
-            if p.is_closed() == Some(true) {
-                CmdResult::new(false, format!("The {} is already closed.", path))
+    pub fn close(&mut self, name: &str) -> CmdResult {
+        if let Some(path) = self.get_curr_room_mut().paths_mut().get_mut(name) {
+            if path.is_closed() == Some(true) {
+                CmdResult::new(false, format!("The {} is already closed.", name))
             } else {
-                p.close();
+                path.close();
+                CmdResult::new(true, "Closed.".to_string())
+            }
+        } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
+            if item.is_closed() == Some(true) {
+                CmdResult::new(false, format!("The {} is already closed.", name))
+            } else {
+                item.close();
                 CmdResult::new(true, "Closed.".to_string())
             }
         } else {
-            CmdResult::new(false, format!("There is no \"{}\".", path))
+            CmdResult::new(false, format!("There is no \"{}\".", name))
         }
     }
 
@@ -130,7 +139,7 @@ impl World {
                     CmdResult::new(true, res)
                 }
             } else {
-                CmdResult::new(false, format!("You do not have the \"{}\".", weapon))
+                dont_have(weapon)
             }
         } else {
             CmdResult::new(false, format!("There is no \"{}\" here.", enemy_name))
@@ -142,15 +151,40 @@ impl World {
         self.get_curr_room_mut().items_mut().remove(name)
     }
 
-    pub fn give_from(&mut self, item: &str, container: &str) -> Option<Box<Item>> {
-        if let Some(cont) = self.get_curr_room_mut().items_mut().get_mut(container) {
-            if let Some(ref mut contents) = cont.contents_mut() {
-                contents.remove(item)
+    // take an Item from a container Item in the current Room
+    pub fn give_from(
+        &mut self,
+        player: &mut Player,
+        item_name: &str,
+        container_name: &str,
+    ) -> CmdResult {
+        let is_closed = if let Some(container) = self.get_curr_room().items().get(container_name) {
+            container.is_closed()
+        } else {
+            return dont_have(container_name);
+        };
+        if is_closed == Some(true) {
+            CmdResult::new(false, format!("The {} is closed.", container_name))
+        } else if let Some(container) = self.get_curr_room_mut().items_mut().get_mut(container_name)
+        {
+            if let Some(ref mut contents) = container.contents_mut() {
+                if let Some(item) = contents.remove(item_name) {
+                    player.take(item_name, Some(item));
+                    CmdResult::new(true, "Taken.".to_string())
+                } else {
+                    CmdResult::new(
+                        false,
+                        format!("There is no {} in the {}.", item_name, container_name),
+                    )
+                }
             } else {
-                None
+                CmdResult::new(
+                    false,
+                    format!("The {} cannot hold anything.", container_name),
+                )
             }
         } else {
-            None
+            CmdResult::new(false, format!("There is no {} here.", container_name))
         }
     }
 
@@ -166,30 +200,37 @@ impl World {
                 .insert(obj.name().to_string(), obj);
             CmdResult::new(true, "Dropped.".to_string())
         } else {
-            CmdResult::new(false, format!("You do not have the \"{}\".", name))
+            dont_have(name)
         }
     }
 
     // insert an Item into a container Item in the current Room
     pub fn insert_into(
         &mut self,
-        name: &str,
-        container: &str,
-        item: Option<Box<Item>>,
+        player: &mut Player,
+        item_name: &str,
+        container_name: &str,
     ) -> CmdResult {
-        if let Some(obj) = item {
-            if let Some(cont) = self.get_curr_room_mut().items_mut().get_mut(container) {
-                if let Some(ref mut contents) = cont.contents_mut() {
+        let is_closed = if let Some(container) = self.get_curr_room().items().get(container_name) {
+            container.is_closed()
+        } else {
+            return dont_have(container_name);
+        };
+        if is_closed == Some(true) {
+            CmdResult::new(false, format!("The {} is closed.", container_name))
+        } else if let Some(obj) = player.remove(item_name) {
+            if let Some(container) = self.get_curr_room_mut().items_mut().get_mut(container_name) {
+                if let Some(ref mut contents) = container.contents_mut() {
                     contents.insert(obj.name().to_string(), obj);
                     CmdResult::new(true, "Placed.".to_string())
                 } else {
                     CmdResult::new(true, "You can not put anything in there.".to_string())
                 }
             } else {
-                CmdResult::new(false, format!("There is no \"{}\" here.", container))
+                CmdResult::new(false, format!("There is no \"{}\" here.", container_name))
             }
         } else {
-            CmdResult::new(false, format!("You do not have the \"{}\".", name))
+            dont_have(item_name)
         }
     }
 }

@@ -34,16 +34,6 @@ impl Room {
     pub fn paths_mut(&mut self) -> &mut PathMap {
         &mut self.paths
     }
-    pub fn has_path(&self, path: &str) -> bool {
-        self.paths.contains_key(path)
-    }
-
-    pub fn enemies(&self) -> &EnemyMap {
-        &self.enemies
-    }
-    pub fn enemies_mut(&mut self) -> &mut EnemyMap {
-        &mut self.enemies
-    }
 
     pub fn items(&self) -> &ItemMap {
         &self.items
@@ -51,7 +41,11 @@ impl Room {
     pub fn items_mut(&mut self) -> &mut ItemMap {
         &mut self.items
     }
-    pub fn has_item(&self, item: &str) -> bool {
-        self.items.contains_key(item)
+
+    pub fn enemies(&self) -> &EnemyMap {
+        &self.enemies
+    }
+    pub fn enemies_mut(&mut self) -> &mut EnemyMap {
+        &mut self.enemies
     }
 }

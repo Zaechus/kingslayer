@@ -8,7 +8,7 @@ use crate::{
     input::{Lexer, Parser},
     player::Player,
     types::{CmdResult, ItemMap},
-    utils::read_line,
+    util::read_line,
     world::World,
 };
 
@@ -75,21 +75,21 @@ impl Cli {
         CmdResult::new(
             false,
             "Some available commands:
-        go, enter <direction>\tmove in through a listed entrance
+        go, enter <direction>\tmove through a listed entrance
         \tshort directions: n, s, e, w, ne, nw, se, sw, u, d
         \tlong directions:
         \t   north, south, east, west,
         \t   northeast, northwest, southeast, southwest,
-        \t   up, down, other listed entrance\n
+        \t   up, down, (other listed entrance)\n
         take\t\tput an item from the room into your inventory
         drop\t\tdrop an item from your inventory into the room
         l, look\t\tlook around the room
         i, inventory\tprint the contents of your inventory
         x, examine\t\tshow additional information about an item
-        equip\t\tuse an item from your inventory as your default weapon
+        draw, equip\t\tuse an item from your inventory as your default weapon
         don, put on\tdon a set of armor to increase your armor class
         kill\t\tattack an enemy with your main hand or a chosen weapon
-        open | close\topen/close a pathway
+        open | close\topen/close a container or pathway
         rest\t\treplenish some HP
         increase\tincrease a chosen ability score by 1 if stat points are available
         status\t\tdisplay information on the state of your character"
@@ -99,7 +99,7 @@ impl Cli {
 
     /// Start a basic Kingslayer game for the command line
     pub fn start(&self) {
-        println!("Type \"help\" to learn come commands.\n");
+        println!("type \"help\" to learn some commond commands.\n");
         println!("Use \"increase\" to use your initial stat points.\n");
         println!("{}", self.ask("l"));
         while self.player.borrow().is_alive() {

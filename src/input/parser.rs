@@ -1,22 +1,16 @@
 use serde_derive::{Deserialize, Serialize};
 
-use crate::{cli::Cli, player::Player, types::CmdResult, world::World};
+use crate::{cli::Cli, player::Player, response::do_what, types::CmdResult, world::World};
 
 #[derive(Serialize, Deserialize)]
 pub struct Parser;
 
 impl Parser {
-    fn do_what(word: &str) -> CmdResult {
-        CmdResult::new(false, format!("What do you want to {}?", word))
-    }
-
     fn parse_attack(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
         if words.len() > 1 {
             if let Some(pos) = words.iter().position(|r| r == "with") {
-                let damage = player.attack_with(&words[pos + 1..].join(" "));
-
                 world.harm_enemy(
-                    damage,
+                    player.attack_with(&words[pos + 1..].join(" ")),
                     &words[1..pos].join(" "),
                     &words[pos + 1..].join(" "),
                 )
@@ -26,26 +20,24 @@ impl Parser {
                 if let Some(main_hand) = player.main_hand() {
                     world.harm_enemy(damage, &words[1..].join(" "), &main_hand.name())
                 } else {
-                    CmdResult::new(
-                        false,
-                        format!(
-                            "What do you want to {} the {} with?",
-                            words[0],
-                            &words[1..].join(" ")
-                        ),
-                    )
+                    do_what(&format!("{} the {} with?", words[0], &words[1..].join(" ")))
                 }
             }
         } else {
-            Parser::do_what(&words[0])
+            do_what(&words[0])
         }
     }
 
-    fn parse_close(words: &[String], world: &mut World) -> CmdResult {
+    fn parse_close(words: &[String], player: &mut Player, world: &mut World) -> CmdResult {
+        let obj = &words[1..].join(" ");
         if words.len() > 1 {
-            world.close_path(&words[1..].join(" "))
+            if player.has(obj) {
+                player.close(obj)
+            } else {
+                world.close(obj)
+            }
         } else {
-            Parser::do_what(&words[0])
+            do_what(&words[0])
         }
     }
 
@@ -53,7 +45,7 @@ impl Parser {
         if words.len() > 1 {
             player.don_armor(&words[1..].join(" "))
         } else {
-            Parser::do_what(&words[0])
+            do_what(&words[0])
         }
     }
 
@@ -61,10 +53,7 @@ impl Parser {
         if words.len() > 1 {
             world.insert(&words[1..].join(" "), player.remove(&words[1..].join(" ")))
         } else {
-            CmdResult::new(
-                false,
-                format!("What do you want to {} from your inventory?", words[0]),
-            )
+            do_what(&format!("{} from your inventory?", words[0]))
         }
     }
 
@@ -72,7 +61,7 @@ impl Parser {
         if words.len() > 1 {
             player.equip(&words[1..].join(" "))
         } else {
-            Parser::do_what(&words[0])
+            do_what(&words[0])
         }
     }
 
@@ -88,25 +77,23 @@ impl Parser {
         if words.len() > 1 {
             player.increase_ability_mod(&words[1])
         } else {
-            CmdResult::new(
-                false,
-                "What do you want to increase?
-                    \r(strength, dexterity, constitution, intellect, wisdom, charisma)"
-                    .to_string(),
+            do_what(
+                "increase?
+                    \r(strength, dexterity, constitution, intellect, wisdom, charisma)",
             )
         }
     }
 
-    fn parse_open(words: &[String], world: &mut World) -> CmdResult {
+    fn parse_open(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
         let obj = &words[1..].join(" ");
         if words.len() > 1 {
-            if world.get_curr_room().has_path(obj) || world.get_curr_room().has_item(obj) {
-                world.open(obj)
+            if player.has(obj) {
+                player.open(obj)
             } else {
-                CmdResult::new(false, "TODO: Player open".to_string())
+                world.open(obj)
             }
         } else {
-            Parser::do_what(&words[0])
+            do_what(&words[0])
         }
     }
 
@@ -115,36 +102,30 @@ impl Parser {
             if let Some(pos) = words.iter().position(|r| r == "in" || r == "inside") {
                 if pos != 1 {
                     if player.has(&words[pos + 1..].join(" ")) {
-                        player.put_in(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+                        player.insert_into(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                     } else {
                         world.insert_into(
+                            player,
                             &words[1..pos].join(" "),
                             &words[pos + 1..].join(" "),
-                            player.remove(&words[1..pos].join(" ")),
                         )
                     }
                 } else if words.len() < 3 {
-                    Parser::do_what(&words[0])
+                    do_what(&words[0])
                 } else {
-                    CmdResult::new(
-                        false,
-                        format!(
-                            "What do you want to place in the {}?",
-                            &words[1..].join(" ")
-                        ),
-                    )
+                    do_what(&format!("place in the {}?", &words[1..].join(" ")))
                 }
             } else if &words[1] == "on" {
                 if words.len() > 2 {
                     player.don_armor(&words[1..].join(" "))
                 } else {
-                    Parser::do_what(&format!("{} on", &words[0]))
+                    do_what(&format!("{} on", &words[0]))
                 }
             } else {
-                Parser::do_what(&format!("{} the {} in", words[0], &words[1..].join(" ")))
+                do_what(&format!("{} the {} in", words[0], &words[1..].join(" ")))
             }
         } else {
-            Parser::do_what(&words[0])
+            do_what(&words[0])
         }
     }
 
@@ -157,9 +138,10 @@ impl Parser {
                 if player.has(&words[pos + 1..].join(" ")) {
                     player.take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
                 } else {
-                    player.take(
+                    world.give_from(
+                        player,
                         &words[1..pos].join(" "),
-                        world.give_from(&words[1..pos].join(" "), &words[pos + 1..].join(" ")),
+                        &words[pos + 1..].join(" "),
                     )
                 }
             } else if words[1] == "all" {
@@ -170,7 +152,7 @@ impl Parser {
                 player.take(&words[1..].join(" "), world.give(&words[1..].join(" ")))
             }
         } else {
-            Parser::do_what(&words[0])
+            do_what(&words[0])
         }
     }
 
@@ -187,7 +169,7 @@ impl Parser {
                 )
             }
         } else {
-            Parser::do_what(&words[0])
+            do_what(&words[0])
         }
     }
 
@@ -203,7 +185,7 @@ impl Parser {
             "attack" | "cut" | "hit" | "kill" | "slay" => {
                 Parser::parse_attack(words, world, player)
             }
-            "close" => Parser::parse_close(words, world),
+            "close" => Parser::parse_close(words, player, world),
             "diagno" | "status" => player.status(),
             "don" => Parser::parse_don(words, player),
             "draw" | "equip" | "hold" | "use" => Parser::parse_equip(words, player),
@@ -213,11 +195,11 @@ impl Parser {
             "get" | "pick" | "take" => Parser::parse_take(words, world, player),
             "heal" | "rest" | "sleep" => player.rest(),
             "help" => Cli::help(),
-            "i" | "invent" => player.inventory(),
+            "i" | "invent" => player.print_inventory(),
             "increa" => Parser::parse_increase(words, player),
             "l" | "look" => world.look(),
-            "open" => Parser::parse_open(words, world),
-            "place" | "put" => Parser::parse_put(words, world, player),
+            "open" => Parser::parse_open(words, world, player),
+            "insert" | "place" | "put" => Parser::parse_put(words, world, player),
             "wait" | "z" => Player::wait(),
             _ => CmdResult::new(false, format!("I do not know the word \"{}\".", &words[0])),
         }

@@ -113,6 +113,7 @@
                     "name": "capsule",
                     "desc": "There is a capsule here.",
                     "inspection": "The capsule appears to be able to hold things.",
+                    "is_closed": true,
                     "contents": {
                         "curious object": {
                             "name": "curious object",

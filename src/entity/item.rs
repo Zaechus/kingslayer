@@ -20,7 +20,7 @@ pub struct Item {
 impl Item {
     pub fn name(&self) -> String {
         if let Some(ref contents) = self.contents {
-            if !contents.is_empty() {
+            if !contents.is_empty() && !self.is_closed.unwrap_or(false) {
                 let mut desc = format!("{}; it contains:", self.name);
                 for x in contents.iter() {
                     desc = format!("{}\n    {}", desc, x.1.name());
@@ -80,6 +80,11 @@ impl Item {
     pub fn open(&mut self) {
         if self.is_closed.is_some() {
             self.is_closed = Some(false)
+        }
+    }
+    pub fn close(&mut self) {
+        if self.is_closed.is_some() {
+            self.is_closed = Some(true)
         }
     }
 }
