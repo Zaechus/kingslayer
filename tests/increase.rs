@@ -3,7 +3,7 @@ mod tests {
     use kingslayer::Cli;
 
     #[test]
-    fn increase() {
+    fn increase_stat_pts() {
         let cli = Cli::from_json_file("data/world.json");
 
         assert!(cli.ask("status").contains("Stat points: 4"));
@@ -26,5 +26,6 @@ mod tests {
         assert!(cli
             .ask("increase wisdom")
             .contains("You do not have any stat points."));
+        assert!(cli.ask("stats").contains(""));
     }
 }

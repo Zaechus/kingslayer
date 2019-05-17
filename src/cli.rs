@@ -90,7 +90,7 @@ impl Cli {
         don, put on\tdon a set of armor to increase your armor class
         kill\t\tattack an enemy with your main hand or a chosen weapon
         open | close\topen/close a container or pathway
-        rest\t\treplenish some HP
+        heal\t\treplenish some HP
         increase\tincrease a chosen ability score by 1 if stat points are available
         status\t\tdisplay information on the state of your character"
                 .to_string(),

@@ -46,6 +46,8 @@ impl World {
             Some(CmdResult::new(true, item.inspection().to_string()))
         } else if let Some(enemy) = self.get_curr_room().enemies().get(name) {
             Some(CmdResult::new(true, enemy.inspection().to_string()))
+        } else if let Some(ally) = self.get_curr_room().allies().get(name) {
+            Some(CmdResult::new(true, ally.inspection().to_string()))
         } else {
             None
         }

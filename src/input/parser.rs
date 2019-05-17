@@ -129,6 +129,10 @@ impl Parser {
         }
     }
 
+    fn parse_stats(player: &mut Player) -> CmdResult {
+        player.stats()
+    }
+
     fn parse_take(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
         if words.len() > 1 {
             if let Some(pos) = words
@@ -200,6 +204,7 @@ impl Parser {
             "l" | "look" => world.look(),
             "open" => Parser::parse_open(words, world, player),
             "insert" | "place" | "put" => Parser::parse_put(words, world, player),
+            "stats" => Parser::parse_stats(player),
             "wait" | "z" => Player::wait(),
             _ => CmdResult::new(false, format!("I do not know the word \"{}\".", &words[0])),
         }

@@ -7,6 +7,7 @@ mod tests {
         let cli = Cli::from_json_file("data/world.json");
 
         cli.ask("take leaf");
+        cli.ask("n");
         assert_eq!(cli.ask("remove leaf"), "Dropped.");
         assert_eq!(cli.ask("i"), "Your inventory is empty.");
         assert!(
@@ -16,8 +17,8 @@ mod tests {
                 && !cli.ask("i").contains("leaf")
         );
 
+        cli.ask("n");
         cli.ask("take the iron sword");
-        cli.ask("take iron sword");
         assert!(
             cli.ask("i").contains("iron sword")
                 && !cli.ask("i").contains("leaf")
@@ -59,6 +60,7 @@ mod tests {
         let cli = Cli::from_json_file("data/world.json");
 
         cli.ask("take leaf");
+        cli.ask("n");
         cli.ask("drop leaf");
         assert_eq!(cli.ask("i"), "Your inventory is empty.");
         cli.ask("take all");

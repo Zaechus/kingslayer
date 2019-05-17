@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use crate::types::{EnemyMap, ItemMap, PathMap};
+use crate::types::{AllyMap, EnemyMap, ItemMap, PathMap};
 
 // A section of the world connected by paths
 #[derive(Debug, Serialize, Deserialize)]
@@ -9,6 +9,7 @@ pub struct Room {
     desc: String,
     paths: PathMap,
     enemies: EnemyMap,
+    allies: AllyMap,
     items: ItemMap,
 }
 
@@ -20,6 +21,9 @@ impl Room {
             desc.push_str(&format!("\n{}", &(x.1).desc()));
         }
         for x in self.enemies.iter() {
+            desc.push_str(&format!("\n{}", &x.1.desc()));
+        }
+        for x in self.allies.iter() {
             desc.push_str(&format!("\n{}", &x.1.desc()));
         }
         for x in self.items.iter() {
@@ -48,4 +52,11 @@ impl Room {
     pub fn enemies_mut(&mut self) -> &mut EnemyMap {
         &mut self.enemies
     }
+
+    pub fn allies(&self) -> &AllyMap {
+        &self.allies
+    }
+    // pub fn allies_mut(&mut self) -> &mut AllyMap {
+    //     &mut self.allies
+    // }
 }

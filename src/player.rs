@@ -5,6 +5,7 @@ use serde_derive::{Deserialize, Serialize};
 use crate::{
     entity::Item,
     response::dont_have,
+    stats::Stats,
     types::{CmdResult, ItemMap},
 };
 
@@ -14,13 +15,7 @@ pub struct Player {
     xp: (u32, u32),
     in_combat: bool,
     lvl: u32,
-    stat_pts: u32,
-    strength: u32,
-    dex: u32,
-    con: u32,
-    int: u32,
-    wis: u32,
-    cha: u32,
+    stats: Stats,
     main_hand: Option<Box<Item>>,
     armor: Option<Box<Item>>,
     inventory: ItemMap,
@@ -33,13 +28,7 @@ impl Player {
             xp: (0, 1000),
             in_combat: false,
             lvl: 1,
-            stat_pts: 4,
-            strength: 0,
-            dex: 0,
-            con: 0,
-            int: 0,
-            wis: 0,
-            cha: 0,
+            stats: Stats::new(),
             main_hand: None,
             armor: None,
             inventory: ItemMap::new(),
@@ -49,12 +38,12 @@ impl Player {
     fn ac(&self) -> u32 {
         if let Some(armor) = &self.armor {
             if let Some(ac) = armor.armor_class() {
-                ac + self.dex
+                ac + self.stats.dex
             } else {
-                10 + self.dex
+                10 + self.stats.dex
             }
         } else {
-            10 + self.dex
+            10 + self.stats.dex
         }
     }
 
@@ -97,7 +86,7 @@ impl Player {
     }
 
     fn deal_damage(&self, weapon_damage: u32) -> u32 {
-        weapon_damage + self.strength
+        weapon_damage + self.stats.strngth
     }
 
     pub fn disengage_combat(&mut self) {
@@ -179,10 +168,10 @@ impl Player {
     }
 
     pub fn increase_ability_mod(&mut self, ability_score: &str) -> CmdResult {
-        if self.stat_pts > 0 {
+        if self.stats.pts > 0 {
             match &ability_score[0..3] {
                 "str" | "dex" | "con" | "int" | "wis" | "cha" => {
-                    self.stat_pts -= 1;
+                    self.stats.pts -= 1;
                     CmdResult::new(true, "Ability modifier increased by one.".to_string())
                 }
                 _ => CmdResult::new(
@@ -244,7 +233,7 @@ impl Player {
             self.xp.0 -= self.xp.1;
             self.xp.1 = 1800 * (self.lvl - 2).pow(2) + 1000;
             self.lvl += 1;
-            self.stat_pts += self.lvl + 3;
+            self.stats.pts += self.lvl + 3;
             format!("You advanced to level {}!", self.lvl)
         } else {
             String::new()
@@ -328,6 +317,10 @@ impl Player {
         }
     }
 
+    pub fn stats(&self) -> CmdResult {
+        CmdResult::new(true, self.stats.print_stats())
+    }
+
     pub fn status(&self) -> CmdResult {
         CmdResult::new(
             false,
@@ -339,7 +332,7 @@ impl Player {
                 self.ac(),
                 self.xp.0,
                 self.xp.1,
-                self.stat_pts
+                self.stats.pts
             ),
         )
     }

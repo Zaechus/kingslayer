@@ -12,7 +12,36 @@
                 }
             },
             "enemies": {},
+            "allies": {},
             "items": {}
+        },
+        "Small Cave": {
+            "name": "Small Cave",
+            "desc": "This isn't a very large or clean closet.",
+            "paths": {
+                "s": {
+                    "target": "Circle Room",
+                    "desc": "The opening of the cave leads back into the circle room.",
+                    "inspection": "The edges of the opening are cracked and rough."
+                }
+            },
+            "enemies": {},
+            "allies": {
+                "old man": {
+                    "hp": 1,
+                    "name": "old man",
+                    "desc": "An old man stoically stands at the back of the gave.",
+                    "inspection": "\"Take the sword, brave one.\""
+                }
+            },
+            "items": {
+                "iron sword": {
+                    "name": "iron sword",
+                    "desc": "There is an iron sword on the ground.",
+                    "inspection": "The iron sword is of crude workmanship, but it should be usable.",
+                    "damage": 6
+                }
+            }
         },
         "Circle Room": {
             "name": "Circle Room",
@@ -24,25 +53,25 @@
                     "inspection": "The door is plain and wooden.",
                     "is_closed": true
                 },
-                "e": {
-                    "target": "Next Room",
-                    "desc": "There is a pathway to the east.",
-                    "inspection": "The opening is spacious."
+                "n": {
+                    "target": "Small Cave",
+                    "desc": "There is a mouth of a cave to the north.",
+                    "inspection": "The cave opening glows with a soft flickering light."
                 },
                 "s": {
                     "target": "Long Hallway",
                     "desc": "There is a hallway to the south.",
                     "inspection": "The hallway seems narrow and foreboding."
+                },
+                "e": {
+                    "target": "Next Room",
+                    "desc": "There is a pathway to the east.",
+                    "inspection": "The opening is spacious."
                 }
             },
             "enemies": {},
+            "allies": {},
             "items": {
-                "iron sword": {
-                    "name": "iron sword",
-                    "desc": "There is an iron sword on the ground.",
-                    "inspection": "The iron sword is of crude workmanship, but it should be usable.",
-                    "damage": 6
-                },
                 "leather armor": {
                     "name": "leather armor",
                     "desc": "There is a set of leather armor lying in a heap.",
@@ -95,6 +124,7 @@
                     "loot": {}
                 }
             },
+            "allies": {},
             "items": {}
         },
         "Long Hallway": {
@@ -108,6 +138,7 @@
                 }
             },
             "enemies": {},
+            "allies": {},
             "items": {
                 "capsule": {
                     "name": "capsule",

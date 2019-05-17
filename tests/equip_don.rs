@@ -6,6 +6,7 @@ mod tests {
     fn player_equip() {
         let cli = Cli::from_json_file("data/world.json");
 
+        cli.ask("n");
         cli.ask("take iron sword");
         assert!(cli.ask("i").contains("iron sword") && !cli.ask("i").contains("Main hand"));
         assert!(cli.ask("draw iron sword").contains("Equipped."));
