@@ -10,14 +10,13 @@ impl Lexer {
         Self {
             filter_out: vec!["a", "an", "at", "my", "of", "that", "the", "through", "to"]
                 .iter()
-                .map(std::string::ToString::to_string)
+                .map(|&s| s.to_owned())
                 .collect(),
         }
     }
 
     pub fn lex(&self, s: &str) -> Vec<String> {
-        let parts = self.filter_parts(s);
-        self.mod_words(&parts)
+        self.mod_words(&self.filter_parts(s))
     }
 
     fn filter_parts(&self, s: &str) -> Vec<String> {
@@ -43,7 +42,7 @@ impl Lexer {
                     "down" => "d",
                     _ => w,
                 }
-                .to_string(),
+                .to_owned(),
             );
         }
         modified

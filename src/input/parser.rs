@@ -84,6 +84,14 @@ impl Parser {
         }
     }
 
+    fn parse_hail(words: &[String], world: &mut World) -> CmdResult {
+        if words.len() > 1 {
+            world.hail(&words[1..].join(" "))
+        } else {
+            CmdResult::new(false, "Who do you want to talk to?".to_owned())
+        }
+    }
+
     fn parse_open(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
         let obj = &words[1..].join(" ");
         if words.len() > 1 {
@@ -197,6 +205,7 @@ impl Parser {
             "enter" | "go" | "move" => Parser::parse_go(words, world),
             "examin" | "inspec" | "read" | "x" => Parser::parse_x(words, world, player),
             "get" | "pick" | "take" => Parser::parse_take(words, world, player),
+            "hail" | "talk" | "hi" | "hello" | "greet" => Parser::parse_hail(words, world),
             "heal" | "rest" | "sleep" => player.rest(),
             "help" => Cli::help(),
             "i" | "invent" => player.print_inventory(),

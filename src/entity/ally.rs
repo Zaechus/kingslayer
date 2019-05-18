@@ -9,6 +9,10 @@ pub struct Ally {
 }
 
 impl Ally {
+    // pub fn name(&self) -> &String {
+    //     &self.name
+    // }
+
     pub fn desc(&self) -> &String {
         &self.desc
     }

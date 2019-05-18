@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn player_inspect() {
-        let cli = Cli::from_json_file("data/world.json");
+        let cli = Cli::from_json_file("data/test_world.json");
 
         cli.ask("take leaf");
         assert!(cli.ask("i").contains("leaf") && !cli.ask("l").contains("leaf"));

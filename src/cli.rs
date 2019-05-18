@@ -93,7 +93,7 @@ impl Cli {
         heal\t\treplenish some HP
         increase\tincrease a chosen ability score by 1 if stat points are available
         status\t\tdisplay information on the state of your character"
-                .to_string(),
+                .to_owned(),
         )
     }
 
@@ -125,10 +125,10 @@ impl Cli {
                     self.combat(&mut self.world.borrow_mut())
                 )
             } else {
-                res.output().to_string()
+                res.output().to_owned()
             }
         } else {
-            "I do not understand that phrase.".to_string()
+            "I do not understand that phrase.".to_owned()
         }
     }
 

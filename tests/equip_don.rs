@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn player_equip() {
-        let cli = Cli::from_json_file("data/world.json");
+        let cli = Cli::from_json_file("data/test_world.json");
 
         cli.ask("n");
         cli.ask("take iron sword");
@@ -18,7 +18,7 @@ mod tests {
 
     #[test]
     fn player_don() {
-        let cli = Cli::from_json_file("data/world.json");
+        let cli = Cli::from_json_file("data/test_world.json");
 
         cli.ask("take leather armor");
         assert!(cli.ask("i").contains("leather armor") && !cli.ask("i").contains("Armor"));

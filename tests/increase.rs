@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn increase_stat_pts() {
-        let cli = Cli::from_json_file("data/world.json");
+        let cli = Cli::from_json_file("data/test_world.json");
 
         assert!(cli.ask("status").contains("Stat points: 4"));
         assert!(cli

@@ -15,19 +15,19 @@
                     "desc": "",
                     "inspection": ""
                 }
-            }, 
+            },
             "enemies": {},
             "items": {
                 "small mailbox": {
                     "name": "small mailbox",
                     "desc": "There is a small mailbox here.",
-                    "inspection": "TODO",
+                    "inspection": "The small mailbox is white.",
                     "is_closed": true,
                     "contents": {
                         "leaflet": {
                             "name": "leaflet",
                             "desc": "There is a leaflet here.",
-                            "inspection": "TODO"
+                            "inspection": "The leaflet is made of expensive stationery."
                         }
                     }
                 }

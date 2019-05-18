@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn put_in_take_from() {
-        let cli = Cli::from_json_file("data/world.json");
+        let cli = Cli::from_json_file("data/test_world.json");
 
         cli.ask("take leaf");
         cli.ask("s");

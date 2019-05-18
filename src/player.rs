@@ -78,7 +78,7 @@ impl Player {
                 CmdResult::new(false, format!("The {} is already closed.", item_name))
             } else {
                 item.close();
-                CmdResult::new(true, "Closed.".to_string())
+                CmdResult::new(true, "Closed.".to_owned())
             }
         } else {
             CmdResult::new(false, format!("There is no \"{}\".", item_name))
@@ -104,10 +104,10 @@ impl Player {
                 CmdResult::new(
                 true,
                 "Donned.\n(You can remove armor with \"drop\" or by donning a different set or armor)"
-                    .to_string(),
+                    .to_owned(),
             )
             } else {
-                self.inventory.insert(armor_name.to_string(), item);
+                self.inventory.insert(armor_name.to_owned(), item);
                 CmdResult::new(
                     false,
                     format!(
@@ -137,13 +137,13 @@ impl Player {
                 CmdResult::new(
                     true,
                     "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
-                        .to_string(),
+                        .to_owned(),
                 )
             } else {
                 self.take(weapon_name, Some(item));
                 CmdResult::new(
                     false,
-                    "You cannot equip armor. Use \"don\" instead.".to_string(),
+                    "You cannot equip armor. Use \"don\" instead.".to_owned(),
                 )
             }
         } else {
@@ -172,7 +172,7 @@ impl Player {
             match &ability_score[0..3] {
                 "str" | "dex" | "con" | "int" | "wis" | "cha" => {
                     self.stats.pts -= 1;
-                    CmdResult::new(true, "Ability modifier increased by one.".to_string())
+                    CmdResult::new(true, "Ability modifier increased by one.".to_owned())
                 }
                 _ => CmdResult::new(
                     false,
@@ -180,7 +180,7 @@ impl Player {
                 ),
             }
         } else {
-            CmdResult::new(false, "You do not have any stat points.".to_string())
+            CmdResult::new(false, "You do not have any stat points.".to_owned())
         }
     }
 
@@ -196,8 +196,8 @@ impl Player {
         } else if let Some(item) = self.inventory.remove(item_name) {
             if let Some(container) = self.inventory.get_mut(container_name) {
                 if let Some(ref mut contents) = container.contents_mut() {
-                    contents.insert(item_name.to_string(), item);
-                    CmdResult::new(true, "Placed.".to_string())
+                    contents.insert(item_name.to_owned(), item);
+                    CmdResult::new(true, "Placed.".to_owned())
                 } else {
                     CmdResult::new(
                         false,
@@ -216,9 +216,9 @@ impl Player {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.status())
         } else if let Some(item) = self.inventory.get(name) {
-            Some(CmdResult::new(true, item.inspection().to_string()))
+            Some(CmdResult::new(true, item.inspection().to_owned()))
         } else if let Some(item) = &self.main_hand {
-            Some(CmdResult::new(true, item.inspection().to_string()))
+            Some(CmdResult::new(true, item.inspection().to_owned()))
         } else {
             None
         }
@@ -248,7 +248,7 @@ impl Player {
         if let Some(item) = self.inventory.get_mut(item_name) {
             if item.is_closed() == Some(true) {
                 item.open();
-                CmdResult::new(true, "Opened.".to_string())
+                CmdResult::new(true, "Opened.".to_owned())
             } else {
                 CmdResult::new(false, format!("The {} is already opened.", item_name))
             }
@@ -310,10 +310,10 @@ impl Player {
                     ),
                 )
             } else {
-                CmdResult::new(false, "You cannot rest while in combat.".to_string())
+                CmdResult::new(false, "You cannot rest while in combat.".to_owned())
             }
         } else {
-            CmdResult::new(false, "You already have full health.".to_string())
+            CmdResult::new(false, "You already have full health.".to_owned())
         }
     }
 
@@ -370,7 +370,7 @@ impl Player {
             if obj.is_weapon() {
                 res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
             }
-            self.inventory.insert(name.to_string(), obj);
+            self.inventory.insert(name.to_owned(), obj);
             CmdResult::new(true, res)
         } else {
             CmdResult::new(
@@ -385,7 +385,7 @@ impl Player {
 
     pub fn take_all(&mut self, items: ItemMap) -> CmdResult {
         if items.is_empty() {
-            CmdResult::new(false, "There is nothing to take.".to_string())
+            CmdResult::new(false, "There is nothing to take.".to_owned())
         } else {
             let times = items.len();
             self.inventory.extend(items);
@@ -410,8 +410,8 @@ impl Player {
         } else if let Some(container) = self.inventory.get_mut(container_name) {
             if let Some(ref mut contents) = container.contents_mut() {
                 if let Some(itm) = contents.remove(item) {
-                    self.inventory.insert(item.to_string(), itm);
-                    CmdResult::new(true, "Taken.".to_string())
+                    self.inventory.insert(item.to_owned(), itm);
+                    CmdResult::new(true, "Taken.".to_owned())
                 } else {
                     CmdResult::new(
                         true,
@@ -433,6 +433,6 @@ impl Player {
     }
 
     pub fn wait() -> CmdResult {
-        CmdResult::new(true, "Time passes...".to_string())
+        CmdResult::new(true, "Time passes...".to_owned())
     }
 }

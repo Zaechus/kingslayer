@@ -19,18 +19,14 @@ impl World {
     pub fn get_curr_room(&self) -> &Room {
         match self.rooms.get(&self.curr_room) {
             Some(room) => room,
-            None => {
-                panic!("ERROR: You are not in a valid room (The world creator should fix this).")
-            }
+            None => panic!("ERROR: You are not in a valid room (The world should be fixed)."),
         }
     }
 
     pub fn get_curr_room_mut(&mut self) -> &mut Room {
         match self.rooms.get_mut(&self.curr_room) {
             Some(room) => room,
-            None => {
-                panic!("ERROR: You are not in a valid room (The world creator should fix this).")
-            }
+            None => panic!("ERROR: You are not in a valid room (The world should be fixed)."),
         }
     }
 
@@ -41,13 +37,13 @@ impl World {
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.get_curr_room().items().get(name) {
-            Some(CmdResult::new(true, item.inspection().to_string()))
+            Some(CmdResult::new(true, item.inspection().to_owned()))
         } else if let Some(item) = self.get_curr_room().paths().get(name) {
-            Some(CmdResult::new(true, item.inspection().to_string()))
+            Some(CmdResult::new(true, item.inspection().to_owned()))
         } else if let Some(enemy) = self.get_curr_room().enemies().get(name) {
-            Some(CmdResult::new(true, enemy.inspection().to_string()))
+            Some(CmdResult::new(true, enemy.inspection().to_owned()))
         } else if let Some(ally) = self.get_curr_room().allies().get(name) {
-            Some(CmdResult::new(true, ally.inspection().to_string()))
+            Some(CmdResult::new(true, ally.inspection().to_owned()))
         } else {
             None
         }
@@ -57,20 +53,20 @@ impl World {
     pub fn move_room(&mut self, direction: &str) -> CmdResult {
         if let Some(new_room) = self.get_curr_room().paths().get(direction) {
             if new_room.is_locked() == Some(true) {
-                CmdResult::new(true, "The way is locked.".to_string())
+                CmdResult::new(true, "The way is locked.".to_owned())
             } else if new_room.is_closed() == Some(true) {
-                CmdResult::new(true, "The way is closed.".to_string())
+                CmdResult::new(true, "The way is shut.".to_owned())
             } else {
                 for e in self.get_curr_room().enemies().values() {
                     if e.is_angry() {
-                        return CmdResult::new(false, "Enemies bar your way.".to_string());
+                        return CmdResult::new(false, "Enemies bar your way.".to_owned());
                     }
                 }
-                self.curr_room = new_room.target().to_string();
+                self.curr_room = new_room.target().to_owned();
                 self.look()
             }
         } else {
-            CmdResult::new(false, "You cannot go that way.".to_string())
+            CmdResult::new(false, "You cannot go that way.".to_owned())
         }
     }
 
@@ -78,14 +74,14 @@ impl World {
         if let Some(path) = self.get_curr_room_mut().paths_mut().get_mut(name) {
             if path.is_closed() == Some(true) {
                 path.open();
-                CmdResult::new(true, "Opened.".to_string())
+                CmdResult::new(true, "Opened.".to_owned())
             } else {
                 CmdResult::new(false, format!("The {} is already opened.", name))
             }
         } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
             if item.is_closed() == Some(true) {
                 item.open();
-                CmdResult::new(true, "Opened.".to_string())
+                CmdResult::new(true, "Opened.".to_owned())
             } else {
                 CmdResult::new(false, format!("The {} is already opened.", name))
             }
@@ -100,14 +96,14 @@ impl World {
                 CmdResult::new(false, format!("The {} is already closed.", name))
             } else {
                 path.close();
-                CmdResult::new(true, "Closed.".to_string())
+                CmdResult::new(true, "Closed.".to_owned())
             }
         } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
             if item.is_closed() == Some(true) {
                 CmdResult::new(false, format!("The {} is already closed.", name))
             } else {
                 item.close();
-                CmdResult::new(true, "Closed.".to_string())
+                CmdResult::new(true, "Closed.".to_owned())
             }
         } else {
             CmdResult::new(false, format!("There is no \"{}\".", name))
@@ -172,7 +168,7 @@ impl World {
             if let Some(ref mut contents) = container.contents_mut() {
                 if let Some(item) = contents.remove(item_name) {
                     player.take(item_name, Some(item));
-                    CmdResult::new(true, "Taken.".to_string())
+                    CmdResult::new(true, "Taken.".to_owned())
                 } else {
                     CmdResult::new(
                         false,
@@ -199,8 +195,8 @@ impl World {
         if let Some(obj) = item {
             self.get_curr_room_mut()
                 .items_mut()
-                .insert(obj.name().to_string(), obj);
-            CmdResult::new(true, "Dropped.".to_string())
+                .insert(obj.name().to_owned(), obj);
+            CmdResult::new(true, "Dropped.".to_owned())
         } else {
             dont_have(name)
         }
@@ -223,16 +219,25 @@ impl World {
         } else if let Some(obj) = player.remove(item_name) {
             if let Some(container) = self.get_curr_room_mut().items_mut().get_mut(container_name) {
                 if let Some(ref mut contents) = container.contents_mut() {
-                    contents.insert(obj.name().to_string(), obj);
-                    CmdResult::new(true, "Placed.".to_string())
+                    contents.insert(obj.name().to_owned(), obj);
+                    CmdResult::new(true, "Placed.".to_owned())
                 } else {
-                    CmdResult::new(true, "You can not put anything in there.".to_string())
+                    CmdResult::new(true, "You can not put anything in there.".to_owned())
                 }
             } else {
                 CmdResult::new(false, format!("There is no \"{}\" here.", container_name))
             }
         } else {
             dont_have(item_name)
+        }
+    }
+
+    // interact with an Ally
+    pub fn hail(&self, ally_name: &str) -> CmdResult {
+        if let Some(_ally) = self.get_curr_room().allies().get(ally_name) {
+            CmdResult::new(false, "TODO: interact with ally".to_owned())
+        } else {
+            CmdResult::new(false, format!("There is no \"{}\" here.", ally_name))
         }
     }
 }

@@ -4,12 +4,20 @@ mod tests {
 
     #[test]
     fn open_close_path() {
-        // TODO
+        let cli = Cli::from_json_file("data/test_world.json");
+
+        assert_eq!(cli.ask("enter door"), "The way is shut.");
+        assert_eq!(cli.ask("open door"), "Opened.");
+        assert!(cli.ask("enter door").contains("Closet"));
+        assert_eq!(cli.ask("close door"), "Closed.");
+        assert_eq!(cli.ask("enter door"), "The way is shut.");
+        assert_eq!(cli.ask("open door"), "Opened.");
+        assert!(cli.ask("enter door").contains("Circle Room"));
     }
 
     #[test]
     fn open_close_item() {
-        let cli = Cli::from_json_file("data/world.json");
+        let cli = Cli::from_json_file("data/test_world.json");
 
         cli.ask("s");
 
