@@ -1,81 +1,90 @@
 use serde_derive::{Deserialize, Serialize};
 
-use crate::{cli::Cli, player::Player, response::do_what, types::CmdResult, world::World};
+use crate::{
+    cli::Cli,
+    player::Player,
+    response::do_what,
+    types::{CmdResult, CmdTokens},
+    world::World,
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct Parser;
 
 impl Parser {
-    fn parse_attack(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
-        if words.len() > 1 {
-            if let Some(pos) = words.iter().position(|r| r == "with") {
+    fn parse_attack(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+        if words.num_words() > 1 {
+            if words.prep() == "with" {
                 world.harm_enemy(
-                    player.attack_with(&words[pos + 1..].join(" ")),
-                    &words[1..pos].join(" "),
-                    &words[pos + 1..].join(" "),
+                    player.attack_with(words.obj_prep()),
+                    words.obj(),
+                    words.obj_prep(),
                 )
             } else {
                 let damage = player.attack();
 
                 if let Some(main_hand) = player.main_hand() {
-                    world.harm_enemy(damage, &words[1..].join(" "), &main_hand.name())
+                    world.harm_enemy(damage, &words.obj(), &main_hand.name())
                 } else {
-                    do_what(&format!("{} the {} with?", words[0], &words[1..].join(" ")))
+                    do_what(&format!(
+                        "{} the {} with?",
+                        words.verb(),
+                        words.after_verb()
+                    ))
                 }
             }
         } else {
-            do_what(&words[0])
+            do_what(words.verb())
         }
     }
 
-    fn parse_close(words: &[String], player: &mut Player, world: &mut World) -> CmdResult {
-        let obj = &words[1..].join(" ");
-        if words.len() > 1 {
-            if player.has(obj) {
-                player.close(obj)
+    fn parse_close(words: CmdTokens, player: &mut Player, world: &mut World) -> CmdResult {
+        if words.num_words() > 1 {
+            if player.has(&words.obj()) {
+                player.close(&words.obj())
             } else {
-                world.close(obj)
+                world.close(&words.obj())
             }
         } else {
-            do_what(&words[0])
+            do_what(words.verb())
         }
     }
 
-    fn parse_don(words: &[String], player: &mut Player) -> CmdResult {
-        if words.len() > 1 {
-            player.don_armor(&words[1..].join(" "))
+    fn parse_don(words: CmdTokens, player: &mut Player) -> CmdResult {
+        if words.num_words() > 1 {
+            player.don_armor(&words.obj())
         } else {
-            do_what(&words[0])
+            do_what(words.verb())
         }
     }
 
-    fn parse_drop(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
-        if words.len() > 1 {
-            world.insert(&words[1..].join(" "), player.remove(&words[1..].join(" ")))
+    fn parse_drop(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+        if words.num_words() > 1 {
+            world.insert(&words.obj(), player.remove(&words.obj()))
         } else {
-            do_what(&format!("{} from your inventory?", words[0]))
+            do_what(&format!("{} from your inventory?", words.verb()))
         }
     }
 
-    fn parse_equip(words: &[String], player: &mut Player) -> CmdResult {
-        if words.len() > 1 {
-            player.equip(&words[1..].join(" "))
+    fn parse_equip(words: CmdTokens, player: &mut Player) -> CmdResult {
+        if words.num_words() > 1 {
+            player.equip(&words.obj())
         } else {
-            do_what(&words[0])
+            do_what(words.verb())
         }
     }
 
-    fn parse_go(words: &[String], world: &mut World) -> CmdResult {
-        if words.len() > 1 {
-            world.move_room(&words[1])
+    fn parse_go(words: CmdTokens, world: &mut World) -> CmdResult {
+        if words.num_words() > 1 {
+            world.move_room(&words.obj())
         } else {
-            CmdResult::new(false, format!("Where do you want to {}?", words[0]))
+            CmdResult::new(false, format!("Where do you want to {}?", words.verb()))
         }
     }
 
-    fn parse_increase(words: &[String], player: &mut Player) -> CmdResult {
-        if words.len() > 1 {
-            player.increase_ability_mod(&words[1])
+    fn parse_increase(words: CmdTokens, player: &mut Player) -> CmdResult {
+        if words.num_words() > 1 && words.obj().len() >= 3 {
+            player.increase_ability_mod(&words.obj())
         } else {
             do_what(
                 "increase?
@@ -84,56 +93,52 @@ impl Parser {
         }
     }
 
-    fn parse_hail(words: &[String], world: &mut World) -> CmdResult {
-        if words.len() > 1 {
-            world.hail(&words[1..].join(" "))
+    fn parse_hail(words: CmdTokens, world: &mut World) -> CmdResult {
+        if words.num_words() > 1 {
+            world.hail(&words.obj())
         } else {
             CmdResult::new(false, "Who do you want to talk to?".to_owned())
         }
     }
 
-    fn parse_open(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
-        let obj = &words[1..].join(" ");
-        if words.len() > 1 {
-            if player.has(obj) {
-                player.open(obj)
+    fn parse_open(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+        let obj = words.obj();
+        if words.num_words() > 1 {
+            if player.has(&obj) {
+                player.open(&obj)
             } else {
-                world.open(obj)
+                world.open(&obj)
             }
         } else {
-            do_what(&words[0])
+            do_what(words.verb())
         }
     }
 
-    fn parse_put(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
-        if words.len() > 1 {
-            if let Some(pos) = words.iter().position(|r| r == "in" || r == "inside") {
-                if pos != 1 {
-                    if player.has(&words[pos + 1..].join(" ")) {
-                        player.insert_into(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+    fn parse_put(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+        if words.num_words() > 1 {
+            if words.prep() == "in" || words.prep() == "inside" {
+                if !words.obj().is_empty() {
+                    if player.has(&words.obj_prep()) {
+                        player.insert_into(&words.obj(), &words.obj_prep())
                     } else {
-                        world.insert_into(
-                            player,
-                            &words[1..pos].join(" "),
-                            &words[pos + 1..].join(" "),
-                        )
+                        world.insert_into(player, &words.obj(), &words.obj_prep())
                     }
-                } else if words.len() < 3 {
-                    do_what(&words[0])
+                } else if words.num_words() < 3 {
+                    do_what(words.verb())
                 } else {
-                    do_what(&format!("place in the {}?", &words[1..].join(" ")))
+                    do_what(&format!("place in the {}?", words.after_verb()))
                 }
-            } else if &words[1] == "on" {
-                if words.len() > 2 {
-                    player.don_armor(&words[1..].join(" "))
+            } else if words.prep() == "on" {
+                if words.num_words() > 2 {
+                    player.don_armor(&words.obj_prep())
                 } else {
-                    do_what(&format!("{} on", &words[0]))
+                    do_what(&format!("{} on", words.verb()))
                 }
             } else {
-                do_what(&format!("{} the {} in", words[0], &words[1..].join(" ")))
+                do_what(&format!("{} the {} in", words.verb(), words.after_verb()))
             }
         } else {
-            do_what(&words[0])
+            do_what(words.verb())
         }
     }
 
@@ -141,58 +146,51 @@ impl Parser {
         player.stats()
     }
 
-    fn parse_take(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
-        if words.len() > 1 {
-            if let Some(pos) = words
-                .iter()
-                .position(|r| r == "from" || r == "out" || r == "in")
-            {
-                if player.has(&words[pos + 1..].join(" ")) {
-                    player.take_from(&words[1..pos].join(" "), &words[pos + 1..].join(" "))
+    fn parse_take(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+        if words.num_words() > 1 {
+            if words.prep() == "from" || words.prep() == "out" || words.prep() == "in" {
+                if player.has(&words.obj_prep()) {
+                    player.take_from(&words.obj(), &words.obj_prep())
                 } else {
-                    world.give_from(
-                        player,
-                        &words[1..pos].join(" "),
-                        &words[pos + 1..].join(" "),
-                    )
+                    world.give_from(player, &words.obj(), &words.obj_prep())
                 }
-            } else if words[1] == "all" {
+            } else if words.obj().len() >= 3 && words.obj().get(0..3).unwrap() == "all" {
                 player.take_all(world.give_all())
-            } else if &words[1] == "u" {
-                player.take(&words[2..].join(" "), world.give(&words[2..].join(" ")))
-            } else {
-                player.take(&words[1..].join(" "), world.give(&words[1..].join(" ")))
-            }
-        } else {
-            do_what(&words[0])
-        }
-    }
-
-    fn parse_x(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
-        if words.len() > 1 {
-            if let Some(s) = player.inspect(&words[1..].join(" ")) {
-                s
-            } else if let Some(s) = world.inspect(&words[1..].join(" ")) {
-                s
-            } else {
-                CmdResult::new(
-                    false,
-                    format!("There is no \"{}\" here.", &words[1..].join(" ")),
+            } else if words.after_verb_vec()[0] == "u" {
+                player.take(
+                    &words.after_verb()[2..],
+                    world.give(&words.after_verb()[2..]),
                 )
+            } else {
+                player.take(&words.obj(), world.give(&words.obj()))
             }
         } else {
-            do_what(&words[0])
+            do_what(words.verb())
         }
     }
 
-    pub fn parse(words: &[String], world: &mut World, player: &mut Player) -> CmdResult {
-        match if words[0].len() >= 6 {
-            &words[0][0..6]
+    fn parse_x(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+        if words.num_words() > 1 {
+            if let Some(s) = player.inspect(&words.obj()) {
+                s
+            } else if let Some(s) = world.inspect(&words.obj()) {
+                s
+            } else {
+                CmdResult::new(false, format!("There is no \"{}\" here.", words.obj()))
+            }
         } else {
-            &words[0]
+            do_what(words.verb())
+        }
+    }
+
+    pub fn parse(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+        match if words.verb().len() >= 6 {
+            &words.verb()[0..6]
+        } else {
+            words.verb()
         } {
             "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
-                world.move_room(&words[0])
+                world.move_room(words.verb())
             }
             "attack" | "cut" | "hit" | "kill" | "slay" => {
                 Parser::parse_attack(words, world, player)
@@ -215,7 +213,10 @@ impl Parser {
             "insert" | "place" | "put" => Parser::parse_put(words, world, player),
             "stats" => Parser::parse_stats(player),
             "wait" | "z" => Player::wait(),
-            _ => CmdResult::new(false, format!("I do not know the word \"{}\".", &words[0])),
+            _ => CmdResult::new(
+                false,
+                format!("I do not know the word \"{}\".", words.verb()),
+            ),
         }
     }
 }

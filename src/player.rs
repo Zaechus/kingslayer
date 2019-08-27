@@ -172,6 +172,15 @@ impl Player {
             match &ability_score[0..3] {
                 "str" | "dex" | "con" | "int" | "wis" | "cha" => {
                     self.stats.pts -= 1;
+                    match &ability_score[0..3] {
+                        "str" => self.stats.strngth += 1,
+                        "dex" => self.stats.dex += 1,
+                        "con" => self.stats.con += 1,
+                        "int" => self.stats.int += 1,
+                        "wis" => self.stats.wis += 1,
+                        "cha" => self.stats.cha += 1,
+                        _ => (),
+                    }
                     CmdResult::new(true, "Ability modifier increased by one.".to_owned())
                 }
                 _ => CmdResult::new(

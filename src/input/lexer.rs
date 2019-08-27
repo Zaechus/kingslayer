@@ -1,5 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
+use crate::types::CmdTokens;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Lexer {
     filter_out: Vec<String>,
@@ -15,8 +17,25 @@ impl Lexer {
         }
     }
 
-    pub fn lex(&self, s: &str) -> Vec<String> {
-        self.mod_words(&self.filter_parts(s))
+    pub fn lex(&self, s: &str) -> CmdTokens {
+        let words = self.mod_words(&self.filter_parts(s));
+
+        if words.len() < 2 {
+            CmdTokens::new(1, &words[0], "", "", "")
+        } else if let Some(pos) = words
+            .iter()
+            .position(|r| r == "in" || r == "inside" || r == "from" || r == "on" || r == "with")
+        {
+            CmdTokens::new(
+                words.len(),
+                &words[0],
+                &words[1..pos].join(" "),
+                &words[pos],
+                &words[pos + 1..].join(" "),
+            )
+        } else {
+            CmdTokens::new(words.len(), &words[0], &words[1..].join(" "), "", "")
+        }
     }
 
     fn filter_parts(&self, s: &str) -> Vec<String> {

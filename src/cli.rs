@@ -47,20 +47,18 @@ impl Cli {
             .read_to_string(&mut data)
             .expect("Unable to read string from world file");
 
-        serde_json::from_str(&data).expect("Error when creating world from file.")
+        serde_json::from_str(&data).expect("Error creating world from JSON file.")
     }
 
     fn get_world_json_str(json: &str) -> RefCell<World> {
-        serde_json::from_str(json).expect("Error when creating world from string.")
+        serde_json::from_str(json).expect("Error creating world from string.")
     }
 
     /// Prompts the user for input with stdin
     pub fn prompt() -> String {
         loop {
             print!("\n> ");
-            io::stdout()
-                .flush()
-                .expect("There was a problem flushing stdout");
+            io::stdout().flush().expect("Error flushing stdout");
             let input = read_line();
             if !input.is_empty() {
                 return input;
@@ -111,9 +109,9 @@ impl Cli {
     pub fn ask(&self, input: &str) -> String {
         let command = self.lexer.lex(input);
 
-        if !command.is_empty() {
+        if !command.verb().is_empty() {
             let res = Parser::parse(
-                &command,
+                command,
                 &mut self.world.borrow_mut(),
                 &mut self.player.borrow_mut(),
             );

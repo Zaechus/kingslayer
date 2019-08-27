@@ -27,11 +27,11 @@ impl Stats {
     pub fn print_stats(&self) -> String {
         format!(
             "Strength: {},
-            Dexterity: {},
-            Constitution: {},
-            Intellect: {},
-            Wisdom: {},
-            Charisma: {}",
+Dexterity: {},
+Constitution: {},
+Intellect: {},
+Wisdom: {},
+Charisma: {}",
             self.strngth, self.dex, self.con, self.int, self.wis, self.cha
         )
     }
