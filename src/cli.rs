@@ -97,7 +97,7 @@ impl Cli {
 
     /// Start a basic Kingslayer game for the command line
     pub fn start(&self) {
-        println!("type \"help\" to learn some commond commands.\n");
+        println!("type \"help\" to learn some common commands.\n");
         println!("Use \"increase\" to use your initial stat points.\n");
         println!("{}", self.ask("l"));
         while self.player.borrow().is_alive() {

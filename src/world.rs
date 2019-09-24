@@ -3,8 +3,8 @@ use serde_derive::{Deserialize, Serialize};
 use crate::{
     entity::{Item, Room},
     player::Player,
-    response::dont_have,
     types::{CmdResult, ItemMap, RoomMap},
+    util::dont_have,
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -146,7 +146,21 @@ impl World {
 
     // move an Item out of the current Room
     pub fn give(&mut self, name: &str) -> Option<Box<Item>> {
-        self.get_curr_room_mut().items_mut().remove(name)
+        if let Some(item) = self.get_curr_room_mut().items_mut().remove(name) {
+            Some(item)
+        } else {
+            let similar_name = if let Some(similar_name) =
+                self.get_curr_room_mut().items().keys().find(|k| {
+                    k.contains(&format!("{} ", name)) || k.contains(&format!(" {}", name))
+                }) {
+                similar_name.clone()
+            } else {
+                return None;
+            };
+            self.get_curr_room_mut()
+                .items_mut()
+                .remove(similar_name.as_str())
+        }
     }
 
     // take an Item from a container Item in the current Room

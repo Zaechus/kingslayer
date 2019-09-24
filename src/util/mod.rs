@@ -7,3 +7,8 @@ pub fn read_line() -> String {
         .expect("Error reading stdin");
     input.trim().to_owned()
 }
+
+mod response;
+
+pub use response::do_what;
+pub use response::dont_have;

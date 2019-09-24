@@ -4,9 +4,9 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::{
     entity::Item,
-    response::dont_have,
-    stats::Stats,
+    types::Stats,
     types::{CmdResult, ItemMap},
+    util::dont_have,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -107,7 +107,7 @@ impl Player {
                     .to_owned(),
             )
             } else {
-                self.inventory.insert(armor_name.to_owned(), item);
+                self.inventory.insert(item.name(), item);
                 CmdResult::new(
                     false,
                     format!(
@@ -205,7 +205,7 @@ impl Player {
         } else if let Some(item) = self.inventory.remove(item_name) {
             if let Some(container) = self.inventory.get_mut(container_name) {
                 if let Some(ref mut contents) = container.contents_mut() {
-                    contents.insert(item_name.to_owned(), item);
+                    contents.insert(item.name(), item);
                     CmdResult::new(true, "Placed.".to_owned())
                 } else {
                     CmdResult::new(
@@ -379,7 +379,7 @@ impl Player {
             if obj.is_weapon() {
                 res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
             }
-            self.inventory.insert(name.to_owned(), obj);
+            self.inventory.insert(obj.name(), obj);
             CmdResult::new(true, res)
         } else {
             CmdResult::new(
@@ -408,7 +408,7 @@ impl Player {
     }
 
     // take an Item from a container Item in the inventory
-    pub fn take_from(&mut self, item: &str, container_name: &str) -> CmdResult {
+    pub fn take_from(&mut self, item_name: &str, container_name: &str) -> CmdResult {
         let is_closed = if let Some(container) = self.inventory.get(container_name) {
             container.is_closed()
         } else {
@@ -418,15 +418,15 @@ impl Player {
             CmdResult::new(false, format!("The {} is closed.", container_name))
         } else if let Some(container) = self.inventory.get_mut(container_name) {
             if let Some(ref mut contents) = container.contents_mut() {
-                if let Some(itm) = contents.remove(item) {
-                    self.inventory.insert(item.to_owned(), itm);
+                if let Some(item) = contents.remove(item_name) {
+                    self.inventory.insert(item.name(), item);
                     CmdResult::new(true, "Taken.".to_owned())
                 } else {
                     CmdResult::new(
                         true,
                         format!(
                             "There is no \"{}\" inside of the \"{}\".",
-                            item, container_name
+                            item_name, container_name
                         ),
                     )
                 }

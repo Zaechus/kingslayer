@@ -7,9 +7,11 @@ mod tests {
         let cli = Cli::from_json_file("data/world.json");
 
         cli.ask("take leaf");
+        assert!(cli.ask("take leaf").contains("is no"));
         cli.ask("n");
         assert_eq!(cli.ask("remove leaf"), "Dropped.");
         assert_eq!(cli.ask("i"), "Your inventory is empty.");
+        assert!(cli.ask("drop leaf").contains("do not have"));
         assert!(
             cli.ask("l").contains("iron sword")
                 && cli.ask("l").contains("leaf")
@@ -17,8 +19,7 @@ mod tests {
                 && !cli.ask("i").contains("leaf")
         );
 
-        cli.ask("n");
-        cli.ask("take the iron sword");
+        cli.ask("take the sword");
         assert!(
             cli.ask("i").contains("iron sword")
                 && !cli.ask("i").contains("leaf")
@@ -27,7 +28,9 @@ mod tests {
         );
 
         cli.ask("take leaf");
+        // cli.ask("drop leaf");
         cli.ask("take that leaf");
+        // cli.ask("drop leaf");
         cli.ask("take that leaf over there");
         assert!(
             cli.ask("i").contains("iron sword")

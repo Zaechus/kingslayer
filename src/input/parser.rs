@@ -3,8 +3,8 @@ use serde_derive::{Deserialize, Serialize};
 use crate::{
     cli::Cli,
     player::Player,
-    response::do_what,
     types::{CmdResult, CmdTokens},
+    util::do_what,
     world::World,
 };
 

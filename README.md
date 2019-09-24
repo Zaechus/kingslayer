@@ -4,9 +4,14 @@
 
 A text adventure dungeon crawler game written in Rust.
 
-### Creating and Running a World
+### Running the game
+```
+$ cargo run --release
+```
 
-Worlds are defined with JSON. An example can be found on the ![wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file). Deploying the world file in Rust looks like this:
+### Creating and Running your own World
+
+Worlds are defined with JSON. An example can be found on the ![wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file). Deploying the world to the command line looks like this:
 ```
 use kingslayer::Cli;
 
@@ -36,3 +41,7 @@ fn main() {
     }
 }
 ```
+This allows you to manage other forms of input and output such as a website.
+
+### Dependencies
+* Rustc and Cargo >= 1.37.0
