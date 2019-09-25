@@ -6,7 +6,7 @@ use crate::{
     entity::Item,
     types::Stats,
     types::{CmdResult, ItemMap},
-    util::dont_have,
+    util::{dont_have, no_item_here},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -81,7 +81,7 @@ impl Player {
                 CmdResult::new(true, "Closed.".to_owned())
             }
         } else {
-            CmdResult::new(false, format!("There is no \"{}\".", item_name))
+            no_item_here(item_name)
         }
     }
 
@@ -262,7 +262,7 @@ impl Player {
                 CmdResult::new(false, format!("The {} is already opened.", item_name))
             }
         } else {
-            CmdResult::new(false, format!("There is no \"{}\".", item_name))
+            no_item_here(item_name)
         }
     }
 

@@ -4,7 +4,7 @@ use crate::{
     entity::{Item, Room},
     player::Player,
     types::{CmdResult, ItemMap, RoomMap},
-    util::dont_have,
+    util::{dont_have, no_item_here},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -86,7 +86,7 @@ impl World {
                 CmdResult::new(false, format!("The {} is already opened.", name))
             }
         } else {
-            CmdResult::new(false, format!("There is no \"{}\".", name))
+            no_item_here(name)
         }
     }
 
@@ -106,7 +106,7 @@ impl World {
                 CmdResult::new(true, "Closed.".to_owned())
             }
         } else {
-            CmdResult::new(false, format!("There is no \"{}\".", name))
+            no_item_here(name)
         }
     }
 
@@ -140,7 +140,7 @@ impl World {
                 dont_have(weapon)
             }
         } else {
-            CmdResult::new(false, format!("There is no \"{}\" here.", enemy_name))
+            no_item_here(enemy_name)
         }
     }
 
@@ -198,7 +198,7 @@ impl World {
                 )
             }
         } else {
-            CmdResult::new(false, format!("There is no {} here.", container_name))
+            no_item_here(container_name)
         }
     }
 
@@ -241,7 +241,7 @@ impl World {
                     CmdResult::new(true, "You can not put anything in there.".to_owned())
                 }
             } else {
-                CmdResult::new(false, format!("There is no \"{}\" here.", container_name))
+                no_item_here(container_name)
             }
         } else {
             dont_have(item_name)
@@ -253,7 +253,7 @@ impl World {
         if let Some(_ally) = self.get_curr_room().allies().get(ally_name) {
             CmdResult::new(false, "TODO: interact with ally".to_owned())
         } else {
-            CmdResult::new(false, format!("There is no \"{}\" here.", ally_name))
+            no_item_here(ally_name)
         }
     }
 }

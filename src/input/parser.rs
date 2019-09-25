@@ -4,7 +4,7 @@ use crate::{
     cli::Cli,
     player::Player,
     types::{CmdResult, CmdTokens},
-    util::do_what,
+    util::{do_what, no_item_here},
     world::World,
 };
 
@@ -176,7 +176,7 @@ impl Parser {
             } else if let Some(s) = world.inspect(&words.obj()) {
                 s
             } else {
-                CmdResult::new(false, format!("There is no \"{}\" here.", words.obj()))
+                no_item_here(words.obj())
             }
         } else {
             do_what(words.verb())

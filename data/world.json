@@ -141,9 +141,9 @@
             "enemies": {},
             "allies": {},
             "items": {
-                "capsule": {
-                    "name": "capsule",
-                    "desc": "There is a capsule here.",
+                "large capsule": {
+                    "name": "large capsule",
+                    "desc": "There is a large capsule here.",
                     "inspection": "The capsule appears to be able to hold things.",
                     "is_closed": true,
                     "contents": {

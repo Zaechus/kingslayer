@@ -30,6 +30,5 @@ mod tests {
         assert!(cli
             .ask("increase wisdom")
             .contains("You do not have any stat points."));
-        assert!(cli.ask("stats").contains(""));
     }
 }
