@@ -12,7 +12,7 @@ $ cargo run --release
 ### Creating and Running your own World
 
 Worlds are defined with JSON. An example can be found on the [wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file). Deploying the world to the command line looks like this:
-```
+```rust
 use kingslayer::Cli;
 
 fn main() {
@@ -22,7 +22,7 @@ fn main() {
 }
 ```
 or the loop can be managed manually like this:
-```
+```rust
 use kingslayer::Cli;
 
 fn main() {
