@@ -28,10 +28,8 @@ mod tests {
         );
 
         cli.ask("take leaf");
-        // cli.ask("drop leaf");
+        cli.ask("drop the leaf");
         cli.ask("take that leaf");
-        // cli.ask("drop leaf");
-        cli.ask("take that leaf over there");
         assert!(
             cli.ask("i").contains("iron sword")
                 && cli.ask("i").contains("leaf")

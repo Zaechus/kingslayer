@@ -4,6 +4,11 @@ run:
 build:
     cargo build
 
+test:
+    cargo clippy
+    cargo bench
+    cargo test
+
 c:
     cargo fmt
     cargo update

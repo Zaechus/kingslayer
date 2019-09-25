@@ -149,10 +149,12 @@ impl World {
         if let Some(item) = self.get_curr_room_mut().items_mut().remove(name) {
             Some(item)
         } else {
-            let similar_name = if let Some(similar_name) =
-                self.get_curr_room_mut().items().keys().find(|k| {
-                    k.contains(&format!("{} ", name)) || k.contains(&format!(" {}", name))
-                }) {
+            let similar_name = if let Some(similar_name) = self
+                .get_curr_room_mut()
+                .items()
+                .keys()
+                .find(|key| key.split_whitespace().any(|word| word == name))
+            {
                 similar_name.clone()
             } else {
                 return None;
