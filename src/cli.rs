@@ -5,10 +5,9 @@ use std::io::{self, BufReader, Read, Write};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    input::{Lexer, Parser},
+    input::{read_line, Lexer, Parser},
     player::Player,
     types::{CmdResult, ItemMap},
-    util::read_line,
     world::World,
 };
 
