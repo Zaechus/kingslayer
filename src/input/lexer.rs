@@ -20,7 +20,9 @@ impl Lexer {
     pub fn lex(&self, s: &str) -> CmdTokens {
         let words = self.mod_words(&self.filter_parts(s));
 
-        if words.len() < 2 {
+        if words.is_empty() {
+            CmdTokens::new(0, "", "", "", "")
+        } else if words.len() < 2 {
             CmdTokens::new(1, &words[0], "", "", "")
         } else if let Some(pos) = words
             .iter()

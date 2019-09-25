@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/Maxgy/kingslayer.svg?branch=master)](https://travis-ci.com/Maxgy/kingslayer)
 
-A text adventure dungeon crawler game written in Rust.
+Kingslayer is a text adventure dungeon crawler game written in Rust. It is a rewrite and continuation of [thekinggame](https://github.com/Maxgy/thekinggame).
 
 ### Running the game
 ```
@@ -11,7 +11,7 @@ $ cargo run --release
 
 ### Creating and Running your own World
 
-Worlds are defined with JSON. An example can be found on the ![wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file). Deploying the world to the command line looks like this:
+Worlds are defined with JSON. An example can be found on the [wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file). Deploying the world to the command line looks like this:
 ```
 use kingslayer::Cli;
 
@@ -30,18 +30,15 @@ fn main() {
 
     println!("{}", cli.ask("l"));
     loop {
-        match cli.ask(&cli.prompt()) {
-            s => {
-                println!("{}", s);
-                if s.contains("You died.") {
-                    break;
-                }
-            }
+        let s = cli.ask(&Cli::prompt());
+        println!("{}", s);
+        if s.contains("You died.") {
+            break;
         }
     }
 }
 ```
-This allows you to manage other forms of input and output such as a website.
+This method allows you to manage other forms of input and output such as within a website.
 
 ### Dependencies
 * Rustc and Cargo >= 1.37.0
