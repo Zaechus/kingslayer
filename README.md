@@ -38,7 +38,7 @@ fn main() {
     }
 }
 ```
-This method allows you to manage other forms of input and output such as within a website.
+This method allows you to manage other forms of input and output such as within a website. The JSON content for the world can also be passed as a raw string with `Cli::from_json_str`.
 
 ### Dependencies
 * Rustc and Cargo >= 1.37.0

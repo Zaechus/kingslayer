@@ -16,3 +16,6 @@ c:
 
     cargo bench
     cargo test
+
+docs:
+    cargo doc --open
