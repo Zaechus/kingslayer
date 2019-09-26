@@ -71,32 +71,43 @@ impl Cli {
     pub fn help() -> CmdResult {
         CmdResult::new(
             false,
-            "Some available commands:
-        go, enter <direction>\tmove through a listed entrance
-        \tshort directions: n, s, e, w, ne, nw, se, sw, u, d
-        \tlong directions:
-        \t   north, south, east, west,
-        \t   northeast, northwest, southeast, southwest,
-        \t   up, down, (other listed entrance)\n
-        take\t\tput an item from the room into your inventory
-        drop\t\tdrop an item from your inventory into the room
-        l, look\t\tlook around the room
-        i, inventory\tprint the contents of your inventory
-        x, examine\t\tshow additional information about an item
-        draw, equip\t\tuse an item from your inventory as your default weapon
-        don, put on\tdon a set of armor to increase your armor class
-        kill\t\tattack an enemy with your main hand or a chosen weapon
-        open | close\topen/close a container or pathway
-        heal\t\treplenish some HP
-        increase\tincrease a chosen ability score by 1 if stat points are available
-        status\t\tdisplay information on the state of your character"
+            "Typical format: <action> [object] [preposition] [object]
+    some prepositions: in, inside, from, on, with
+
+Some available commands:
+
+    Explore around the world
+        go, enter       move in a direction or through a listed entrance
+            Directions can be short like:
+                n, s, e, w, ne, nw, se, sw, u, d
+            or long like:
+               north, south, east, west,
+               northeast, northwest, southeast, southwest,
+               up, down, (any other listed entrance)
+        
+        l, look         look around the room
+        open | close    open/close an item or pathway
+
+    Manipulate items found in the world
+        take            put an item from the room into your inventory
+        drop            drop an item from your inventory into the room
+        i, inventory    print the contents of your inventory
+        x, examine      show additional information about an item
+        draw, equip     use an item from your inventory as your default weapon
+        don, put on     don a set of armor to increase your armor class
+        kill            attack an enemy with your main hand or a chosen weapon
+
+    Manage your character
+        heal            replenish some HP
+        increase        increase a chosen ability score by 1 if stat points are available
+        status          display information on the state of your character"
                 .to_owned(),
         )
     }
 
     /// Start a basic Kingslayer game for the command line
     pub fn start(&self) {
-        println!("type \"help\" to learn some common commands.\n");
+        println!("Type \"help\" if you are unfamiliar with text-based games.\n");
         println!("Use \"increase\" to use your initial stat points.\n");
         println!("{}", self.ask("l"));
         while self.player.borrow().is_alive() {

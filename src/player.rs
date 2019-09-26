@@ -181,7 +181,7 @@ impl Player {
                         "cha" => self.stats.cha += 1,
                         _ => (),
                     }
-                    CmdResult::new(true, "Ability modifier increased by one.".to_owned())
+                    CmdResult::new(true, "Ability score increased by one.".to_owned())
                 }
                 _ => CmdResult::new(
                     false,

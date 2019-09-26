@@ -26,7 +26,7 @@ impl Lexer {
             CmdTokens::new(1, &words[0], "", "", "")
         } else if let Some(pos) = words
             .iter()
-            .position(|r| r == "in" || r == "inside" || r == "from" || r == "on" || r == "with")
+            .position(|r| ["in", "inside", "from", "on", "with"].contains(&r.as_str()))
         {
             CmdTokens::new(
                 words.len(),
