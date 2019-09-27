@@ -20,7 +20,7 @@ pub struct Cli {
 }
 
 impl Cli {
-    /// Create a Cli from a JSON file
+    /// Construct from a JSON file
     pub fn from_json_file(path: &str) -> Self {
         Self {
             lexer: Lexer::new(),
@@ -29,7 +29,7 @@ impl Cli {
         }
     }
 
-    /// Create a Cli from a string containing JSON
+    /// Construct from a string containing JSON
     pub fn from_json_str(json: &str) -> Self {
         Self {
             lexer: Lexer::new(),
@@ -53,7 +53,7 @@ impl Cli {
         serde_json::from_str(json).expect("Error creating world from string.")
     }
 
-    /// Prompts the user for input with stdin
+    /// Prompts the user for input from stdin
     pub fn prompt() -> String {
         loop {
             print!("\n> ");
@@ -105,7 +105,7 @@ Some available commands:
         )
     }
 
-    /// Start a basic Kingslayer game for the command line
+    /// Start a typical game for the command line
     pub fn start(&self) {
         println!("Type \"help\" if you are unfamiliar with text-based games.\n");
         println!("Use \"increase\" to use your initial stat points.\n");
@@ -115,7 +115,7 @@ Some available commands:
         }
     }
 
-    /// Handle user input and return the result of commands and events
+    /// Handle user input and return the results of commands and events
     pub fn ask(&self, input: &str) -> String {
         let command = self.lexer.lex(input);
 
