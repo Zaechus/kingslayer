@@ -93,31 +93,48 @@ impl Player {
         self.in_combat = false;
     }
 
+    fn set_armor(&mut self, armor_name: &str, item: Box<Item>) -> CmdResult {
+        if item.armor_class().is_some() {
+            // move old armor back to inventory
+            if let Some(armor) = self.armor.take() {
+                self.take(armor_name, Some(armor));
+            }
+            self.armor = Some(item);
+            CmdResult::new(
+                    true,
+                    "Donned.\n(You can remove armor with \"drop\" or by donning a different set or armor)"
+                        .to_owned()
+                )
+        } else {
+            self.inventory.insert(item.name(), item);
+            CmdResult::new(
+                false,
+                format!(
+                    "You cannot put on the \"{}\", which isn't armor.",
+                    armor_name
+                ),
+            )
+        }
+    }
+
     pub fn don_armor(&mut self, armor_name: &str) -> CmdResult {
         if let Some(item) = self.inventory.remove(armor_name) {
-            if item.armor_class().is_some() {
-                // move old armor back to inventory
-                if let Some(armor) = self.armor.take() {
-                    self.take(armor_name, Some(armor));
-                }
-                self.armor = Some(item);
-                CmdResult::new(
-                true,
-                "Donned.\n(You can remove armor with \"drop\" or by donning a different set or armor)"
-                    .to_owned(),
-            )
-            } else {
-                self.inventory.insert(item.name(), item);
-                CmdResult::new(
-                    false,
-                    format!(
-                        "You cannot put on the \"{}\", which isn't armor.",
-                        armor_name
-                    ),
-                )
-            }
+            self.set_armor(armor_name, item)
         } else {
-            dont_have(armor_name)
+            let similar_name = if let Some(similar_name) = self
+                .inventory
+                .keys()
+                .find(|key| key.split_whitespace().any(|word| word == armor_name))
+            {
+                similar_name.clone()
+            } else {
+                return dont_have(armor_name);
+            };
+            if let Some(item) = self.inventory.remove(&similar_name) {
+                self.set_armor(&similar_name, item)
+            } else {
+                dont_have(armor_name)
+            }
         }
     }
 
@@ -125,29 +142,44 @@ impl Player {
         self.in_combat = true;
     }
 
+    fn set_equipped(&mut self, weapon_name: &str, item: Box<Item>) -> CmdResult {
+        // move old main hand back to inventory
+        if let Some(weapon) = self.main_hand.take() {
+            self.take(&weapon.name(), Some(weapon));
+        }
+        if item.armor_class().is_none() {
+            self.main_hand = Some(item);
+            CmdResult::new(
+                true,
+                "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
+                    .to_owned(),
+            )
+        } else {
+            self.take(weapon_name, Some(item));
+            self.don_armor(weapon_name);
+            CmdResult::new(true, "Donned.".to_owned())
+        }
+    }
+
     // equip an Item into main_hand to simplify fighting
     pub fn equip(&mut self, weapon_name: &str) -> CmdResult {
         if let Some(item) = self.inventory.remove(weapon_name) {
-            // move old main hand back to inventory
-            if let Some(weapon) = self.main_hand.take() {
-                self.take(&weapon.name(), Some(weapon));
-            }
-            if item.armor_class().is_none() {
-                self.main_hand = Some(item);
-                CmdResult::new(
-                    true,
-                    "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
-                        .to_owned(),
-                )
-            } else {
-                self.take(weapon_name, Some(item));
-                CmdResult::new(
-                    false,
-                    "You cannot equip armor. Use \"don\" instead.".to_owned(),
-                )
-            }
+            self.set_equipped(weapon_name, item)
         } else {
-            dont_have(weapon_name)
+            let similar_name = if let Some(similar_name) = self
+                .inventory
+                .keys()
+                .find(|key| key.split_whitespace().any(|word| word == weapon_name))
+            {
+                similar_name.clone()
+            } else {
+                return dont_have(weapon_name);
+            };
+            if let Some(item) = self.inventory.remove(&similar_name) {
+                self.set_equipped(&similar_name, item)
+            } else {
+                dont_have(weapon_name)
+            }
         }
     }
 

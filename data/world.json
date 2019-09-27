@@ -22,7 +22,7 @@
             "paths": {
                 "s": {
                     "target": "Circle Room",
-                    "desc": "The opening of the cave leads back into the circle room.",
+                    "desc": "The opening of the cave leads south back into the circle room.",
                     "inspection": "The edges of the opening are cracked and rough."
                 }
             },

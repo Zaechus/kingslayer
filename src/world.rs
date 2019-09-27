@@ -159,9 +159,7 @@ impl World {
             } else {
                 return None;
             };
-            self.get_curr_room_mut()
-                .items_mut()
-                .remove(similar_name.as_str())
+            self.get_curr_room_mut().items_mut().remove(&similar_name)
         }
     }
 
