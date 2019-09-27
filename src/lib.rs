@@ -2,7 +2,7 @@
 
 pub use cli::Cli;
 
-/// The Cli type
+/// A command line interface for controlling interactions between objects in a game
 pub mod cli;
 
 mod entity;

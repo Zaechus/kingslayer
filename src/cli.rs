@@ -11,7 +11,7 @@ use crate::{
     world::World,
 };
 
-/// A command line interface for controlling interactions between objects in a game
+/// The Cli type provides a simple way to interface into the mechanics of Kingslayer with custom worlds
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Cli {
     lexer: Lexer,
