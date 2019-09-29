@@ -10,7 +10,7 @@ You can find the WASM package at [github.com/Maxgy/kingslayer-wasm](https://gith
 
 ### Running the game
 
-You can play the online WASM version here: [maxgy.github.io/server-kingslayer](https://maxgy.github.io/server-kingslayer/)
+You can play the online WASM version here: [maxgy.github.io/server-kingslayer](https://maxgy.github.io/kingslayer-wasm/)
 
 or clone the project and run:
 ```
