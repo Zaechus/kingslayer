@@ -1,10 +1,16 @@
 # Kingslayer
 
 [![Build Status](https://travis-ci.com/Maxgy/kingslayer.svg?branch=master)](https://travis-ci.com/Maxgy/kingslayer)
+[![Build status](https://ci.appveyor.com/api/projects/status/b5p7b1efiy9t0fm7/branch/master?svg=true)](https://ci.appveyor.com/project/Maxgy/kingslayer/branch/master)
+[![Current Crates.io Version](https://img.shields.io/crates/v/kingslayer)](https://crates.io/crates/kingslayer)
 
 Kingslayer is a text adventure dungeon crawler game written in Rust. It is a rewrite and continuation of [thekinggame](https://github.com/Maxgy/thekinggame).
 
 ### Running the game
+
+You can play the online WASM version here: [maxgy.github.io/server-kingslayer](https://maxgy.github.io/server-kingslayer/)
+
+or clone the project and run:
 ```
 $ cargo run --release
 ```
