@@ -98,7 +98,7 @@
             },
             "enemies": {
                 "ogre": {
-                    "hp": 7,
+                    "hp": 10,
                     "xp": 15,
                     "damage": 4,
                     "name": "ogre",
@@ -115,7 +115,7 @@
                     }
                 },
                 "goblin": {
-                    "hp": 5,
+                    "hp": 7,
                     "xp": 10,
                     "damage": 2,
                     "name": "goblin",

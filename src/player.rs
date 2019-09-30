@@ -38,9 +38,9 @@ impl Player {
     fn ac(&self) -> u32 {
         if let Some(armor) = &self.armor {
             if let Some(ac) = armor.armor_class() {
-                ac + self.stats.dex
+                ac + ((self.stats.dex - 10) as f64 / 2.0).floor() as u32
             } else {
-                10 + self.stats.dex
+                10 + ((self.stats.dex - 10) as f64 / 2.0).floor() as u32
             }
         } else {
             10 + self.stats.dex
@@ -86,7 +86,7 @@ impl Player {
     }
 
     fn deal_damage(&self, weapon_damage: u32) -> u32 {
-        weapon_damage + self.stats.strngth
+        weapon_damage + ((self.stats.strngth - 10) as f64 / 2.0).floor() as u32
     }
 
     pub fn disengage_combat(&mut self) {
@@ -253,9 +253,32 @@ impl Player {
         }
     }
 
+    pub fn info(&self) -> CmdResult {
+        CmdResult::new(
+            false,
+            format!(
+                "Level: {}\
+                \nHP: ({} / {})\
+                \nAC: {}\
+                \nXP: ({} / {})\
+                \nStat points: {}\
+                
+                \n\n{}",
+                self.lvl,
+                self.hp(),
+                self.hp_cap(),
+                self.ac(),
+                self.xp.0,
+                self.xp.1,
+                self.stats.pts,
+                self.stats.print_stats()
+            ),
+        )
+    }
+
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if name == "me" || name == "self" || name == "myself" {
-            Some(self.status())
+            Some(self.info())
         } else if let Some(item) = self.inventory.get(name) {
             Some(CmdResult::new(true, item.inspection().to_owned()))
         } else if let Some(item) = &self.main_hand {
@@ -317,13 +340,56 @@ impl Player {
         CmdResult::new(true, items_carried)
     }
 
-    // remove an item from inventory and into the current Room
-    pub fn remove(&mut self, name: &str) -> Option<Box<Item>> {
+    fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.inventory.remove(name) {
             Some(item)
-        } else if let Some(item) = self.main_hand.take() {
+        } else {
+            let similar_name = if let Some(similar_name) = self
+                .inventory
+                .keys()
+                .find(|key| key.split_whitespace().any(|word| word == name))
+            {
+                similar_name.clone()
+            } else {
+                return None;
+            };
+            self.inventory.remove(&similar_name)
+        }
+    }
+
+    fn remove_main_hand(&mut self, name: &str) -> Option<Box<Item>> {
+        if let Some(item) = self.main_hand.take() {
+            if item.name() == name || item.name().split_whitespace().any(|word| word == name) {
+                Some(item)
+            } else {
+                self.main_hand = Some(item);
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    fn remove_armor(&mut self, name: &str) -> Option<Box<Item>> {
+        if let Some(item) = self.armor.take() {
+            if item.name() == name || item.name().split_whitespace().any(|word| word == name) {
+                Some(item)
+            } else {
+                self.armor = Some(item);
+                None
+            }
+        } else {
+            None
+        }
+    }
+
+    // remove an item from inventory and into the current Room
+    pub fn remove(&mut self, name: &str) -> Option<Box<Item>> {
+        if let Some(item) = self.remove_item(name) {
             Some(item)
-        } else if let Some(item) = self.armor.take() {
+        } else if let Some(item) = self.remove_main_hand(name) {
+            Some(item)
+        } else if let Some(item) = self.remove_armor(name) {
             Some(item)
         } else {
             None
@@ -356,26 +422,6 @@ impl Player {
         } else {
             CmdResult::new(false, "You already have full health.".to_owned())
         }
-    }
-
-    pub fn stats(&self) -> CmdResult {
-        CmdResult::new(true, self.stats.print_stats())
-    }
-
-    pub fn status(&self) -> CmdResult {
-        CmdResult::new(
-            false,
-            format!(
-                "Level: {}\nHP: ({} / {})\nAC: {}\nXP: ({} / {})\nStat points: {}",
-                self.lvl,
-                self.hp(),
-                self.hp_cap(),
-                self.ac(),
-                self.xp.0,
-                self.xp.1,
-                self.stats.pts
-            ),
-        )
     }
 
     pub fn take_damage(&mut self, enemy_name: &str, damage: u32) -> String {
@@ -446,6 +492,7 @@ impl Player {
         } else {
             return dont_have(container_name);
         };
+
         if is_closed == Some(true) {
             CmdResult::new(false, format!("The {} is closed.", container_name))
         } else if let Some(container) = self.inventory.get_mut(container_name) {

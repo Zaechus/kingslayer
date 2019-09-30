@@ -142,10 +142,6 @@ impl Parser {
         }
     }
 
-    fn parse_stats(player: &mut Player) -> CmdResult {
-        player.stats()
-    }
-
     fn parse_take(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
         if words.num_words() > 1 {
             if words.prep() == "from" || words.prep() == "out" || words.prep() == "in" {
@@ -196,7 +192,7 @@ impl Parser {
                 Parser::parse_attack(words, world, player)
             }
             "close" => Parser::parse_close(words, player, world),
-            "diagno" | "status" => player.status(),
+            "c" | "stats" => player.info(),
             "don" => Parser::parse_don(words, player),
             "draw" | "equip" | "hold" | "use" => Parser::parse_equip(words, player),
             "drop" | "remove" | "throw" => Parser::parse_drop(words, world, player),
@@ -211,7 +207,6 @@ impl Parser {
             "l" | "look" => world.look(),
             "open" => Parser::parse_open(words, world, player),
             "insert" | "place" | "put" => Parser::parse_put(words, world, player),
-            "stats" => Parser::parse_stats(player),
             "wait" | "z" => Player::wait(),
             _ => CmdResult::new(
                 false,

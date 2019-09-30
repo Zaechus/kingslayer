@@ -15,23 +15,24 @@ impl Stats {
     pub fn new() -> Self {
         Self {
             pts: 4,
-            strngth: 0,
-            dex: 0,
-            con: 0,
-            int: 0,
-            wis: 0,
-            cha: 0,
+            strngth: 14,
+            dex: 13,
+            con: 15,
+            int: 12,
+            wis: 10,
+            cha: 8,
         }
     }
 
     pub fn print_stats(&self) -> String {
         format!(
-            "Strength: {},
-Dexterity: {},
-Constitution: {},
-Intellect: {},
-Wisdom: {},
-Charisma: {}",
+            "\
+             Strength:     {}\
+             \nDexterity:    {}\
+             \nConstitution: {}\
+             \nIntellect:    {}\
+             \nWisdom:       {}\
+             \nCharisma:     {} ",
             self.strngth, self.dex, self.con, self.int, self.wis, self.cha
         )
     }

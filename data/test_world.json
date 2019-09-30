@@ -96,35 +96,7 @@
                     "inspection": "The path expands into a larger room."
                 }
             },
-            "enemies": {
-                "ogre": {
-                    "hp": 7,
-                    "xp": 15,
-                    "damage": 4,
-                    "name": "ogre",
-                    "desc": "The ogre stands there menacingly with a club.",
-                    "inspection": "The ogre is holding a long club made of wood. He is wearing nothing but a loincloth and a leather jerkin.",
-                    "is_angry": false,
-                    "loot": {
-                        "club": {
-                            "name": "club",
-                            "desc": "There is a club on the ground.",
-                            "inspection": "The club is very thick and heavy.",
-                            "damage": 4
-                        }
-                    }
-                },
-                "goblin": {
-                    "hp": 5,
-                    "xp": 10,
-                    "damage": 2,
-                    "name": "goblin",
-                    "desc": "The goblin cowers in a corner holding a knife.",
-                    "inspection": "The goblin is small, grey-green, and skinny. He is brandishing a knife.",
-                    "is_angry": false,
-                    "loot": {}
-                }
-            },
+            "enemies": {},
             "allies": {},
             "items": {}
         },

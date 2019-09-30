@@ -4,7 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/b5p7b1efiy9t0fm7/branch/master?svg=true)](https://ci.appveyor.com/project/Maxgy/kingslayer/branch/master)
 [![Current Crates.io Version](https://img.shields.io/crates/v/kingslayer)](https://crates.io/crates/kingslayer)
 
-Kingslayer is a text adventure dungeon crawler game written in Rust. It is a rewrite and continuation of [thekinggame](https://github.com/Maxgy/thekinggame).
+Kingslayer is a text-based dungeon crawler written in Rust. It is a rewrite and continuation of [thekinggame](https://github.com/Maxgy/thekinggame).
 
 You can find the WASM package at [github.com/Maxgy/kingslayer-wasm](https://github.com/Maxgy/kingslayer-wasm)
 
@@ -19,7 +19,7 @@ $ cargo run --release
 
 ### Creating and Running your own World
 
-Worlds are defined with JSON. An example can be found on the [wiki](https://github.com/Maxgy/kingslayer/wiki/Example-world-JSON-file). Deploying the world to the command line looks like this:
+Worlds are defined with JSON. An example can be found on the [wiki](https://github.com/Maxgy/kingslayer/wiki/). Deploying the world to the command line looks like this:
 ```rust
 use kingslayer::Cli;
 

@@ -100,7 +100,7 @@ Some available commands:
     Manage your character
         heal            replenish some HP
         increase        increase a chosen ability score by 1 if stat points are available
-        status          display information on the state of your character"
+        c | stats          display information on the state of your character"
                 .to_owned(),
         )
     }

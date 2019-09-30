@@ -1,9 +1,6 @@
 run:
     cargo run --release
 
-build:
-    cargo build
-
 test:
     cargo clippy
     cargo bench
