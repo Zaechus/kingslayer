@@ -3,7 +3,7 @@ use rand::Rng;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    entity::Item,
+    entity::{Closeable, Entity, Item},
     types::Stats,
     types::{CmdResult, ItemMap},
     util::{dont_have, no_item_here},
@@ -38,9 +38,9 @@ impl Player {
     fn ac(&self) -> u32 {
         if let Some(armor) = &self.armor {
             if let Some(ac) = armor.armor_class() {
-                ac + ((self.stats.dex - 10) as f64 / 2.0).floor() as u32
+                ac + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
             } else {
-                10 + ((self.stats.dex - 10) as f64 / 2.0).floor() as u32
+                10 + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
             }
         } else {
             10 + self.stats.dex
@@ -86,7 +86,7 @@ impl Player {
     }
 
     fn deal_damage(&self, weapon_damage: u32) -> u32 {
-        weapon_damage + ((self.stats.strngth - 10) as f64 / 2.0).floor() as u32
+        weapon_damage + (f64::from(self.stats.strngth - 10) / 2.0).floor() as u32
     }
 
     pub fn disengage_combat(&mut self) {
@@ -106,7 +106,7 @@ impl Player {
                         .to_owned()
                 )
         } else {
-            self.inventory.insert(item.name(), item);
+            self.inventory.insert(item.name().to_owned(), item);
             CmdResult::new(
                 false,
                 format!(
@@ -145,7 +145,7 @@ impl Player {
     fn set_equipped(&mut self, weapon_name: &str, item: Box<Item>) -> CmdResult {
         // move old main hand back to inventory
         if let Some(weapon) = self.main_hand.take() {
-            self.take(&weapon.name(), Some(weapon));
+            self.take(&weapon.name().to_owned(), Some(weapon));
         }
         if item.armor_class().is_none() {
             self.main_hand = Some(item);
@@ -237,7 +237,7 @@ impl Player {
         } else if let Some(item) = self.inventory.remove(item_name) {
             if let Some(container) = self.inventory.get_mut(container_name) {
                 if let Some(ref mut contents) = container.contents_mut() {
-                    contents.insert(item.name(), item);
+                    contents.insert(item.name().to_owned(), item);
                     CmdResult::new(true, "Placed.".to_owned())
                 } else {
                     CmdResult::new(
@@ -324,17 +324,17 @@ impl Player {
     pub fn print_inventory(&self) -> CmdResult {
         let mut items_carried = String::new();
         if let Some(weapon) = &self.main_hand {
-            items_carried.push_str(&format!("Main hand: {}\n", weapon.name()));
+            items_carried.push_str(&format!("Main hand: {}\n", weapon.long_name()));
         }
         if let Some(armor) = &self.armor {
-            items_carried.push_str(&format!("Armor: {}\n", armor.name()));
+            items_carried.push_str(&format!("Armor: {}\n", armor.long_name()));
         }
         if self.inventory.is_empty() {
             items_carried.push_str("Your inventory is empty.");
         } else {
             items_carried.push_str("You are carrying:");
-            for x in self.inventory.iter() {
-                items_carried = format!("{}\n  {}", items_carried, x.1.name());
+            for item in self.inventory.values() {
+                items_carried = format!("{}\n  {}", items_carried, item.long_name());
             }
         }
         CmdResult::new(true, items_carried)
@@ -457,7 +457,7 @@ impl Player {
             if obj.is_weapon() {
                 res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
             }
-            self.inventory.insert(obj.name(), obj);
+            self.inventory.insert(obj.name().to_owned(), obj);
             CmdResult::new(true, res)
         } else {
             CmdResult::new(
@@ -498,7 +498,7 @@ impl Player {
         } else if let Some(container) = self.inventory.get_mut(container_name) {
             if let Some(ref mut contents) = container.contents_mut() {
                 if let Some(item) = contents.remove(item_name) {
-                    self.inventory.insert(item.name(), item);
+                    self.inventory.insert(item.name().to_owned(), item);
                     CmdResult::new(true, "Taken.".to_owned())
                 } else {
                     CmdResult::new(

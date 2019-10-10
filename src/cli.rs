@@ -5,6 +5,7 @@ use std::io::{self, BufReader, Read, Write};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
+    entity::Entity,
     input::{read_line, Lexer, Parser},
     player::Player,
     types::{CmdResult, ItemMap},

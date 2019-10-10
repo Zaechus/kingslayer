@@ -2,6 +2,7 @@ use rand::Rng;
 
 use serde_derive::{Deserialize, Serialize};
 
+use crate::entity::Entity;
 use crate::types::ItemMap;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,18 +20,6 @@ pub struct Enemy {
 impl Enemy {
     pub fn xp(&self) -> u32 {
         self.xp
-    }
-
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn desc(&self) -> &String {
-        &self.desc
-    }
-
-    pub fn inspection(&self) -> &String {
-        &self.inspection
     }
 
     pub fn damage(&self) -> u32 {
@@ -60,5 +49,19 @@ impl Enemy {
 
     pub fn drop_loot(&mut self) -> ItemMap {
         self.loot.drain().collect()
+    }
+}
+
+impl Entity for Enemy {
+    fn name(&self) -> &String {
+        &self.name
+    }
+
+    fn desc(&self) -> &String {
+        &self.desc
+    }
+
+    fn inspection(&self) -> &String {
+        &self.inspection
     }
 }

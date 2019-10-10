@@ -1,7 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
-    entity::{Item, Room},
+    entity::{Closeable, Entity, Item, Room},
     player::Player,
     types::{CmdResult, ItemMap, RoomMap},
     util::{dont_have, no_item_here},
@@ -32,7 +32,7 @@ impl World {
 
     // displays description of the current Room
     pub fn look(&self) -> CmdResult {
-        CmdResult::new(true, self.get_curr_room().desc())
+        CmdResult::new(true, self.get_curr_room().long_desc())
     }
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
@@ -130,8 +130,8 @@ impl World {
                     );
                     if !enemy.loot().is_empty() {
                         res.push_str("It dropped:\n");
-                        for x in enemy.loot().iter() {
-                            res.push_str(&format!(" {},", x.1.name()));
+                        for loot in enemy.loot().values() {
+                            res.push_str(&format!(" {},", loot.long_name()));
                         }
                     }
                     CmdResult::new(true, res)

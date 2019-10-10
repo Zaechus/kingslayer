@@ -1,5 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 
+use crate::entity::Entity;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Ally {
     hp: i32,
@@ -8,16 +10,18 @@ pub struct Ally {
     inspection: String,
 }
 
-impl Ally {
-    // pub fn name(&self) -> &String {
-    //     &self.name
-    // }
+impl Ally {}
 
-    pub fn desc(&self) -> &String {
+impl Entity for Ally {
+    fn name(&self) -> &String {
+        &self.name
+    }
+
+    fn desc(&self) -> &String {
         &self.desc
     }
 
-    pub fn inspection(&self) -> &String {
+    fn inspection(&self) -> &String {
         &self.inspection
     }
 }

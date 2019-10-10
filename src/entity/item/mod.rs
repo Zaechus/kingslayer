@@ -2,6 +2,7 @@ use rand::Rng;
 
 use serde_derive::{Deserialize, Serialize};
 
+use crate::entity::{Closeable, Entity};
 use crate::types::ItemMap;
 
 // An object to be interacted with by the user
@@ -18,27 +19,28 @@ pub struct Item {
 }
 
 impl Item {
-    pub fn name(&self) -> String {
+    pub fn long_name(&self) -> String {
         if let Some(ref contents) = self.contents {
             if !contents.is_empty() && !self.is_closed.unwrap_or(false) {
                 let mut desc = format!("{}; it contains:", self.name);
-                for x in contents.iter() {
-                    desc = format!("{}\n    {}", desc, x.1.name());
+                for item in contents.values() {
+                    desc = format!("{}\n    {}", desc, item.name());
                 }
-                return desc;
+                desc
+            } else {
+                self.name.clone()
             }
-            self.name.clone()
         } else {
             self.name.clone()
         }
     }
 
-    pub fn desc(&self) -> String {
+    pub fn long_desc(&self) -> String {
         if let Some(ref contents) = self.contents {
             if !contents.is_empty() && !self.is_closed.unwrap_or(false) {
                 let mut desc = format!("{}\nThe {} contains:", self.desc, self.name);
-                for x in contents.iter() {
-                    desc = format!("{}\n  {}", desc, x.1.name());
+                for item in contents.values() {
+                    desc = format!("{}\n  {}", desc, item.name());
                 }
                 desc
             } else {
@@ -47,10 +49,6 @@ impl Item {
         } else {
             self.desc.clone()
         }
-    }
-
-    pub fn inspection(&self) -> &String {
-        &self.inspection
     }
 
     pub fn is_weapon(&self) -> bool {
@@ -76,13 +74,29 @@ impl Item {
     pub fn is_closed(&self) -> Option<bool> {
         self.is_closed
     }
+}
 
-    pub fn open(&mut self) {
+impl Entity for Item {
+    fn name(&self) -> &String {
+        &self.name
+    }
+
+    fn desc(&self) -> &String {
+        &self.desc
+    }
+
+    fn inspection(&self) -> &String {
+        &self.inspection
+    }
+}
+
+impl Closeable for Item {
+    fn open(&mut self) {
         if self.is_closed.is_some() {
             self.is_closed = Some(false)
         }
     }
-    pub fn close(&mut self) {
+    fn close(&mut self) {
         if self.is_closed.is_some() {
             self.is_closed = Some(true)
         }

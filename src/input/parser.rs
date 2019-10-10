@@ -2,6 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::{
     cli::Cli,
+    entity::Entity,
     player::Player,
     types::{CmdResult, CmdTokens},
     util::{do_what, no_item_here},

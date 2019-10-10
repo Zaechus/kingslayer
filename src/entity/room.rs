@@ -1,10 +1,12 @@
 use serde_derive::{Deserialize, Serialize};
 
+use crate::entity::Entity;
 use crate::types::{AllyMap, EnemyMap, ItemMap, PathMap};
 
 // A section of the world connected by paths
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Room {
+    #[serde(default)]
     name: String,
     desc: String,
     paths: PathMap,
@@ -15,19 +17,19 @@ pub struct Room {
 
 impl Room {
     // collects all descriptions of entities in the Room for printing
-    pub fn desc(&self) -> String {
+    pub fn long_desc(&self) -> String {
         let mut desc = format!("{}\n{}", self.name, self.desc);
-        for x in self.paths.iter() {
-            desc.push_str(&format!("\n{}", &(x.1).desc()));
+        for path in self.paths.values() {
+            desc.push_str(&format!("\n{}", path.desc()));
         }
-        for x in self.enemies.iter() {
-            desc.push_str(&format!("\n{}", &x.1.desc()));
+        for enemy in self.enemies.values() {
+            desc.push_str(&format!("\n{}", enemy.desc()));
         }
-        for x in self.allies.iter() {
-            desc.push_str(&format!("\n{}", &x.1.desc()));
+        for ally in self.allies.values() {
+            desc.push_str(&format!("\n{}", ally.desc()));
         }
-        for x in self.items.iter() {
-            desc.push_str(&format!("\n{}", &x.1.desc()));
+        for item in self.items.values() {
+            desc.push_str(&format!("\n{}", item.long_desc()));
         }
         desc
     }
@@ -56,7 +58,18 @@ impl Room {
     pub fn allies(&self) -> &AllyMap {
         &self.allies
     }
-    // pub fn allies_mut(&mut self) -> &mut AllyMap {
-    //     &mut self.allies
-    // }
+}
+
+impl Entity for Room {
+    fn name(&self) -> &String {
+        &self.name
+    }
+
+    fn desc(&self) -> &String {
+        &self.desc
+    }
+
+    fn inspection(&self) -> &String {
+        &self.desc
+    }
 }
