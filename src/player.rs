@@ -7,9 +7,9 @@ use crate::{
         Closeable, Entity,
         Item::{self, Armor, Container, Weapon},
     },
+    response::{dont_have, no_item_here, not_container},
     types::Stats,
     types::{CmdResult, ItemMap},
-    util::{dont_have, no_item_here},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -97,7 +97,7 @@ impl Player {
                     CmdResult::new(true, "Closed.".to_owned())
                 }
             } else {
-                CmdResult::new(false, format!("The {} is not a container.", item_name))
+                not_container(item_name)
             }
         } else {
             no_item_here(item_name)
@@ -267,7 +267,7 @@ impl Player {
                     }
                 } else {
                     self.inventory.insert(item_name.to_owned(), item);
-                    CmdResult::new(false, format!("The {} is not a container.", item_name))
+                    not_container(container_name)
                 }
             } else {
                 self.inventory.insert(item_name.to_owned(), item);
@@ -343,7 +343,7 @@ impl Player {
                     CmdResult::new(false, format!("The {} is already opened.", item_name))
                 }
             } else {
-                CmdResult::new(false, format!("The {} is not a container.", item_name))
+                not_container(item_name)
             }
         } else {
             no_item_here(item_name)

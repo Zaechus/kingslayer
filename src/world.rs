@@ -7,8 +7,8 @@ use crate::{
         Room,
     },
     player::Player,
+    response::{dont_have, no_item_here, not_container},
     types::{CmdResult, ItemMap, RoomMap},
-    util::{dont_have, no_item_here},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -91,7 +91,7 @@ impl World {
                     CmdResult::new(false, format!("The {} is already opened.", name))
                 }
             } else {
-                CmdResult::new(false, format!("The {} is not a container.", name))
+                not_container(name)
             }
         } else {
             no_item_here(name)
@@ -115,7 +115,7 @@ impl World {
                     CmdResult::new(true, "Closed.".to_owned())
                 }
             } else {
-                CmdResult::new(false, format!("The {} is not a container.", name))
+                not_container(name)
             }
         } else {
             no_item_here(name)
@@ -196,7 +196,7 @@ impl World {
                     )
                 }
             } else {
-                CmdResult::new(false, format!("The {} is not a container.", container_name))
+                not_container(container_name)
             }
         } else {
             no_item_here(container_name)
@@ -240,7 +240,7 @@ impl World {
                     }
                 } else {
                     player.take(item_name, Some(item));
-                    CmdResult::new(true, "You can not put anything in there.".to_owned())
+                    not_container(container_name)
                 }
             } else {
                 player.take(item_name, Some(item));

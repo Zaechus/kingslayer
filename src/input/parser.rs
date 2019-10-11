@@ -4,8 +4,8 @@ use crate::{
     cli::Cli,
     entity::Entity,
     player::Player,
+    response::{do_what, no_item_here},
     types::{CmdResult, CmdTokens},
-    util::{do_what, no_item_here},
     world::World,
 };
 

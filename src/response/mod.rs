@@ -11,3 +11,7 @@ pub fn dont_have(name: &str) -> CmdResult {
 pub fn no_item_here(name: &str) -> CmdResult {
     CmdResult::new(false, format!("There is no \"{}\" here.", name))
 }
+
+pub fn not_container(name: &str) -> CmdResult {
+    CmdResult::new(false, format!("The {} is not a container.", name))
+}
