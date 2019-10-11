@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::entity::Entity;
 use crate::types::ItemMap;
@@ -12,7 +12,7 @@ pub struct Enemy {
     damage: u32,
     name: String,
     desc: String,
-    inspection: String,
+    inspect: String,
     is_angry: bool,
     loot: ItemMap,
 }
@@ -61,7 +61,7 @@ impl Entity for Enemy {
         &self.desc
     }
 
-    fn inspection(&self) -> &String {
-        &self.inspection
+    fn inspect(&self) -> &String {
+        &self.inspect
     }
 }

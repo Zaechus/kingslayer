@@ -1,7 +1,11 @@
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    entity::{Closeable, Entity, Item, Room},
+    entity::{
+        Closeable, Entity,
+        Item::{self, Container},
+        Room,
+    },
     player::Player,
     types::{CmdResult, ItemMap, RoomMap},
     util::{dont_have, no_item_here},
@@ -37,13 +41,13 @@ impl World {
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.get_curr_room().items().get(name) {
-            Some(CmdResult::new(true, item.inspection().to_owned()))
+            Some(CmdResult::new(true, item.inspect().to_owned()))
         } else if let Some(item) = self.get_curr_room().paths().get(name) {
-            Some(CmdResult::new(true, item.inspection().to_owned()))
+            Some(CmdResult::new(true, item.inspect().to_owned()))
         } else if let Some(enemy) = self.get_curr_room().enemies().get(name) {
-            Some(CmdResult::new(true, enemy.inspection().to_owned()))
+            Some(CmdResult::new(true, enemy.inspect().to_owned()))
         } else if let Some(ally) = self.get_curr_room().allies().get(name) {
-            Some(CmdResult::new(true, ally.inspection().to_owned()))
+            Some(CmdResult::new(true, ally.inspect().to_owned()))
         } else {
             None
         }
@@ -57,8 +61,8 @@ impl World {
             } else if new_room.is_closed() == Some(true) {
                 CmdResult::new(true, "The way is shut.".to_owned())
             } else {
-                for e in self.get_curr_room().enemies().values() {
-                    if e.is_angry() {
+                for enemy in self.get_curr_room().enemies().values() {
+                    if enemy.is_angry() {
                         return CmdResult::new(false, "Enemies bar your way.".to_owned());
                     }
                 }
@@ -79,11 +83,15 @@ impl World {
                 CmdResult::new(false, format!("The {} is already opened.", name))
             }
         } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
-            if item.is_closed() == Some(true) {
-                item.open();
-                CmdResult::new(true, "Opened.".to_owned())
+            if let Container(container) = &mut **item {
+                if container.is_closed() {
+                    container.open();
+                    CmdResult::new(true, "Opened.".to_owned())
+                } else {
+                    CmdResult::new(false, format!("The {} is already opened.", name))
+                }
             } else {
-                CmdResult::new(false, format!("The {} is already opened.", name))
+                CmdResult::new(false, format!("The {} is not a container.", name))
             }
         } else {
             no_item_here(name)
@@ -99,11 +107,15 @@ impl World {
                 CmdResult::new(true, "Closed.".to_owned())
             }
         } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
-            if item.is_closed() == Some(true) {
-                CmdResult::new(false, format!("The {} is already closed.", name))
+            if let Container(container) = &mut **item {
+                if container.is_closed() {
+                    CmdResult::new(false, format!("The {} is already closed.", name))
+                } else {
+                    container.close();
+                    CmdResult::new(true, "Closed.".to_owned())
+                }
             } else {
-                item.close();
-                CmdResult::new(true, "Closed.".to_owned())
+                CmdResult::new(false, format!("The {} is not a container.", name))
             }
         } else {
             no_item_here(name)
@@ -170,17 +182,11 @@ impl World {
         item_name: &str,
         container_name: &str,
     ) -> CmdResult {
-        let is_closed = if let Some(container) = self.get_curr_room().items().get(container_name) {
-            container.is_closed()
-        } else {
-            return dont_have(container_name);
-        };
-        if is_closed == Some(true) {
-            CmdResult::new(false, format!("The {} is closed.", container_name))
-        } else if let Some(container) = self.get_curr_room_mut().items_mut().get_mut(container_name)
-        {
-            if let Some(ref mut contents) = container.contents_mut() {
-                if let Some(item) = contents.remove(item_name) {
+        if let Some(container) = self.get_curr_room_mut().items_mut().get_mut(container_name) {
+            if let Container(container) = &mut **container {
+                if container.is_closed() {
+                    CmdResult::new(true, format!("The {} is closed.", container_name))
+                } else if let Some(item) = container.contents_mut().remove(item_name) {
                     player.take(item_name, Some(item));
                     CmdResult::new(true, "Taken.".to_owned())
                 } else {
@@ -190,10 +196,7 @@ impl World {
                     )
                 }
             } else {
-                CmdResult::new(
-                    false,
-                    format!("The {} cannot hold anything.", container_name),
-                )
+                CmdResult::new(false, format!("The {} is not a container.", container_name))
             }
         } else {
             no_item_here(container_name)
@@ -223,22 +226,24 @@ impl World {
         item_name: &str,
         container_name: &str,
     ) -> CmdResult {
-        let is_closed = if let Some(container) = self.get_curr_room().items().get(container_name) {
-            container.is_closed()
-        } else {
-            return dont_have(container_name);
-        };
-        if is_closed == Some(true) {
-            CmdResult::new(false, format!("The {} is closed.", container_name))
-        } else if let Some(obj) = player.remove(item_name) {
+        if let Some(item) = player.remove(item_name) {
             if let Some(container) = self.get_curr_room_mut().items_mut().get_mut(container_name) {
-                if let Some(ref mut contents) = container.contents_mut() {
-                    contents.insert(obj.name().to_owned(), obj);
-                    CmdResult::new(true, "Placed.".to_owned())
+                if let Container(container) = &mut **container {
+                    if container.is_closed() {
+                        player.take(item_name, Some(item));
+                        CmdResult::new(true, format!("The {} is closed.", container_name))
+                    } else {
+                        container
+                            .contents_mut()
+                            .insert(item.name().to_owned(), item);
+                        CmdResult::new(true, "Placed.".to_owned())
+                    }
                 } else {
+                    player.take(item_name, Some(item));
                     CmdResult::new(true, "You can not put anything in there.".to_owned())
                 }
             } else {
+                player.take(item_name, Some(item));
                 no_item_here(container_name)
             }
         } else {

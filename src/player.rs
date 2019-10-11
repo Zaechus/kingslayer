@@ -1,9 +1,12 @@
 use rand::Rng;
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    entity::{Closeable, Entity, Item},
+    entity::{
+        Closeable, Entity,
+        Item::{self, Armor, Container, Weapon},
+    },
     types::Stats,
     types::{CmdResult, ItemMap},
     util::{dont_have, no_item_here},
@@ -37,20 +40,24 @@ impl Player {
 
     fn ac(&self) -> u32 {
         if let Some(armor) = &self.armor {
-            if let Some(ac) = armor.armor_class() {
-                ac + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
+            if let Armor(armor) = &**armor {
+                armor.ac() + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
             } else {
                 10 + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
             }
         } else {
-            10 + self.stats.dex
+            10 + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
         }
     }
 
     pub fn attack(&mut self) -> Option<u32> {
         if let Some(weapon) = &self.main_hand {
-            self.in_combat = true;
-            Some(self.deal_damage(weapon.damage()))
+            if let Weapon(weapon) = &**weapon {
+                self.in_combat = true;
+                Some(self.deal_damage(weapon.damage()))
+            } else {
+                None
+            }
         } else {
             None
         }
@@ -58,12 +65,20 @@ impl Player {
 
     pub fn attack_with(&mut self, weapon_name: &str) -> Option<u32> {
         if let Some(weapon) = self.inventory.get(weapon_name) {
-            self.in_combat = true;
-            Some(self.deal_damage(weapon.damage()))
-        } else if let Some(equipped_weapon) = &self.main_hand {
-            if weapon_name == equipped_weapon.name() {
+            if let Weapon(weapon) = &**weapon {
                 self.in_combat = true;
-                Some(self.deal_damage(equipped_weapon.damage()))
+                Some(self.deal_damage(weapon.damage()))
+            } else {
+                None
+            }
+        } else if let Some(weapon) = &self.main_hand {
+            if weapon_name == weapon.name() {
+                if let Weapon(weapon) = &**weapon {
+                    self.in_combat = true;
+                    Some(self.deal_damage(weapon.damage()))
+                } else {
+                    None
+                }
             } else {
                 None
             }
@@ -74,11 +89,15 @@ impl Player {
 
     pub fn close(&mut self, item_name: &str) -> CmdResult {
         if let Some(item) = self.inventory.get_mut(item_name) {
-            if item.is_closed() == Some(true) {
-                CmdResult::new(false, format!("The {} is already closed.", item_name))
+            if let Container(item) = &mut **item {
+                if item.is_closed() {
+                    CmdResult::new(false, format!("The {} is already closed.", item_name))
+                } else {
+                    item.close();
+                    CmdResult::new(true, "Closed.".to_owned())
+                }
             } else {
-                item.close();
-                CmdResult::new(true, "Closed.".to_owned())
+                CmdResult::new(false, format!("The {} is not a container.", item_name))
             }
         } else {
             no_item_here(item_name)
@@ -94,7 +113,7 @@ impl Player {
     }
 
     fn set_armor(&mut self, armor_name: &str, item: Box<Item>) -> CmdResult {
-        if item.armor_class().is_some() {
+        if let Armor(_) = &*item {
             // move old armor back to inventory
             if let Some(armor) = self.armor.take() {
                 self.take(armor_name, Some(armor));
@@ -142,22 +161,29 @@ impl Player {
         self.in_combat = true;
     }
 
-    fn set_equipped(&mut self, weapon_name: &str, item: Box<Item>) -> CmdResult {
+    fn set_equipped(&mut self, item_name: &str, item: Box<Item>) -> CmdResult {
         // move old main hand back to inventory
         if let Some(weapon) = self.main_hand.take() {
             self.take(&weapon.name().to_owned(), Some(weapon));
         }
-        if item.armor_class().is_none() {
-            self.main_hand = Some(item);
-            CmdResult::new(
-                true,
-                "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
-                    .to_owned(),
-            )
-        } else {
-            self.take(weapon_name, Some(item));
-            self.don_armor(weapon_name);
-            CmdResult::new(true, "Donned.".to_owned())
+        match &*item {
+            Armor(_) => {
+                self.take(item_name, Some(item));
+                self.don_armor(item_name);
+                CmdResult::new(true, "Donned.".to_owned())
+            }
+            Weapon(_) => {
+                self.main_hand = Some(item);
+                CmdResult::new(
+                    true,
+                    "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
+                        .to_owned(),
+                )
+            }
+            _ => CmdResult::new(
+                false,
+                format!("The {} is neither armor nor weapon.", item_name),
+            ),
         }
     }
 
@@ -227,25 +253,24 @@ impl Player {
 
     // place an item into a container item
     pub fn insert_into(&mut self, item_name: &str, container_name: &str) -> CmdResult {
-        let is_closed = if let Some(container) = self.inventory.get(container_name) {
-            container.is_closed()
-        } else {
-            return dont_have(container_name);
-        };
-        if is_closed == Some(true) {
-            CmdResult::new(false, format!("The {} is closed.", container_name))
-        } else if let Some(item) = self.inventory.remove(item_name) {
+        if let Some(item) = self.inventory.remove(item_name) {
             if let Some(container) = self.inventory.get_mut(container_name) {
-                if let Some(ref mut contents) = container.contents_mut() {
-                    contents.insert(item.name().to_owned(), item);
-                    CmdResult::new(true, "Placed.".to_owned())
+                if let Container(container) = &mut **container {
+                    if container.is_closed() {
+                        self.inventory.insert(item_name.to_owned(), item);
+                        CmdResult::new(true, format!("The {} is closed.", container_name))
+                    } else {
+                        container
+                            .contents_mut()
+                            .insert(item.name().to_owned(), item);
+                        CmdResult::new(true, "Placed.".to_owned())
+                    }
                 } else {
-                    CmdResult::new(
-                        false,
-                        format!("You cannot put anything in the {}.", container_name),
-                    )
+                    self.inventory.insert(item_name.to_owned(), item);
+                    CmdResult::new(false, format!("The {} is not a container.", item_name))
                 }
             } else {
+                self.inventory.insert(item_name.to_owned(), item);
                 dont_have(container_name)
             }
         } else {
@@ -280,9 +305,9 @@ impl Player {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.info())
         } else if let Some(item) = self.inventory.get(name) {
-            Some(CmdResult::new(true, item.inspection().to_owned()))
+            Some(CmdResult::new(true, item.inspect().to_owned()))
         } else if let Some(item) = &self.main_hand {
-            Some(CmdResult::new(true, item.inspection().to_owned()))
+            Some(CmdResult::new(true, item.inspect().to_owned()))
         } else {
             None
         }
@@ -310,11 +335,15 @@ impl Player {
 
     pub fn open(&mut self, item_name: &str) -> CmdResult {
         if let Some(item) = self.inventory.get_mut(item_name) {
-            if item.is_closed() == Some(true) {
-                item.open();
-                CmdResult::new(true, "Opened.".to_owned())
+            if let Container(item) = &mut **item {
+                if item.is_closed() {
+                    item.open();
+                    CmdResult::new(true, "Opened.".to_owned())
+                } else {
+                    CmdResult::new(false, format!("The {} is already opened.", item_name))
+                }
             } else {
-                CmdResult::new(false, format!("The {} is already opened.", item_name))
+                CmdResult::new(false, format!("The {} is not a container.", item_name))
             }
         } else {
             no_item_here(item_name)
@@ -454,7 +483,7 @@ impl Player {
     pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
         if let Some(obj) = item {
             let mut res = String::from("Taken.");
-            if obj.is_weapon() {
+            if let Weapon(_) = *obj {
                 res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
             }
             self.inventory.insert(obj.name().to_owned(), obj);
@@ -487,17 +516,9 @@ impl Player {
 
     // take an Item from a container Item in the inventory
     pub fn take_from(&mut self, item_name: &str, container_name: &str) -> CmdResult {
-        let is_closed = if let Some(container) = self.inventory.get(container_name) {
-            container.is_closed()
-        } else {
-            return dont_have(container_name);
-        };
-
-        if is_closed == Some(true) {
-            CmdResult::new(false, format!("The {} is closed.", container_name))
-        } else if let Some(container) = self.inventory.get_mut(container_name) {
-            if let Some(ref mut contents) = container.contents_mut() {
-                if let Some(item) = contents.remove(item_name) {
+        if let Some(container) = self.inventory.get_mut(container_name) {
+            if let Container(container) = &mut **container {
+                if let Some(item) = container.contents_mut().remove(item_name) {
                     self.inventory.insert(item.name().to_owned(), item);
                     CmdResult::new(true, "Taken.".to_owned())
                 } else {

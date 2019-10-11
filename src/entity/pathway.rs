@@ -1,4 +1,4 @@
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::entity::{Closeable, Entity};
 
@@ -8,7 +8,7 @@ pub struct Pathway {
     name: String,
     target: String,
     desc: String,
-    inspection: String,
+    inspect: String,
     is_closed: Option<bool>,
     is_locked: Option<bool>,
 }
@@ -46,8 +46,8 @@ impl Entity for Pathway {
         &self.desc
     }
 
-    fn inspection(&self) -> &String {
-        &self.inspection
+    fn inspect(&self) -> &String {
+        &self.inspect
     }
 }
 

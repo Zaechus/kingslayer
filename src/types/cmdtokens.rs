@@ -1,4 +1,4 @@
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct CmdTokens {
@@ -40,9 +40,10 @@ impl CmdTokens {
         format!("{}{}{}", self.obj, self.prep, self.obj_prep)
     }
     pub fn after_verb_vec(&self) -> Vec<String> {
-        self.after_verb()
-            .split_whitespace()
-            .map(str::to_string)
-            .collect()
+        vec![
+            self.obj.to_owned(),
+            self.prep.to_owned(),
+            self.obj_prep.to_owned(),
+        ]
     }
 }

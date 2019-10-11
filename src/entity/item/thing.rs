@@ -2,17 +2,15 @@ use serde::{Deserialize, Serialize};
 
 use crate::entity::Entity;
 
+// An object to be interacted with by the user
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Ally {
-    hp: i32,
+pub struct Thing {
     name: String,
     desc: String,
     inspect: String,
 }
 
-impl Ally {}
-
-impl Entity for Ally {
+impl Entity for Thing {
     fn name(&self) -> &String {
         &self.name
     }

@@ -17,5 +17,5 @@ pub trait Entity {
 
     fn desc(&self) -> &String;
 
-    fn inspection(&self) -> &String;
+    fn inspect(&self) -> &String;
 }

@@ -14,8 +14,6 @@ mod tests {
                 && cli.ask("l").contains("capsule")
         );
 
-        assert!(cli.ask("put leaf in capsule").contains("is closed"));
-        assert_eq!(cli.ask("open capsule"), "Opened.");
         assert!(
             cli.ask("l").contains("capsule")
                 && cli.ask("l").contains("contains")

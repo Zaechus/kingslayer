@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::fs::File;
 use std::io::{self, BufReader, Read, Write};
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::Entity,
@@ -21,6 +21,24 @@ pub struct Cli {
 }
 
 impl Cli {
+    /// Construct from a RON file
+    pub fn from_ron_file(path: &str) -> Self {
+        Self {
+            lexer: Lexer::new(),
+            player: RefCell::new(Player::new()),
+            world: Cli::get_world_ron(path),
+        }
+    }
+
+    /// Construct from a string containing RON
+    pub fn from_ron_str(json: &str) -> Self {
+        Self {
+            lexer: Lexer::new(),
+            player: RefCell::new(Player::new()),
+            world: ron::de::from_str(json).expect("Error creating world from string."),
+        }
+    }
+
     /// Construct from a JSON file
     pub fn from_json_file(path: &str) -> Self {
         Self {
@@ -35,8 +53,19 @@ impl Cli {
         Self {
             lexer: Lexer::new(),
             player: RefCell::new(Player::new()),
-            world: Cli::get_world_json_str(json),
+            world: serde_json::from_str(json).expect("Error creating world from string."),
         }
+    }
+
+    fn get_world_ron(path: &str) -> RefCell<World> {
+        let world_file = File::open(path).expect("Unable to open world file");
+        let mut world_file_reader = BufReader::new(world_file);
+        let mut data = String::new();
+        world_file_reader
+            .read_to_string(&mut data)
+            .expect("Unable to read string from world file");
+
+        ron::de::from_str(&data).expect("Error creating world from RON file.")
     }
 
     fn get_world_json(path: &str) -> RefCell<World> {
@@ -48,10 +77,6 @@ impl Cli {
             .expect("Unable to read string from world file");
 
         serde_json::from_str(&data).expect("Error creating world from JSON file.")
-    }
-
-    fn get_world_json_str(json: &str) -> RefCell<World> {
-        serde_json::from_str(json).expect("Error creating world from string.")
     }
 
     /// Prompts the user for input from stdin

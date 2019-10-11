@@ -1,4 +1,4 @@
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::entity::Entity;
 use crate::types::{AllyMap, EnemyMap, ItemMap, PathMap};
@@ -69,7 +69,7 @@ impl Entity for Room {
         &self.desc
     }
 
-    fn inspection(&self) -> &String {
+    fn inspect(&self) -> &String {
         &self.desc
     }
 }
