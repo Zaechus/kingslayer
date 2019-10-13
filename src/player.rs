@@ -356,10 +356,10 @@ impl Player {
     pub fn print_inventory(&self) -> CmdResult {
         let mut items_carried = String::new();
         if let Some(weapon) = &self.main_hand {
-            items_carried.push_str(&format!("Main hand: {}\n", weapon.long_name()));
+            items_carried.push_str(&format!("Main hand: {}\n", weapon.name()));
         }
         if let Some(armor) = &self.armor {
-            items_carried.push_str(&format!("Armor: {}\n", armor.long_name()));
+            items_carried.push_str(&format!("Armor: {}\n", armor.name()));
         }
         if self.inventory.is_empty() {
             items_carried.push_str("Your inventory is empty.");
