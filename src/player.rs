@@ -7,9 +7,8 @@ use crate::{
         Closeable, Entity,
         Item::{self, Armor, Container, Weapon},
     },
-    response::{already_closed, already_opened, dont_have, no_item_here, not_container},
-    types::Stats,
-    types::{CmdResult, ItemMap},
+    response::{dont_have, not_container},
+    types::{CmdResult, ItemMap, Stats},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -38,7 +37,7 @@ impl Player {
         }
     }
 
-    fn find_similar_name(&self, name: &str) -> Option<&String> {
+    fn find_similar_item_name(&self, name: &str) -> Option<&String> {
         self.inventory
             .keys()
             .find(|key| key.split_whitespace().any(|word| word == name))
@@ -85,20 +84,28 @@ impl Player {
         }
     }
 
-    pub fn close(&mut self, item_name: &str) -> CmdResult {
+    pub fn close(&mut self, item_name: &str) -> Option<CmdResult> {
         if let Some(item) = self.inventory.get_mut(item_name) {
             if let Container(item) = &mut **item {
-                if item.is_closed() {
-                    already_closed(item_name)
-                } else {
-                    item.close();
-                    CmdResult::new(true, "Closed.".to_owned())
-                }
+                Some(item.close())
             } else {
-                not_container(item_name)
+                Some(not_container(item_name))
             }
         } else {
-            no_item_here(item_name)
+            let similar_name = if let Some(s) = self.find_similar_item_name(item_name) {
+                s.clone()
+            } else {
+                return None;
+            };
+            if let Some(item) = self.inventory.get_mut(&similar_name) {
+                if let Container(item) = &mut **item {
+                    Some(item.close())
+                } else {
+                    Some(not_container(&similar_name))
+                }
+            } else {
+                None
+            }
         }
     }
 
@@ -134,7 +141,7 @@ impl Player {
         if let Some(item) = self.inventory.remove(armor_name) {
             self.set_armor(armor_name, item)
         } else {
-            let similar_name = if let Some(name) = self.find_similar_name(armor_name) {
+            let similar_name = if let Some(name) = self.find_similar_item_name(armor_name) {
                 name.clone()
             } else {
                 return dont_have(armor_name);
@@ -185,7 +192,7 @@ impl Player {
         if let Some(item) = self.inventory.remove(weapon_name) {
             self.set_equipped(weapon_name, item)
         } else {
-            let similar_name = if let Some(name) = self.find_similar_name(weapon_name) {
+            let similar_name = if let Some(name) = self.find_similar_item_name(weapon_name) {
                 name.clone()
             } else {
                 return dont_have(weapon_name);
@@ -322,20 +329,28 @@ impl Player {
         &self.main_hand
     }
 
-    pub fn open(&mut self, item_name: &str) -> CmdResult {
+    pub fn open(&mut self, item_name: &str) -> Option<CmdResult> {
         if let Some(item) = self.inventory.get_mut(item_name) {
             if let Container(item) = &mut **item {
-                if item.is_closed() {
-                    item.open();
-                    CmdResult::new(true, "Opened.".to_owned())
-                } else {
-                    already_opened(item_name)
-                }
+                Some(item.open())
             } else {
-                not_container(item_name)
+                Some(not_container(item_name))
             }
         } else {
-            no_item_here(item_name)
+            let similar_name = if let Some(s) = self.find_similar_item_name(item_name) {
+                s.clone()
+            } else {
+                return None;
+            };
+            if let Some(item) = self.inventory.get_mut(&similar_name) {
+                if let Container(item) = &mut **item {
+                    Some(item.open())
+                } else {
+                    Some(not_container(&similar_name))
+                }
+            } else {
+                None
+            }
         }
     }
 
@@ -362,7 +377,7 @@ impl Player {
         if let Some(item) = self.inventory.remove(name) {
             Some(item)
         } else {
-            let similar_name = if let Some(s) = self.find_similar_name(name) {
+            let similar_name = if let Some(s) = self.find_similar_item_name(name) {
                 s.clone()
             } else {
                 return None;

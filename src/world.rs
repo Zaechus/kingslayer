@@ -7,7 +7,7 @@ use crate::{
         Room,
     },
     player::Player,
-    response::{already_closed, already_opened, dont_have, no_item_here, not_container},
+    response::{dont_have, no_item_here, not_container},
     types::{CmdResult, ItemMap, RoomMap},
 };
 
@@ -21,16 +21,18 @@ pub struct World {
 
 impl World {
     pub fn get_curr_room(&self) -> &Room {
-        match self.rooms.get(&self.curr_room) {
-            Some(room) => room,
-            None => panic!("ERROR: You are not in a valid room (The world should be fixed)."),
+        if let Some(room) = self.rooms.get(&self.curr_room) {
+            room
+        } else {
+            panic!("ERROR: You are not in a valid room (The world should be fixed).")
         }
     }
 
     pub fn get_curr_room_mut(&mut self) -> &mut Room {
-        match self.rooms.get_mut(&self.curr_room) {
-            Some(room) => room,
-            None => panic!("ERROR: You are not in a valid room (The world should be fixed)."),
+        if let Some(room) = self.rooms.get_mut(&self.curr_room) {
+            room
+        } else {
+            panic!("ERROR: You are not in a valid room (The world should be fixed).")
         }
     }
 
@@ -42,8 +44,8 @@ impl World {
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.get_curr_room().items().get(name) {
             Some(CmdResult::new(true, item.inspect().to_owned()))
-        } else if let Some(item) = self.get_curr_room().paths().get(name) {
-            Some(CmdResult::new(true, item.inspect().to_owned()))
+        } else if let Some(pathway) = self.get_curr_room().paths().get(name) {
+            Some(CmdResult::new(true, pathway.inspect().to_owned()))
         } else if let Some(enemy) = self.get_curr_room().enemies().get(name) {
             Some(CmdResult::new(true, enemy.inspect().to_owned()))
         } else if let Some(ally) = self.get_curr_room().allies().get(name) {
@@ -75,51 +77,11 @@ impl World {
     }
 
     pub fn open(&mut self, name: &str) -> CmdResult {
-        if let Some(path) = self.get_curr_room_mut().paths_mut().get_mut(name) {
-            if path.is_closed() {
-                path.open();
-                CmdResult::new(true, "Opened.".to_owned())
-            } else {
-                already_opened(name)
-            }
-        } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
-            if let Container(container) = &mut **item {
-                if container.is_closed() {
-                    container.open();
-                    CmdResult::new(true, "Opened.".to_owned())
-                } else {
-                    already_opened(name)
-                }
-            } else {
-                not_container(name)
-            }
-        } else {
-            no_item_here(name)
-        }
+        self.get_curr_room_mut().open(name)
     }
 
     pub fn close(&mut self, name: &str) -> CmdResult {
-        if let Some(path) = self.get_curr_room_mut().paths_mut().get_mut(name) {
-            if path.is_closed() {
-                already_closed(name)
-            } else {
-                path.close();
-                CmdResult::new(true, "Closed.".to_owned())
-            }
-        } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
-            if let Container(container) = &mut **item {
-                if container.is_closed() {
-                    already_closed(name)
-                } else {
-                    container.close();
-                    CmdResult::new(true, "Closed.".to_owned())
-                }
-            } else {
-                not_container(name)
-            }
-        } else {
-            no_item_here(name)
-        }
+        self.get_curr_room_mut().close(name)
     }
 
     // let an Enemy in the current Room take damage
@@ -158,21 +120,7 @@ impl World {
 
     // move an Item out of the current Room
     pub fn give(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.get_curr_room_mut().items_mut().remove(name) {
-            Some(item)
-        } else {
-            let similar_name = if let Some(similar_name) = self
-                .get_curr_room_mut()
-                .items()
-                .keys()
-                .find(|key| key.split_whitespace().any(|word| word == name))
-            {
-                similar_name.clone()
-            } else {
-                return None;
-            };
-            self.get_curr_room_mut().items_mut().remove(&similar_name)
-        }
+        self.get_curr_room_mut().remove_item(name)
     }
 
     // take an Item from a container Item in the current Room

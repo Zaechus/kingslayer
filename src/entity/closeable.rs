@@ -1,7 +1,9 @@
-pub trait Closeable {
-    fn open(&mut self);
+use crate::types::CmdResult;
 
-    fn close(&mut self);
+pub trait Closeable {
+    fn open(&mut self) -> CmdResult;
+
+    fn close(&mut self) -> CmdResult;
 
     fn is_closed(&self) -> bool;
 }

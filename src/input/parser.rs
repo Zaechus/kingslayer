@@ -39,12 +39,12 @@ impl Parser {
         }
     }
 
-    fn parse_close(words: CmdTokens, player: &mut Player, world: &mut World) -> CmdResult {
+    fn parse_close(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
         if words.num_words() > 1 {
-            if player.has(&words.obj()) {
-                player.close(&words.obj())
+            if let Some(res) = player.close(words.obj()) {
+                res
             } else {
-                world.close(&words.obj())
+                world.close(words.obj())
             }
         } else {
             do_what(words.verb())
@@ -103,12 +103,11 @@ impl Parser {
     }
 
     fn parse_open(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
-        let obj = words.obj();
         if words.num_words() > 1 {
-            if player.has(&obj) {
-                player.open(&obj)
+            if let Some(res) = player.open(words.obj()) {
+                res
             } else {
-                world.open(&obj)
+                world.open(words.obj())
             }
         } else {
             do_what(words.verb())
@@ -189,7 +188,7 @@ impl Parser {
             "attack" | "cut" | "hit" | "kill" | "slay" => {
                 Parser::parse_attack(words, world, player)
             }
-            "close" => Parser::parse_close(words, player, world),
+            "close" => Parser::parse_close(words, world, player),
             "c" | "stat" | "stats" => player.info(),
             "don" => Parser::parse_don(words, player),
             "draw" | "equip" | "hold" | "use" => Parser::parse_equip(words, player),

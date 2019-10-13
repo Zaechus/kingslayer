@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::entity::{Closeable, Entity};
-use crate::types::ItemMap;
+use crate::response::{already_closed, already_opened};
+use crate::types::{CmdResult, ItemMap};
 
 // An object to be interacted with by the user
 #[derive(Debug, Serialize, Deserialize)]
@@ -59,12 +60,22 @@ impl Entity for Container {
 }
 
 impl Closeable for Container {
-    fn open(&mut self) {
-        self.is_closed = false
+    fn open(&mut self) -> CmdResult {
+        if self.is_closed {
+            self.is_closed = false;
+            CmdResult::new(true, "Opened.".to_owned())
+        } else {
+            already_opened(&self.name)
+        }
     }
 
-    fn close(&mut self) {
-        self.is_closed = true
+    fn close(&mut self) -> CmdResult {
+        if self.is_closed {
+            already_closed(&self.name)
+        } else {
+            self.is_closed = true;
+            CmdResult::new(true, "Closed.".to_owned())
+        }
     }
 
     fn is_closed(&self) -> bool {
