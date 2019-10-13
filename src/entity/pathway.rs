@@ -18,7 +18,7 @@ impl Pathway {
         &self.target
     }
 
-    pub fn desc(&self) -> String {
+    pub fn long_desc(&self) -> String {
         if let Some(true) = self.is_closed {
             format!("{} The way is shut.", self.desc)
         } else if let Some(false) = self.is_closed {
