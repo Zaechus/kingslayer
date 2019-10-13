@@ -1,5 +1,13 @@
 use crate::types::CmdResult;
 
+pub fn already_closed(name: &str) -> CmdResult {
+    CmdResult::new(false, format!("The {} already closed.", name))
+}
+
+pub fn already_opened(name: &str) -> CmdResult {
+    CmdResult::new(false, format!("The {} already opened.", name))
+}
+
 pub fn do_what(word: &str) -> CmdResult {
     CmdResult::new(false, format!("What do you want to {}?", word))
 }

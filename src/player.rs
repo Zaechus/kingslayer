@@ -7,7 +7,7 @@ use crate::{
         Closeable, Entity,
         Item::{self, Armor, Container, Weapon},
     },
-    response::{dont_have, no_item_here, not_container},
+    response::{already_closed, already_opened, dont_have, no_item_here, not_container},
     types::Stats,
     types::{CmdResult, ItemMap},
 };
@@ -91,7 +91,7 @@ impl Player {
         if let Some(item) = self.inventory.get_mut(item_name) {
             if let Container(item) = &mut **item {
                 if item.is_closed() {
-                    CmdResult::new(false, format!("The {} is already closed.", item_name))
+                    already_closed(item_name)
                 } else {
                     item.close();
                     CmdResult::new(true, "Closed.".to_owned())
@@ -340,7 +340,7 @@ impl Player {
                     item.open();
                     CmdResult::new(true, "Opened.".to_owned())
                 } else {
-                    CmdResult::new(false, format!("The {} is already opened.", item_name))
+                    already_opened(item_name)
                 }
             } else {
                 not_container(item_name)

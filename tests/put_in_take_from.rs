@@ -7,6 +7,8 @@ mod tests {
         let cli = Cli::from_json_file("data/test_world.json");
 
         cli.ask("take leaf");
+        cli.ask("drop the leaf");
+        cli.ask("pick up leaf");
         cli.ask("s");
         assert!(
             cli.ask("i").contains("leaf")

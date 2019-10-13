@@ -16,4 +16,12 @@ mod tests {
             break;
         }
     }
+
+    #[test]
+    fn from_file() {
+        let _cli = Cli::from_json_file("data/world.json");
+        let _cli = Cli::from_ron_file("data/world.ron");
+        let _cli = Cli::from_json_file("data/test_world.json");
+        let _cli = Cli::from_ron_file("data/zork.ron");
+    }
 }

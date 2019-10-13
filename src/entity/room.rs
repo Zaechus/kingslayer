@@ -1,17 +1,19 @@
 use serde::{Deserialize, Serialize};
 
-use crate::entity::Entity;
+use super::Entity;
 use crate::types::{AllyMap, EnemyMap, ItemMap, PathMap};
 
 // A section of the world connected by paths
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Room {
-    #[serde(default)]
     name: String,
     desc: String,
     paths: PathMap,
+    #[serde(default)]
     enemies: EnemyMap,
+    #[serde(default)]
     allies: AllyMap,
+    #[serde(default)]
     items: ItemMap,
 }
 

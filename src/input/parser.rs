@@ -153,11 +153,8 @@ impl Parser {
                 }
             } else if words.obj().len() >= 3 && words.obj().get(0..3).unwrap() == "all" {
                 player.take_all(world.give_all())
-            } else if words.after_verb_vec()[0] == "u" {
-                player.take(
-                    &words.after_verb()[2..],
-                    world.give(&words.after_verb()[2..]),
-                )
+            } else if &words.obj()[0..2] == "u " {
+                player.take(&words.obj()[2..], world.give(&words.obj()[2..]))
             } else {
                 player.take(&words.obj(), world.give(&words.obj()))
             }
@@ -193,7 +190,7 @@ impl Parser {
                 Parser::parse_attack(words, world, player)
             }
             "close" => Parser::parse_close(words, player, world),
-            "c" | "stats" => player.info(),
+            "c" | "stat" | "stats" => player.info(),
             "don" => Parser::parse_don(words, player),
             "draw" | "equip" | "hold" | "use" => Parser::parse_equip(words, player),
             "drop" | "remove" | "throw" => Parser::parse_drop(words, world, player),

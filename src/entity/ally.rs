@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::entity::Entity;
+use super::Entity;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Ally {

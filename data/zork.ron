@@ -1,53 +1,46 @@
 (
-    curr_room: "West of House",
-    rooms: {
-        "West of House": Room(
-            name: "West of House",
-            desc: "You are standing in an open field west of a white house, with a boarded front door.",
-            paths: {
-                "n": Pathway(
-                    target: "North of House",
-                    desc: "",
-                    inspect: ""
-                ),
-                "ne": Pathway(
-                    target: "North of House",
-                    desc: "",
-                    inspect: ""
-                ),
-            },
-            enemies: {},
-            allies: {},
-            items: {
-                "small mailbox": Container(Container(
-                    name: "small mailbox",
-                    desc: "There is a small mailbox here.",
-                    inspect: "The small mailbox is white.",
-                    is_closed: true,
-                    is_locked: false,
-                    contents: {
-                        "leaflet": Thing(Thing(
-                            name: "leaflet",
-                            desc: "There is a leaflet here.",
-                            inspect: "The leaflet is made of expensive stationery."
-                        ))
-                    }
-                )),
-            },
+curr_room: "West of House",
+rooms: {
+"West of House": Room(
+    name: "West of House",
+    desc: "You are standing in an open field west of a white house, with a boarded front door.",
+    paths: {
+        "n": Pathway(
+            target: "North of House",
         ),
-        "North of House": Room(
-            name: "North of House",
-            desc: "You are facing the north side of a white house. There is no door here, and all the windows are boarded up. To the north a narrow path winds though the trees.",
-            paths: {
-                "sw": Pathway(
-                    target: "West of House",
-                    desc: "",
-                    inspect: ""
-                ),
-            },
-            enemies: {},
-            allies: {},
-            items: {},
+        "ne": Pathway(
+            target: "North of House",
         ),
     },
+    items: {
+        "small mailbox": Container(Container(
+            name: "small mailbox",
+            desc: "There is a small mailbox here.",
+            inspect: "The small mailbox is white.",
+            is_closed: true,
+            is_locked: false,
+            contents: {
+                "leaflet": Thing(Thing(
+                    name: "leaflet",
+                    desc: "There is a leaflet here.",
+                    inspect: "The leaflet is made of expensive stationery."
+                ))
+            }
+        )),
+    },
+),
+"North of House": Room(
+    name: "North of House",
+    desc: "You are facing the north side of a white house. There is no door here, and all the windows are boarded up.",
+    paths: {
+        "n": Pathway(
+            target: "North of House",
+            desc: "To the north a narrow path winds though the trees."
+        ),
+        "sw": Pathway(
+            target: "West of House",
+        ),
+    },
+),
+},
 )

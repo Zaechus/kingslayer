@@ -2,7 +2,7 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 
-use crate::entity::Entity;
+use super::Entity;
 use crate::types::ItemMap;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -14,6 +14,7 @@ pub struct Enemy {
     desc: String,
     inspect: String,
     is_angry: bool,
+    #[serde(default)]
     loot: ItemMap,
 }
 

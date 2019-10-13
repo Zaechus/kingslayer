@@ -39,11 +39,4 @@ impl CmdTokens {
     pub fn after_verb(&self) -> String {
         format!("{}{}{}", self.obj, self.prep, self.obj_prep)
     }
-    pub fn after_verb_vec(&self) -> Vec<String> {
-        vec![
-            self.obj.to_owned(),
-            self.prep.to_owned(),
-            self.obj_prep.to_owned(),
-        ]
-    }
 }

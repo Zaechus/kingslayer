@@ -7,7 +7,7 @@ use crate::{
         Room,
     },
     player::Player,
-    response::{dont_have, no_item_here, not_container},
+    response::{already_closed, already_opened, dont_have, no_item_here, not_container},
     types::{CmdResult, ItemMap, RoomMap},
 };
 
@@ -80,7 +80,7 @@ impl World {
                 path.open();
                 CmdResult::new(true, "Opened.".to_owned())
             } else {
-                CmdResult::new(false, format!("The {} is already opened.", name))
+                already_opened(name)
             }
         } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
             if let Container(container) = &mut **item {
@@ -88,7 +88,7 @@ impl World {
                     container.open();
                     CmdResult::new(true, "Opened.".to_owned())
                 } else {
-                    CmdResult::new(false, format!("The {} is already opened.", name))
+                    already_opened(name)
                 }
             } else {
                 not_container(name)
@@ -101,7 +101,7 @@ impl World {
     pub fn close(&mut self, name: &str) -> CmdResult {
         if let Some(path) = self.get_curr_room_mut().paths_mut().get_mut(name) {
             if path.is_closed() == Some(true) {
-                CmdResult::new(false, format!("The {} is already closed.", name))
+                already_closed(name)
             } else {
                 path.close();
                 CmdResult::new(true, "Closed.".to_owned())
@@ -109,7 +109,7 @@ impl World {
         } else if let Some(item) = self.get_curr_room_mut().items_mut().get_mut(name) {
             if let Container(container) = &mut **item {
                 if container.is_closed() {
-                    CmdResult::new(false, format!("The {} is already closed.", name))
+                    already_closed(name)
                 } else {
                     container.close();
                     CmdResult::new(true, "Closed.".to_owned())

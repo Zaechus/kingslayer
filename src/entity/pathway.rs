@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
-use crate::entity::{Closeable, Entity};
+use super::{Closeable, Entity};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Pathway {
-    #[serde(default)]
-    name: String,
     target: String,
+    #[serde(default)]
     desc: String,
+    #[serde(default)]
     inspect: String,
     is_closed: Option<bool>,
     is_locked: Option<bool>,
@@ -39,7 +39,7 @@ impl Pathway {
 
 impl Entity for Pathway {
     fn name(&self) -> &String {
-        &self.name
+        &self.target
     }
 
     fn desc(&self) -> &String {
