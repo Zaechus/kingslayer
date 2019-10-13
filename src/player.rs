@@ -180,10 +180,13 @@ impl Player {
                         .to_owned(),
                 )
             }
-            _ => CmdResult::new(
-                false,
-                format!("The {} is neither armor nor weapon.", item_name),
-            ),
+            _ => {
+                self.inventory.insert(item_name.to_owned(), item);
+                CmdResult::new(
+                    false,
+                    format!("The {} is neither armor nor weapon.", item_name),
+                )
+            }
         }
     }
 
