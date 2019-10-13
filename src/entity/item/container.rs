@@ -42,10 +42,6 @@ impl Container {
     pub fn contents_mut(&mut self) -> &mut ItemMap {
         &mut self.contents
     }
-
-    pub fn is_closed(&self) -> bool {
-        self.is_closed
-    }
 }
 
 impl Entity for Container {
@@ -66,7 +62,12 @@ impl Closeable for Container {
     fn open(&mut self) {
         self.is_closed = false
     }
+
     fn close(&mut self) {
         self.is_closed = true
+    }
+
+    fn is_closed(&self) -> bool {
+        self.is_closed
     }
 }

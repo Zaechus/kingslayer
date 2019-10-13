@@ -38,16 +38,14 @@ impl Player {
         }
     }
 
-    fn ac(&self) -> u32 {
-        if let Some(armor) = &self.armor {
-            if let Armor(armor) = &**armor {
-                armor.ac() + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
-            } else {
-                10 + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
-            }
-        } else {
-            10 + (f64::from(self.stats.dex - 10) / 2.0).floor() as u32
-        }
+    fn find_similar_name(&self, name: &str) -> Option<&String> {
+        self.inventory
+            .keys()
+            .find(|key| key.split_whitespace().any(|word| word == name))
+    }
+
+    fn deal_damage(&self, weapon_damage: u32) -> u32 {
+        weapon_damage + self.stats.strngth_mod()
     }
 
     pub fn attack(&mut self) -> Option<u32> {
@@ -104,10 +102,6 @@ impl Player {
         }
     }
 
-    fn deal_damage(&self, weapon_damage: u32) -> u32 {
-        weapon_damage + (f64::from(self.stats.strngth - 10) / 2.0).floor() as u32
-    }
-
     pub fn disengage_combat(&mut self) {
         self.in_combat = false;
     }
@@ -140,12 +134,8 @@ impl Player {
         if let Some(item) = self.inventory.remove(armor_name) {
             self.set_armor(armor_name, item)
         } else {
-            let similar_name = if let Some(similar_name) = self
-                .inventory
-                .keys()
-                .find(|key| key.split_whitespace().any(|word| word == armor_name))
-            {
-                similar_name.clone()
+            let similar_name = if let Some(name) = self.find_similar_name(armor_name) {
+                name.clone()
             } else {
                 return dont_have(armor_name);
             };
@@ -195,12 +185,8 @@ impl Player {
         if let Some(item) = self.inventory.remove(weapon_name) {
             self.set_equipped(weapon_name, item)
         } else {
-            let similar_name = if let Some(similar_name) = self
-                .inventory
-                .keys()
-                .find(|key| key.split_whitespace().any(|word| word == weapon_name))
-            {
-                similar_name.clone()
+            let similar_name = if let Some(name) = self.find_similar_name(weapon_name) {
+                name.clone()
             } else {
                 return dont_have(weapon_name);
             };
@@ -376,12 +362,8 @@ impl Player {
         if let Some(item) = self.inventory.remove(name) {
             Some(item)
         } else {
-            let similar_name = if let Some(similar_name) = self
-                .inventory
-                .keys()
-                .find(|key| key.split_whitespace().any(|word| word == name))
-            {
-                similar_name.clone()
+            let similar_name = if let Some(s) = self.find_similar_name(name) {
+                s.clone()
             } else {
                 return None;
             };
@@ -453,6 +435,18 @@ impl Player {
             }
         } else {
             CmdResult::new(false, "You already have full health.".to_owned())
+        }
+    }
+
+    fn ac(&self) -> u32 {
+        if let Some(armor) = &self.armor {
+            if let Armor(armor) = &**armor {
+                armor.ac() + self.stats.dex_mod()
+            } else {
+                10 + self.stats.dex_mod()
+            }
+        } else {
+            10 + self.stats.dex_mod()
         }
     }
 

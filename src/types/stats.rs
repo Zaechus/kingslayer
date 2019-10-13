@@ -36,4 +36,23 @@ impl Stats {
             self.strngth, self.dex, self.con, self.int, self.wis, self.cha
         )
     }
+
+    pub fn strngth_mod(&self) -> u32 {
+        (f64::from(self.strngth - 10) / 2.0).floor() as u32
+    }
+    pub fn dex_mod(&self) -> u32 {
+        (f64::from(self.dex - 10) / 2.0).floor() as u32
+    }
+    // pub fn con_mod(&self) -> u32 {
+    //     (f64::from(self.con - 10) / 2.0).floor() as u32
+    // }
+    // pub fn int_mod(&self) -> u32 {
+    //     (f64::from(self.int - 10) / 2.0).floor() as u32
+    // }
+    // pub fn wis_mod(&self) -> u32 {
+    //     (f64::from(self.wis - 10) / 2.0).floor() as u32
+    // }
+    // pub fn cha_mod(&self) -> u32 {
+    //     (f64::from(self.cha - 10) / 2.0).floor() as u32
+    // }
 }

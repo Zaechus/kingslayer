@@ -58,7 +58,7 @@ impl World {
         if let Some(new_room) = self.get_curr_room().paths().get(direction) {
             if new_room.is_locked() == Some(true) {
                 CmdResult::new(true, "The way is locked.".to_owned())
-            } else if new_room.is_closed() == Some(true) {
+            } else if new_room.is_closed() {
                 CmdResult::new(true, "The way is shut.".to_owned())
             } else {
                 for enemy in self.get_curr_room().enemies().values() {
@@ -76,7 +76,7 @@ impl World {
 
     pub fn open(&mut self, name: &str) -> CmdResult {
         if let Some(path) = self.get_curr_room_mut().paths_mut().get_mut(name) {
-            if path.is_closed() == Some(true) {
+            if path.is_closed() {
                 path.open();
                 CmdResult::new(true, "Opened.".to_owned())
             } else {
@@ -100,7 +100,7 @@ impl World {
 
     pub fn close(&mut self, name: &str) -> CmdResult {
         if let Some(path) = self.get_curr_room_mut().paths_mut().get_mut(name) {
-            if path.is_closed() == Some(true) {
+            if path.is_closed() {
                 already_closed(name)
             } else {
                 path.close();

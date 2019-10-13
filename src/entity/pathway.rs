@@ -28,9 +28,9 @@ impl Pathway {
         }
     }
 
-    pub fn is_closed(&self) -> Option<bool> {
-        self.is_closed
-    }
+    // pub fn is_closed(&self) -> Option<bool> {
+    //     self.is_closed
+    // }
 
     pub fn is_locked(&self) -> Option<bool> {
         self.is_locked
@@ -61,6 +61,14 @@ impl Closeable for Pathway {
     fn close(&mut self) {
         if self.is_closed.is_some() {
             self.is_closed = Some(true)
+        }
+    }
+
+    fn is_closed(&self) -> bool {
+        if let Some(is_closed) = self.is_closed {
+            is_closed
+        } else {
+            false
         }
     }
 }
