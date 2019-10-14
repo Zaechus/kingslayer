@@ -93,7 +93,7 @@ impl Player {
             }
         } else {
             let similar_name = if let Some(s) = self.find_similar_item_name(item_name) {
-                s.clone()
+                s.to_owned()
             } else {
                 return None;
             };
@@ -142,7 +142,7 @@ impl Player {
             self.set_armor(armor_name, item)
         } else {
             let similar_name = if let Some(name) = self.find_similar_item_name(armor_name) {
-                name.clone()
+                name.to_owned()
             } else {
                 return dont_have(armor_name);
             };
@@ -193,7 +193,7 @@ impl Player {
             self.set_equipped(weapon_name, item)
         } else {
             let similar_name = if let Some(name) = self.find_similar_item_name(weapon_name) {
-                name.clone()
+                name.to_owned()
             } else {
                 return dont_have(weapon_name);
             };
@@ -338,7 +338,7 @@ impl Player {
             }
         } else {
             let similar_name = if let Some(s) = self.find_similar_item_name(item_name) {
-                s.clone()
+                s.to_owned()
             } else {
                 return None;
             };
@@ -378,7 +378,7 @@ impl Player {
             Some(item)
         } else {
             let similar_name = if let Some(s) = self.find_similar_item_name(name) {
-                s.clone()
+                s.to_owned()
             } else {
                 return None;
             };

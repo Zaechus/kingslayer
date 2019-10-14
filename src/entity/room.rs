@@ -91,7 +91,7 @@ impl Room {
             Some(item)
         } else {
             let similar_name = if let Some(s) = self.find_similar_item_name(name) {
-                s.clone()
+                s.to_owned()
             } else {
                 return None;
             };

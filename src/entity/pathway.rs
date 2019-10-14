@@ -25,7 +25,7 @@ impl Pathway {
         } else if let Some(false) = self.is_closed {
             format!("{} The way is open.", self.desc)
         } else {
-            self.desc.clone()
+            self.desc.to_owned()
         }
     }
 

@@ -24,7 +24,7 @@ impl Container {
             }
             desc
         } else {
-            self.name.clone()
+            self.name.to_owned()
         }
     }
 
@@ -36,7 +36,7 @@ impl Container {
             }
             desc
         } else {
-            self.desc.clone()
+            self.desc.to_owned()
         }
     }
 
