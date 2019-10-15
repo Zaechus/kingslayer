@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use serde::{Deserialize, Serialize};
 
 use crate::types::CmdTokens;
@@ -11,7 +13,7 @@ impl Lexer {
     pub fn new() -> Self {
         Self {
             filter_out: vec!["a", "an", "at", "my", "of", "that", "the", "through", "to"]
-                .iter()
+                .par_iter()
                 .map(|&s| s.to_owned())
                 .collect(),
         }
@@ -41,7 +43,7 @@ impl Lexer {
     }
 
     fn filter_parts(&self, s: &str) -> Vec<String> {
-        let mut words: Vec<String> = s.split_whitespace().map(str::to_lowercase).collect();
+        let mut words: Vec<String> = s.par_split_whitespace().map(str::to_lowercase).collect();
         words.retain(|w| !(&self.filter_out).contains(&w));
         words
     }

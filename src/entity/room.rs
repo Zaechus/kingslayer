@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use serde::{Deserialize, Serialize};
 
 use super::{
@@ -43,9 +45,15 @@ impl Room {
     }
 
     fn find_similar_item_name(&self, name: &str) -> Option<&String> {
-        self.items
-            .keys()
-            .find(|key| key.split_whitespace().any(|word| word == name))
+        if let Some((key, _)) = self
+            .items
+            .par_iter()
+            .find_any(|(key, _)| key.par_split_whitespace().any(|word| word == name))
+        {
+            Some(key)
+        } else {
+            None
+        }
     }
 
     pub fn open(&mut self, name: &str) -> CmdResult {

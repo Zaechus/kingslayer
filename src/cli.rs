@@ -2,6 +2,8 @@ use std::cell::RefCell;
 use std::fs::File;
 use std::io::{self, BufReader, Read, Write};
 
+use rayon::prelude::*;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -188,10 +190,10 @@ Some available commands:
                 events_str.push_str(&format!("\nYou gained {} XP.\n", enemy.xp()));
                 self.player.borrow_mut().disengage_combat();
                 self.player.borrow_mut().gain_xp(enemy.xp());
-                loot.extend(enemy.drop_loot());
+                loot.par_extend(enemy.drop_loot());
             }
         }
-        world.get_curr_room_mut().items_mut().extend(loot);
+        world.get_curr_room_mut().items_mut().par_extend(loot);
         world
             .get_curr_room_mut()
             .enemies_mut()

@@ -1,5 +1,7 @@
 use rand::Rng;
 
+use rayon::prelude::*;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -38,13 +40,23 @@ impl Player {
     }
 
     fn find_similar_item_name(&self, name: &str) -> Option<&String> {
-        self.inventory
-            .keys()
-            .find(|key| key.split_whitespace().any(|word| word == name))
+        if let Some((key, _)) = self
+            .inventory
+            .par_iter()
+            .find_any(|(key, _)| key.par_split_whitespace().any(|word| word == name))
+        {
+            Some(key)
+        } else {
+            None
+        }
     }
 
     fn deal_damage(&self, weapon_damage: u32) -> u32 {
         weapon_damage + self.stats.strngth_mod()
+    }
+
+    fn default_damage(&self) -> u32 {
+        rand::thread_rng().gen_range(1, 5)
     }
 
     pub fn attack(&mut self) -> Option<u32> {
@@ -53,7 +65,7 @@ impl Player {
                 self.in_combat = true;
                 Some(self.deal_damage(weapon.damage()))
             } else {
-                None
+                Some(self.default_damage())
             }
         } else {
             None
@@ -66,7 +78,7 @@ impl Player {
                 self.in_combat = true;
                 Some(self.deal_damage(weapon.damage()))
             } else {
-                None
+                Some(self.default_damage())
             }
         } else if let Some(weapon) = &self.main_hand {
             if weapon_name == weapon.name() {
@@ -74,7 +86,7 @@ impl Player {
                     self.in_combat = true;
                     Some(self.deal_damage(weapon.damage()))
                 } else {
-                    None
+                    Some(self.default_damage())
                 }
             } else {
                 None
@@ -388,7 +400,7 @@ impl Player {
 
     fn remove_main_hand(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.main_hand.take() {
-            if item.name() == name || item.name().split_whitespace().any(|word| word == name) {
+            if item.name() == name || item.name().par_split_whitespace().any(|word| word == name) {
                 Some(item)
             } else {
                 self.main_hand = Some(item);
@@ -401,7 +413,7 @@ impl Player {
 
     fn remove_armor(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.armor.take() {
-            if item.name() == name || item.name().split_whitespace().any(|word| word == name) {
+            if item.name() == name || item.name().par_split_whitespace().any(|word| word == name) {
                 Some(item)
             } else {
                 self.armor = Some(item);
@@ -516,7 +528,7 @@ impl Player {
             CmdResult::new(false, "There is nothing to take.".to_owned())
         } else {
             let times = items.len();
-            self.inventory.extend(items);
+            self.inventory.par_extend(items);
 
             let mut res = String::new();
             for _ in 0..times {
