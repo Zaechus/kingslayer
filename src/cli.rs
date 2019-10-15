@@ -10,7 +10,7 @@ use crate::{
     entity::Entity,
     input::{read_line, Lexer, Parser},
     player::Player,
-    types::{CmdResult, ItemMap},
+    types::{CmdResult, Items},
     world::World,
 };
 
@@ -171,7 +171,7 @@ Some available commands:
     // manages actions taken by Enemies in the current room
     fn combat(&self, world: &mut World) -> String {
         let mut events_str = String::new();
-        let mut loot = ItemMap::new();
+        let mut loot = Items::new();
 
         for enemy in world.get_curr_room_mut().enemies_mut().values_mut() {
             if enemy.is_angry() && enemy.is_alive() {

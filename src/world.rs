@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -8,7 +10,7 @@ use crate::{
     },
     player::Player,
     response::{dont_have, no_item_here, not_container},
-    types::{CmdResult, ItemMap, RoomMap},
+    types::{CmdResult, Items, RoomMap},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -42,7 +44,12 @@ impl World {
     }
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
-        if let Some(item) = self.get_curr_room().items().get(name) {
+        if let Some(item) = self
+            .get_curr_room()
+            .items()
+            .par_iter()
+            .find_any(|x| x.name() == name)
+        {
             Some(CmdResult::new(true, item.inspect().to_owned()))
         } else if let Some(pathway) = self.get_curr_room().paths().get(name) {
             Some(CmdResult::new(true, pathway.inspect().to_owned()))
@@ -104,7 +111,7 @@ impl World {
                     );
                     if !enemy.loot().is_empty() {
                         res.push_str("It dropped:\n");
-                        for loot in enemy.loot().values() {
+                        for loot in enemy.loot() {
                             res.push_str(&format!(" {},", loot.long_name()));
                         }
                     }
@@ -130,12 +137,21 @@ impl World {
         item_name: &str,
         container_name: &str,
     ) -> CmdResult {
-        if let Some(container) = self.get_curr_room_mut().items_mut().get_mut(container_name) {
+        if let Some(container) = self
+            .get_curr_room_mut()
+            .items_mut()
+            .par_iter_mut()
+            .find_any(|x| x.name() == container_name)
+        {
             if let Container(container) = &mut **container {
                 if container.is_closed() {
                     CmdResult::new(true, format!("The {} is closed.", container_name))
-                } else if let Some(item) = container.contents_mut().remove(item_name) {
-                    player.take(item_name, Some(item));
+                } else if let Some(item) = container
+                    .contents_mut()
+                    .par_iter()
+                    .position_any(|x| x.name() == item_name)
+                {
+                    player.take(item_name, Some(container.contents_mut().remove(item)));
                     CmdResult::new(true, "Taken.".to_owned())
                 } else {
                     CmdResult::new(
@@ -151,16 +167,14 @@ impl World {
         }
     }
 
-    pub fn give_all(&mut self) -> ItemMap {
-        self.get_curr_room_mut().items_mut().drain().collect()
+    pub fn give_all(&mut self) -> Items {
+        self.get_curr_room_mut().items_mut().drain(0..).collect()
     }
 
     // insert an Item into the current Room
     pub fn insert(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
         if let Some(obj) = item {
-            self.get_curr_room_mut()
-                .items_mut()
-                .insert(obj.name().to_owned(), obj);
+            self.get_curr_room_mut().items_mut().push(obj);
             CmdResult::new(true, "Dropped.".to_owned())
         } else {
             dont_have(name)
@@ -175,15 +189,18 @@ impl World {
         container_name: &str,
     ) -> CmdResult {
         if let Some(item) = player.remove(item_name) {
-            if let Some(container) = self.get_curr_room_mut().items_mut().get_mut(container_name) {
+            if let Some(container) = self
+                .get_curr_room_mut()
+                .items_mut()
+                .par_iter_mut()
+                .find_any(|x| x.name() == container_name)
+            {
                 if let Container(container) = &mut **container {
                     if container.is_closed() {
                         player.take(item_name, Some(item));
                         CmdResult::new(true, format!("The {} is closed.", container_name))
                     } else {
-                        container
-                            .contents_mut()
-                            .insert(item.name().to_owned(), item);
+                        container.contents_mut().push(item);
                         CmdResult::new(true, "Placed.".to_owned())
                     }
                 } else {

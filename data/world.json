@@ -11,10 +11,7 @@
                     "inspect": "The door is plain and wooden.",
                     "is_closed": false
                 }
-            },
-            "enemies": {},
-            "allies": {},
-            "items": {}
+            }
         },
         "Small Cave": {
             "name": "Small Cave",
@@ -36,13 +33,11 @@
                 }
             },
             "items": {
-                "iron sword": {
-                    "Weapon": {
-                        "name": "iron sword",
-                        "desc": "There is an iron sword on the ground.",
-                        "inspect": "The iron sword is of crude workmanship, but it should be usable.",
-                        "damage": 6
-                    }
+                "Weapon": {
+                    "name": "iron sword",
+                    "desc": "There is an iron sword on the ground.",
+                    "inspect": "The iron sword is of crude workmanship, but it should be usable.",
+                    "damage": 6
                 }
             }
         },
@@ -72,23 +67,17 @@
                     "inspect": "The opening is spacious."
                 }
             },
-            "enemies": {},
-            "allies": {},
             "items": {
-                "leather armor": {
-                    "Armor": {
-                        "name": "leather armor",
-                        "desc": "There is a set of leather armor lying in a heap.",
-                        "inspect": "The armor is worn but light and sturdy.",
-                        "ac": 11
-                    }
+                "Armor": {
+                    "name": "leather armor",
+                    "desc": "There is a set of leather armor lying in a heap.",
+                    "inspect": "The armor is worn but light and sturdy.",
+                    "ac": 11
                 },
-                "leaf": {
-                    "Thing": {
-                        "name": "leaf",
-                        "desc": "A leaf lies on the ground.",
-                        "inspect": "It's small, brown, and dry."
-                    }
+                "Thing": {
+                    "name": "leaf",
+                    "desc": "A leaf lies on the ground.",
+                    "inspect": "It's small, brown, and dry."
                 }
             }
         },
@@ -112,13 +101,11 @@
                     "inspect": "The ogre is holding a long club made of wood. He is wearing nothing but a loincloth and a leather jerkin.",
                     "is_angry": false,
                     "loot": {
-                        "club": {
-                            "Weapon": {
-                                "name": "club",
-                                "desc": "There is a club on the ground.",
-                                "inspect": "The club is very thick and heavy.",
-                                "damage": 4
-                            }
+                        "Weapon": {
+                            "name": "club",
+                            "desc": "There is a club on the ground.",
+                            "inspect": "The club is very thick and heavy.",
+                            "damage": 4
                         }
                     }
                 },
@@ -132,9 +119,7 @@
                     "is_angry": false,
                     "loot": {}
                 }
-            },
-            "allies": {},
-            "items": {}
+            }
         },
         "Long Hallway": {
             "name": "Long Hallway",
@@ -146,24 +131,18 @@
                     "inspect": "The hallway seems narrow and foreboding."
                 }
             },
-            "enemies": {},
-            "allies": {},
             "items": {
-                "large capsule": {
-                    "Container": {
-                        "name": "large capsule",
-                        "desc": "There is a large capsule here.",
-                        "inspect": "The capsule appears to be able to hold things.",
-                        "is_closed": false,
-                        "is_locked": false,
-                        "contents": {
-                            "curious object": {
-                                "Thing": {
-                                    "name": "curious object",
-                                    "desc": "There is a curious object here.",
-                                    "inspect": "The object's appearance confuses your weak mind."
-                                }
-                            }
+                "Container": {
+                    "name": "large capsule",
+                    "desc": "There is a large capsule here.",
+                    "inspect": "The capsule appears to be able to hold things.",
+                    "is_closed": false,
+                    "is_locked": false,
+                    "contents": {
+                        "Thing": {
+                            "name": "curious object",
+                            "desc": "There is a curious object here.",
+                            "inspect": "The object's appearance confuses your weak mind."
                         }
                     }
                 }

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::entity::{Closeable, Entity};
 use crate::response::{already_closed, already_opened};
-use crate::types::{CmdResult, ItemMap};
+use crate::types::{CmdResult, Items};
 
 // An object to be interacted with by the user
 #[derive(Debug, Serialize, Deserialize)]
@@ -12,14 +12,14 @@ pub struct Container {
     inspect: String,
     is_closed: bool,
     is_locked: bool,
-    contents: ItemMap,
+    contents: Items,
 }
 
 impl Container {
     pub fn long_name(&self) -> String {
         if !self.contents.is_empty() && !self.is_closed {
             let mut desc = format!("{}; it contains:", self.name);
-            for item in self.contents.values() {
+            for item in self.contents.iter() {
                 desc = format!("{}\n    {}", desc, item.name());
             }
             desc
@@ -31,7 +31,7 @@ impl Container {
     pub fn long_desc(&self) -> String {
         if !self.contents.is_empty() && !self.is_closed {
             let mut desc = format!("{}\nThe {} contains:", self.desc, self.name);
-            for item in self.contents.values() {
+            for item in self.contents.iter() {
                 desc = format!("{}\n  {}", desc, item.name());
             }
             desc
@@ -40,7 +40,7 @@ impl Container {
         }
     }
 
-    pub fn contents_mut(&mut self) -> &mut ItemMap {
+    pub fn contents_mut(&mut self) -> &mut Items {
         &mut self.contents
     }
 }

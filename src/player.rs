@@ -10,7 +10,7 @@ use crate::{
         Item::{self, Armor, Container, Weapon},
     },
     response::{dont_have, not_container},
-    types::{CmdResult, ItemMap, Stats},
+    types::{CmdResult, Items, Stats},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -22,7 +22,7 @@ pub struct Player {
     stats: Stats,
     main_hand: Option<Box<Item>>,
     armor: Option<Box<Item>>,
-    inventory: ItemMap,
+    inventory: Items,
 }
 
 impl Player {
@@ -35,20 +35,14 @@ impl Player {
             stats: Stats::new(),
             main_hand: None,
             armor: None,
-            inventory: ItemMap::new(),
+            inventory: Items::new(),
         }
     }
 
-    fn find_similar_item_name(&self, name: &str) -> Option<&String> {
-        if let Some((key, _)) = self
-            .inventory
+    fn find_similar_item(&self, name: &str) -> Option<usize> {
+        self.inventory
             .par_iter()
-            .find_any(|(key, _)| key.par_split_whitespace().any(|word| word == name))
-        {
-            Some(key)
-        } else {
-            None
-        }
+            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
     }
 
     fn deal_damage(&self, weapon_damage: u32) -> u32 {
@@ -73,7 +67,11 @@ impl Player {
     }
 
     pub fn attack_with(&mut self, weapon_name: &str) -> Option<u32> {
-        if let Some(weapon) = self.inventory.get(weapon_name) {
+        if let Some(weapon) = self
+            .inventory
+            .par_iter()
+            .find_any(|x| x.name() == weapon_name)
+        {
             if let Weapon(weapon) = &**weapon {
                 self.in_combat = true;
                 Some(self.deal_damage(weapon.damage()))
@@ -97,27 +95,28 @@ impl Player {
     }
 
     pub fn close(&mut self, item_name: &str) -> Option<CmdResult> {
-        if let Some(item) = self.inventory.get_mut(item_name) {
+        if let Some(item) = self
+            .inventory
+            .par_iter_mut()
+            .find_any(|x| x.name() == item_name)
+        {
             if let Container(item) = &mut **item {
                 Some(item.close())
             } else {
                 Some(not_container(item_name))
             }
-        } else {
-            let similar_name = if let Some(s) = self.find_similar_item_name(item_name) {
-                s.to_owned()
-            } else {
-                return None;
-            };
-            if let Some(item) = self.inventory.get_mut(&similar_name) {
+        } else if let Some(item) = self.find_similar_item(item_name) {
+            if let Some(item) = self.inventory.get_mut(item) {
                 if let Container(item) = &mut **item {
                     Some(item.close())
                 } else {
-                    Some(not_container(&similar_name))
+                    Some(not_container(&item_name))
                 }
             } else {
                 None
             }
+        } else {
+            None
         }
     }
 
@@ -138,7 +137,7 @@ impl Player {
                         .to_owned()
                 )
         } else {
-            self.inventory.insert(item.name().to_owned(), item);
+            self.inventory.push(item);
             CmdResult::new(
                 false,
                 format!(
@@ -150,19 +149,18 @@ impl Player {
     }
 
     pub fn don_armor(&mut self, armor_name: &str) -> CmdResult {
-        if let Some(item) = self.inventory.remove(armor_name) {
+        if let Some(item) = self
+            .inventory
+            .par_iter()
+            .position_any(|x| x.name() == armor_name)
+        {
+            let item = self.inventory.remove(item);
             self.set_armor(armor_name, item)
+        } else if let Some(item) = self.find_similar_item(armor_name) {
+            let item = self.inventory.remove(item);
+            self.set_armor(&armor_name, item)
         } else {
-            let similar_name = if let Some(name) = self.find_similar_item_name(armor_name) {
-                name.to_owned()
-            } else {
-                return dont_have(armor_name);
-            };
-            if let Some(item) = self.inventory.remove(&similar_name) {
-                self.set_armor(&similar_name, item)
-            } else {
-                dont_have(armor_name)
-            }
+            dont_have(armor_name)
         }
     }
 
@@ -190,7 +188,7 @@ impl Player {
                 )
             }
             _ => {
-                self.inventory.insert(item_name.to_owned(), item);
+                self.inventory.push(item);
                 CmdResult::new(
                     false,
                     format!("The {} is neither armor nor weapon.", item_name),
@@ -201,19 +199,18 @@ impl Player {
 
     // equip an Item into main_hand to simplify fighting
     pub fn equip(&mut self, weapon_name: &str) -> CmdResult {
-        if let Some(item) = self.inventory.remove(weapon_name) {
+        if let Some(item) = self
+            .inventory
+            .par_iter()
+            .position_any(|x| x.name() == weapon_name)
+        {
+            let item = self.inventory.remove(item);
+            self.set_equipped(weapon_name, item)
+        } else if let Some(item) = self.find_similar_item(weapon_name) {
+            let item = self.inventory.remove(item);
             self.set_equipped(weapon_name, item)
         } else {
-            let similar_name = if let Some(name) = self.find_similar_item_name(weapon_name) {
-                name.to_owned()
-            } else {
-                return dont_have(weapon_name);
-            };
-            if let Some(item) = self.inventory.remove(&similar_name) {
-                self.set_equipped(&similar_name, item)
-            } else {
-                dont_have(weapon_name)
-            }
+            dont_have(weapon_name)
         }
     }
 
@@ -222,7 +219,10 @@ impl Player {
     }
 
     pub fn has(&self, name: &str) -> bool {
-        self.inventory.contains_key(name)
+        self.inventory
+            .par_iter()
+            .find_any(|x| x.name() == name)
+            .is_some()
     }
 
     pub fn hp(&self) -> i32 {
@@ -259,30 +259,36 @@ impl Player {
         }
     }
 
-    // place an item into a container item
+    fn inventory_remove(&mut self, name: &str) -> Option<Box<Item>> {
+        if let Some(item) = self.inventory.par_iter().position_any(|x| x.name() == name) {
+            Some(self.inventory.remove(item))
+        } else {
+            None
+        }
+    }
+
     pub fn insert_into(&mut self, item_name: &str, container_name: &str) -> CmdResult {
-        if let Some(item) = self.inventory.remove(item_name) {
-            if let Some(container) = self.inventory.get_mut(container_name) {
-                if let Container(container) = &mut **container {
-                    if container.is_closed() {
-                        self.inventory.insert(item_name.to_owned(), item);
-                        CmdResult::new(true, format!("The {} is closed.", container_name))
-                    } else {
-                        container
-                            .contents_mut()
-                            .insert(item.name().to_owned(), item);
-                        CmdResult::new(true, "Placed.".to_owned())
-                    }
+        let item = self.inventory_remove(item_name);
+
+        if let Some(container) = self
+            .inventory
+            .par_iter_mut()
+            .find_any(|x| x.name() == container_name)
+        {
+            if let Container(container) = &mut **container {
+                if container.is_closed() {
+                    CmdResult::new(true, format!("The {} is closed.", container_name))
+                } else if let Some(item) = item {
+                    container.contents_mut().push(item);
+                    CmdResult::new(true, "Placed.".to_owned())
                 } else {
-                    self.inventory.insert(item_name.to_owned(), item);
-                    not_container(container_name)
+                    dont_have(container_name)
                 }
             } else {
-                self.inventory.insert(item_name.to_owned(), item);
-                dont_have(container_name)
+                not_container(container_name)
             }
         } else {
-            CmdResult::new(false, format!("You do not have the \"{}\".", item_name))
+            dont_have(container_name)
         }
     }
 
@@ -312,7 +318,7 @@ impl Player {
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.info())
-        } else if let Some(item) = self.inventory.get(name) {
+        } else if let Some(item) = self.inventory.par_iter().find_any(|x| x.name() == name) {
             Some(CmdResult::new(true, item.inspect().to_owned()))
         } else if let Some(item) = &self.main_hand {
             Some(CmdResult::new(true, item.inspect().to_owned()))
@@ -342,27 +348,28 @@ impl Player {
     }
 
     pub fn open(&mut self, item_name: &str) -> Option<CmdResult> {
-        if let Some(item) = self.inventory.get_mut(item_name) {
+        if let Some(item) = self
+            .inventory
+            .par_iter_mut()
+            .find_any(|x| x.name() == item_name)
+        {
             if let Container(item) = &mut **item {
                 Some(item.open())
             } else {
                 Some(not_container(item_name))
             }
-        } else {
-            let similar_name = if let Some(s) = self.find_similar_item_name(item_name) {
-                s.to_owned()
-            } else {
-                return None;
-            };
-            if let Some(item) = self.inventory.get_mut(&similar_name) {
+        } else if let Some(item) = self.find_similar_item(item_name) {
+            if let Some(item) = self.inventory.get_mut(item) {
                 if let Container(item) = &mut **item {
                     Some(item.open())
                 } else {
-                    Some(not_container(&similar_name))
+                    Some(not_container(item_name))
                 }
             } else {
                 None
             }
+        } else {
+            None
         }
     }
 
@@ -378,7 +385,7 @@ impl Player {
             items_carried.push_str("Your inventory is empty.");
         } else {
             items_carried.push_str("You are carrying:");
-            for item in self.inventory.values() {
+            for item in self.inventory.iter() {
                 items_carried = format!("{}\n  {}", items_carried, item.long_name());
             }
         }
@@ -386,15 +393,12 @@ impl Player {
     }
 
     fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.inventory.remove(name) {
-            Some(item)
+        if let Some(item) = self.inventory.par_iter().position_any(|x| x.name() == name) {
+            Some(self.inventory.remove(item))
+        } else if let Some(item) = self.find_similar_item(name) {
+            Some(self.inventory.remove(item))
         } else {
-            let similar_name = if let Some(s) = self.find_similar_item_name(name) {
-                s.to_owned()
-            } else {
-                return None;
-            };
-            self.inventory.remove(&similar_name)
+            None
         }
     }
 
@@ -510,7 +514,7 @@ impl Player {
             if let Weapon(_) = *obj {
                 res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
             }
-            self.inventory.insert(obj.name().to_owned(), obj);
+            self.inventory.push(obj);
             CmdResult::new(true, res)
         } else {
             CmdResult::new(
@@ -523,7 +527,7 @@ impl Player {
         }
     }
 
-    pub fn take_all(&mut self, items: ItemMap) -> CmdResult {
+    pub fn take_all(&mut self, items: Items) -> CmdResult {
         if items.is_empty() {
             CmdResult::new(false, "There is nothing to take.".to_owned())
         } else {
@@ -538,28 +542,34 @@ impl Player {
         }
     }
 
-    // take an Item from a container Item in the inventory
-    pub fn take_from(&mut self, item_name: &str, container_name: &str) -> CmdResult {
-        if let Some(container) = self.inventory.get_mut(container_name) {
+    fn take_out_of(&mut self, item_name: &str, container_name: &str) -> Option<Box<Item>> {
+        if let Some(container) = self
+            .inventory
+            .par_iter_mut()
+            .find_any(|x| x.name() == container_name)
+        {
             if let Container(container) = &mut **container {
-                if let Some(item) = container.contents_mut().remove(item_name) {
-                    self.inventory.insert(item.name().to_owned(), item);
-                    CmdResult::new(true, "Taken.".to_owned())
+                if let Some(item) = container
+                    .contents_mut()
+                    .par_iter()
+                    .position_any(|x| x.name() == item_name)
+                {
+                    Some(container.contents_mut().remove(item))
                 } else {
-                    CmdResult::new(
-                        true,
-                        format!(
-                            "There is no \"{}\" inside of the \"{}\".",
-                            item_name, container_name
-                        ),
-                    )
+                    None
                 }
             } else {
-                CmdResult::new(
-                    false,
-                    format!("You cannot take anything from the \"{}\".", container_name),
-                )
+                None
             }
+        } else {
+            None
+        }
+    }
+
+    pub fn take_from(&mut self, item_name: &str, container_name: &str) -> CmdResult {
+        if let Some(item) = self.take_out_of(item_name, container_name) {
+            self.inventory.push(item);
+            CmdResult::new(true, "Taken.".to_owned())
         } else {
             dont_have(container_name)
         }

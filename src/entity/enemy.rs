@@ -3,7 +3,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use super::Entity;
-use crate::types::ItemMap;
+use crate::types::Items;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Enemy {
@@ -15,7 +15,7 @@ pub struct Enemy {
     inspect: String,
     is_angry: bool,
     #[serde(default)]
-    loot: ItemMap,
+    loot: Items,
 }
 
 impl Enemy {
@@ -35,7 +35,7 @@ impl Enemy {
         self.is_angry = true;
     }
 
-    pub fn loot(&self) -> &ItemMap {
+    pub fn loot(&self) -> &Items {
         &self.loot
     }
 
@@ -48,8 +48,8 @@ impl Enemy {
         self.hp > 0
     }
 
-    pub fn drop_loot(&mut self) -> ItemMap {
-        self.loot.drain().collect()
+    pub fn drop_loot(&mut self) -> Items {
+        self.loot.drain(0..).collect()
     }
 }
 

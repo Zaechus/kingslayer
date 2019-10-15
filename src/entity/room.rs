@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
     response::{already_closed, already_opened, no_item_here, not_container},
-    types::{AllyMap, CmdResult, EnemyMap, ItemMap, PathMap},
+    types::{AllyMap, CmdResult, EnemyMap, Items, PathMap},
 };
 
 // A section of the world connected by paths
@@ -22,7 +22,7 @@ pub struct Room {
     #[serde(default)]
     allies: AllyMap,
     #[serde(default)]
-    items: ItemMap,
+    items: Items,
 }
 
 impl Room {
@@ -38,22 +38,16 @@ impl Room {
         for ally in self.allies.values() {
             desc.push_str(&format!("\n{}", ally.desc()));
         }
-        for item in self.items.values() {
+        for item in self.items.iter() {
             desc.push_str(&format!("\n{}", item.long_desc()));
         }
         desc
     }
 
-    fn find_similar_item_name(&self, name: &str) -> Option<&String> {
-        if let Some((key, _)) = self
-            .items
+    fn find_similar_item(&self, name: &str) -> Option<usize> {
+        self.items
             .par_iter()
-            .find_any(|(key, _)| key.par_split_whitespace().any(|word| word == name))
-        {
-            Some(key)
-        } else {
-            None
-        }
+            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
     }
 
     pub fn open(&mut self, name: &str) -> CmdResult {
@@ -64,7 +58,7 @@ impl Room {
             } else {
                 already_opened(name)
             }
-        } else if let Some(item) = self.items.get_mut(name) {
+        } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
             if let Container(container) = &mut **item {
                 container.open()
             } else {
@@ -83,7 +77,7 @@ impl Room {
                 path.close();
                 CmdResult::new(true, "Closed.".to_owned())
             }
-        } else if let Some(item) = self.items.get_mut(name) {
+        } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
             if let Container(container) = &mut **item {
                 container.close()
             } else {
@@ -95,15 +89,12 @@ impl Room {
     }
 
     pub fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.items.remove(name) {
-            Some(item)
+        if let Some(item) = self.items.par_iter().position_any(|x| x.name() == name) {
+            Some(self.items.remove(item))
+        } else if let Some(item) = self.find_similar_item(name) {
+            Some(self.items.remove(item))
         } else {
-            let similar_name = if let Some(s) = self.find_similar_item_name(name) {
-                s.to_owned()
-            } else {
-                return None;
-            };
-            self.items.remove(&similar_name)
+            None
         }
     }
 
@@ -111,10 +102,10 @@ impl Room {
         &self.paths
     }
 
-    pub fn items(&self) -> &ItemMap {
+    pub fn items(&self) -> &Items {
         &self.items
     }
-    pub fn items_mut(&mut self) -> &mut ItemMap {
+    pub fn items_mut(&mut self) -> &mut Items {
         &mut self.items
     }
 

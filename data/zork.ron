@@ -12,22 +12,22 @@ rooms: {
             target: "North of House",
         ),
     },
-    items: {
-        "small mailbox": Container(Container(
+    items: [
+        Container(Container(
             name: "small mailbox",
             desc: "There is a small mailbox here.",
             inspect: "The small mailbox is white.",
             is_closed: true,
             is_locked: false,
-            contents: {
-                "leaflet": Thing(Thing(
+            contents: [
+                Thing(Thing(
                     name: "leaflet",
                     desc: "There is a leaflet here.",
                     inspect: "The leaflet is made of expensive stationery."
                 ))
-            }
+            ]
         )),
-    },
+    ],
 ),
 "North of House": Room(
     name: "North of House",
