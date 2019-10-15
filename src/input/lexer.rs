@@ -27,8 +27,8 @@ impl Lexer {
         } else if words.len() < 2 {
             CmdTokens::new(1, &words[0], "", "", "")
         } else if let Some(pos) = words
-            .iter()
-            .position(|r| ["in", "inside", "from", "on", "with"].contains(&r.as_str()))
+            .par_iter()
+            .position_any(|r| ["in", "inside", "from", "on", "with"].contains(&r.as_str()))
         {
             CmdTokens::new(
                 words.len(),
