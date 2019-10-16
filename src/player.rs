@@ -270,25 +270,30 @@ impl Player {
     pub fn insert_into(&mut self, item_name: &str, container_name: &str) -> CmdResult {
         let item = self.inventory_remove(item_name);
 
-        if let Some(container) = self
-            .inventory
-            .par_iter_mut()
-            .find_any(|x| x.name() == container_name)
-        {
-            if let Container(container) = &mut **container {
-                if container.is_closed() {
-                    CmdResult::new(true, format!("The {} is closed.", container_name))
-                } else if let Some(item) = item {
-                    container.contents_mut().push(item);
-                    CmdResult::new(true, "Placed.".to_owned())
+        if let Some(item) = item {
+            if let Some(container) = self
+                .inventory
+                .par_iter_mut()
+                .find_any(|x| x.name() == container_name)
+            {
+                if let Container(container) = &mut **container {
+                    if container.is_closed() {
+                        self.inventory.push(item);
+                        CmdResult::new(true, format!("The {} is closed.", container_name))
+                    } else {
+                        container.push(item);
+                        CmdResult::new(true, "Placed.".to_owned())
+                    }
                 } else {
-                    dont_have(container_name)
+                    self.inventory.push(item);
+                    not_container(container_name)
                 }
             } else {
-                not_container(container_name)
+                self.inventory.push(item);
+                dont_have(container_name)
             }
         } else {
-            dont_have(container_name)
+            dont_have(item_name)
         }
     }
 
@@ -554,7 +559,7 @@ impl Player {
                     .par_iter()
                     .position_any(|x| x.name() == item_name)
                 {
-                    Some(container.contents_mut().remove(item))
+                    Some(container.remove(item))
                 } else {
                     None
                 }

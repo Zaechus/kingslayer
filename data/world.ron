@@ -62,8 +62,13 @@
                     inspect: "The hallway seems narrow and foreboding."
                 ),
                 "e": Pathway(
-                    target: "Next Room",
+                    target: "Next Room E",
                     desc: "There is a pathway to the east.",
+                    inspect: "The opening is spacious."
+                ),
+                "w": Pathway(
+                    target: "Next Room W",
+                    desc: "There is a pathway to the west.",
                     inspect: "The opening is spacious."
                 ),
             },
@@ -81,7 +86,18 @@
                 )),
             ]
         ),
-        "Next Room": Room(
+        "Next Room W": Room(
+            name: "Next Room",
+            desc: "You are in the next room over.",
+            paths: {
+                "e": Pathway(
+                    target: "Circle Room",
+                    desc: "There is a pathway to the east.",
+                    inspect: "The path expands into a larger room."
+                ),
+            },
+        ),
+        "Next Room E": Room(
             name: "Next Room",
             desc: "You are in the next room over.",
             paths: {

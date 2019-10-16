@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use super::Item;
 use crate::entity::{Closeable, Entity};
 use crate::response::{already_closed, already_opened};
 use crate::types::{CmdResult, Items};
@@ -38,6 +39,13 @@ impl Container {
         } else {
             self.desc.to_owned()
         }
+    }
+
+    pub fn push(&mut self, item: Box<Item>) {
+        self.contents.push(item);
+    }
+    pub fn remove(&mut self, item: usize) -> Box<Item> {
+        self.contents.remove(item)
     }
 
     pub fn contents_mut(&mut self) -> &mut Items {

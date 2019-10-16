@@ -151,7 +151,7 @@ impl World {
                     .par_iter()
                     .position_any(|x| x.name() == item_name)
                 {
-                    player.take(item_name, Some(container.contents_mut().remove(item)));
+                    player.take(item_name, Some(container.remove(item)));
                     CmdResult::new(true, "Taken.".to_owned())
                 } else {
                     CmdResult::new(
@@ -200,7 +200,7 @@ impl World {
                         player.take(item_name, Some(item));
                         CmdResult::new(true, format!("The {} is closed.", container_name))
                     } else {
-                        container.contents_mut().push(item);
+                        container.push(item);
                         CmdResult::new(true, "Placed.".to_owned())
                     }
                 } else {
