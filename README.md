@@ -51,3 +51,10 @@ This method allows you to manage other forms of input and output such as within 
 
 ### Dependencies
 * Rust ^1.38.0
+
+### Crates
+* rand = "0.7"
+* rayon = "1.0"
+* serde = "1.0"
+* ron = "0.5"
+* serde_json = "1.0"
