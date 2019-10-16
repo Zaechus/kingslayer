@@ -9,7 +9,6 @@ use crate::{
         Room,
     },
     player::Player,
-    response::{dont_have, no_item_here, not_container},
     types::{CmdResult, Items, RoomMap},
 };
 
@@ -118,10 +117,10 @@ impl World {
                     CmdResult::new(true, res)
                 }
             } else {
-                dont_have(weapon)
+                CmdResult::dont_have(weapon)
             }
         } else {
-            no_item_here(enemy_name)
+            CmdResult::no_item_here(enemy_name)
         }
     }
 
@@ -160,10 +159,10 @@ impl World {
                     )
                 }
             } else {
-                not_container(container_name)
+                CmdResult::not_container(container_name)
             }
         } else {
-            no_item_here(container_name)
+            CmdResult::no_item_here(container_name)
         }
     }
 
@@ -173,12 +172,7 @@ impl World {
 
     // insert an Item into the current Room
     pub fn insert(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
-        if let Some(obj) = item {
-            self.get_curr_room_mut().items_mut().push(obj);
-            CmdResult::new(true, "Dropped.".to_owned())
-        } else {
-            dont_have(name)
-        }
+        self.get_curr_room_mut().take_item(name, item)
     }
 
     // insert an Item into a container Item in the current Room
@@ -205,14 +199,14 @@ impl World {
                     }
                 } else {
                     player.take(item_name, Some(item));
-                    not_container(container_name)
+                    CmdResult::not_container(container_name)
                 }
             } else {
                 player.take(item_name, Some(item));
-                no_item_here(container_name)
+                CmdResult::no_item_here(container_name)
             }
         } else {
-            dont_have(item_name)
+            CmdResult::dont_have(item_name)
         }
     }
 
@@ -221,7 +215,7 @@ impl World {
         if let Some(_ally) = self.get_curr_room().allies().get(ally_name) {
             CmdResult::new(false, "TODO: interact with ally".to_owned())
         } else {
-            no_item_here(ally_name)
+            CmdResult::no_item_here(ally_name)
         }
     }
 }

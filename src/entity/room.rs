@@ -6,10 +6,7 @@ use super::{
     Closeable, Entity,
     Item::{self, Container},
 };
-use crate::{
-    response::{already_closed, already_opened, no_item_here, not_container},
-    types::{AllyMap, CmdResult, EnemyMap, Items, PathMap},
-};
+use crate::types::{AllyMap, CmdResult, EnemyMap, Items, PathMap};
 
 // A section of the world connected by paths
 #[derive(Debug, Serialize, Deserialize)]
@@ -56,23 +53,23 @@ impl Room {
                 path.open();
                 CmdResult::new(true, "Opened.".to_owned())
             } else {
-                already_opened(name)
+                CmdResult::already_opened(name)
             }
         } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
             if let Container(container) = &mut **item {
                 container.open()
             } else {
-                not_container(name)
+                CmdResult::not_container(name)
             }
         } else {
-            no_item_here(name)
+            CmdResult::no_item_here(name)
         }
     }
 
     pub fn close(&mut self, name: &str) -> CmdResult {
         if let Some(path) = self.paths.get_mut(name) {
             if path.is_closed() {
-                already_closed(name)
+                CmdResult::already_closed(name)
             } else {
                 path.close();
                 CmdResult::new(true, "Closed.".to_owned())
@@ -81,10 +78,19 @@ impl Room {
             if let Container(container) = &mut **item {
                 container.close()
             } else {
-                not_container(name)
+                CmdResult::not_container(name)
             }
         } else {
-            no_item_here(name)
+            CmdResult::no_item_here(name)
+        }
+    }
+
+    pub fn take_item(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
+        if let Some(obj) = item {
+            self.items.push(obj);
+            CmdResult::new(true, "Dropped.".to_owned())
+        } else {
+            CmdResult::dont_have(name)
         }
     }
 

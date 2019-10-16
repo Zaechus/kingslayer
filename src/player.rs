@@ -9,7 +9,6 @@ use crate::{
         Closeable, Entity,
         Item::{self, Armor, Container, Weapon},
     },
-    response::{dont_have, not_container},
     types::{CmdResult, Items, Stats},
 };
 
@@ -103,14 +102,14 @@ impl Player {
             if let Container(item) = &mut **item {
                 Some(item.close())
             } else {
-                Some(not_container(item_name))
+                Some(CmdResult::not_container(item_name))
             }
         } else if let Some(item) = self.find_similar_item(item_name) {
             if let Some(item) = self.inventory.get_mut(item) {
                 if let Container(item) = &mut **item {
                     Some(item.close())
                 } else {
-                    Some(not_container(&item_name))
+                    Some(CmdResult::not_container(&item_name))
                 }
             } else {
                 None
@@ -160,7 +159,7 @@ impl Player {
             let item = self.inventory.remove(item);
             self.set_armor(&armor_name, item)
         } else {
-            dont_have(armor_name)
+            CmdResult::dont_have(armor_name)
         }
     }
 
@@ -210,7 +209,7 @@ impl Player {
             let item = self.inventory.remove(item);
             self.set_equipped(weapon_name, item)
         } else {
-            dont_have(weapon_name)
+            CmdResult::dont_have(weapon_name)
         }
     }
 
@@ -286,14 +285,14 @@ impl Player {
                     }
                 } else {
                     self.inventory.push(item);
-                    not_container(container_name)
+                    CmdResult::not_container(container_name)
                 }
             } else {
                 self.inventory.push(item);
-                dont_have(container_name)
+                CmdResult::dont_have(container_name)
             }
         } else {
-            dont_have(item_name)
+            CmdResult::dont_have(item_name)
         }
     }
 
@@ -361,14 +360,14 @@ impl Player {
             if let Container(item) = &mut **item {
                 Some(item.open())
             } else {
-                Some(not_container(item_name))
+                Some(CmdResult::not_container(item_name))
             }
         } else if let Some(item) = self.find_similar_item(item_name) {
             if let Some(item) = self.inventory.get_mut(item) {
                 if let Container(item) = &mut **item {
                     Some(item.open())
                 } else {
-                    Some(not_container(item_name))
+                    Some(CmdResult::not_container(item_name))
                 }
             } else {
                 None
@@ -576,7 +575,7 @@ impl Player {
             self.inventory.push(item);
             CmdResult::new(true, "Taken.".to_owned())
         } else {
-            dont_have(container_name)
+            CmdResult::dont_have(container_name)
         }
     }
 

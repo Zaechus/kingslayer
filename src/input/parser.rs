@@ -4,7 +4,6 @@ use crate::{
     cli::Cli,
     entity::Entity,
     player::Player,
-    response::{do_what, no_item_here},
     types::{CmdResult, CmdTokens},
     world::World,
 };
@@ -27,7 +26,7 @@ impl Parser {
                 if let Some(main_hand) = player.main_hand() {
                     world.harm_enemy(damage, &words.obj(), &main_hand.name())
                 } else {
-                    do_what(&format!(
+                    CmdResult::do_what(&format!(
                         "{} the {} with?",
                         words.verb(),
                         words.after_verb()
@@ -35,7 +34,7 @@ impl Parser {
                 }
             }
         } else {
-            do_what(words.verb())
+            CmdResult::do_what(words.verb())
         }
     }
 
@@ -47,7 +46,7 @@ impl Parser {
                 world.close(words.obj())
             }
         } else {
-            do_what(words.verb())
+            CmdResult::do_what(words.verb())
         }
     }
 
@@ -55,7 +54,7 @@ impl Parser {
         if words.num_words() > 1 {
             player.don_armor(&words.obj())
         } else {
-            do_what(words.verb())
+            CmdResult::do_what(words.verb())
         }
     }
 
@@ -63,7 +62,7 @@ impl Parser {
         if words.num_words() > 1 {
             world.insert(&words.obj(), player.remove(&words.obj()))
         } else {
-            do_what(&format!("{} from your inventory?", words.verb()))
+            CmdResult::do_what(&format!("{} from your inventory?", words.verb()))
         }
     }
 
@@ -71,7 +70,7 @@ impl Parser {
         if words.num_words() > 1 {
             player.equip(&words.obj())
         } else {
-            do_what(words.verb())
+            CmdResult::do_what(words.verb())
         }
     }
 
@@ -87,7 +86,7 @@ impl Parser {
         if words.num_words() > 1 && words.obj().len() >= 3 {
             player.increase_ability_mod(&words.obj())
         } else {
-            do_what(
+            CmdResult::do_what(
                 "increase?
                     \r(strength, dexterity, constitution, intellect, wisdom, charisma)",
             )
@@ -110,7 +109,7 @@ impl Parser {
                 world.open(words.obj())
             }
         } else {
-            do_what(words.verb())
+            CmdResult::do_what(words.verb())
         }
     }
 
@@ -124,21 +123,21 @@ impl Parser {
                         world.insert_into(player, &words.obj(), &words.obj_prep())
                     }
                 } else if words.num_words() < 3 {
-                    do_what(words.verb())
+                    CmdResult::do_what(words.verb())
                 } else {
-                    do_what(&format!("place in the {}?", words.after_verb()))
+                    CmdResult::do_what(&format!("place in the {}?", words.after_verb()))
                 }
             } else if words.prep() == "on" {
                 if words.num_words() > 2 {
                     player.don_armor(&words.obj_prep())
                 } else {
-                    do_what(&format!("{} on", words.verb()))
+                    CmdResult::do_what(&format!("{} on", words.verb()))
                 }
             } else {
-                do_what(&format!("{} the {} in", words.verb(), words.after_verb()))
+                CmdResult::do_what(&format!("{} the {} in", words.verb(), words.after_verb()))
             }
         } else {
-            do_what(words.verb())
+            CmdResult::do_what(words.verb())
         }
     }
 
@@ -150,7 +149,7 @@ impl Parser {
                 } else {
                     world.give_from(player, &words.obj(), &words.obj_prep())
                 }
-            } else if words.obj().len() >= 3 && words.obj().get(0..3).unwrap() == "all" {
+            } else if words.obj().len() >= 3 && &words.obj()[0..3] == "all" {
                 player.take_all(world.give_all())
             } else if &words.obj()[0..2] == "u " {
                 player.take(&words.obj()[2..], world.give(&words.obj()[2..]))
@@ -158,7 +157,7 @@ impl Parser {
                 player.take(&words.obj(), world.give(&words.obj()))
             }
         } else {
-            do_what(words.verb())
+            CmdResult::do_what(words.verb())
         }
     }
 
@@ -169,10 +168,10 @@ impl Parser {
             } else if let Some(s) = world.inspect(&words.obj()) {
                 s
             } else {
-                no_item_here(words.obj())
+                CmdResult::no_item_here(words.obj())
             }
         } else {
-            do_what(words.verb())
+            CmdResult::do_what(words.verb())
         }
     }
 

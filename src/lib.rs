@@ -8,6 +8,5 @@ pub mod cli;
 mod entity;
 mod input;
 mod player;
-mod response;
 mod types;
 mod world;
