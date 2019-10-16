@@ -18,8 +18,8 @@ use crate::{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Cli {
     lexer: Lexer,
-    player: RefCell<Player>,
-    world: RefCell<World>,
+    player: RefCell<Box<Player>>,
+    world: RefCell<Box<World>>,
 }
 
 impl Cli {
@@ -27,7 +27,7 @@ impl Cli {
     pub fn from_ron_file(path: &str) -> Self {
         Self {
             lexer: Lexer::new(),
-            player: RefCell::new(Player::new()),
+            player: RefCell::new(Box::new(Player::new())),
             world: Cli::get_world_ron(path),
         }
     }
@@ -36,7 +36,7 @@ impl Cli {
     pub fn from_ron_str(json: &str) -> Self {
         Self {
             lexer: Lexer::new(),
-            player: RefCell::new(Player::new()),
+            player: RefCell::new(Box::new(Player::new())),
             world: ron::de::from_str(json).expect("Error creating world from string."),
         }
     }
@@ -45,7 +45,7 @@ impl Cli {
     pub fn from_json_file(path: &str) -> Self {
         Self {
             lexer: Lexer::new(),
-            player: RefCell::new(Player::new()),
+            player: RefCell::new(Box::new(Player::new())),
             world: Cli::get_world_json(path),
         }
     }
@@ -54,12 +54,12 @@ impl Cli {
     pub fn from_json_str(json: &str) -> Self {
         Self {
             lexer: Lexer::new(),
-            player: RefCell::new(Player::new()),
+            player: RefCell::new(Box::new(Player::new())),
             world: serde_json::from_str(json).expect("Error creating world from string."),
         }
     }
 
-    fn get_world_ron(path: &str) -> RefCell<World> {
+    fn get_world_ron(path: &str) -> RefCell<Box<World>> {
         let world_file = File::open(path).expect("Unable to open world file");
         let mut world_file_reader = BufReader::new(world_file);
         let mut data = String::new();
@@ -70,7 +70,7 @@ impl Cli {
         ron::de::from_str(&data).expect("Error creating world from RON file.")
     }
 
-    fn get_world_json(path: &str) -> RefCell<World> {
+    fn get_world_json(path: &str) -> RefCell<Box<World>> {
         let world_file = File::open(path).expect("Unable to open world file");
         let mut world_file_reader = BufReader::new(world_file);
         let mut data = String::new();

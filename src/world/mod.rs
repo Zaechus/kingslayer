@@ -91,7 +91,7 @@ impl World {
     }
 
     // let an Enemy in the current Room take damage
-    pub fn harm_enemy(&mut self, damage: Option<u32>, enemy_name: &str, weapon: &str) -> CmdResult {
+    pub fn harm_enemy(&mut self, damage: Option<i32>, enemy_name: &str, weapon: &str) -> CmdResult {
         if let Some(enemy) = self.get_curr_room_mut().enemies_mut().get_mut(enemy_name) {
             if let Some(damage) = damage {
                 enemy.get_hit(damage);
@@ -145,11 +145,7 @@ impl World {
             if let Container(container) = &mut **container {
                 if container.is_closed() {
                     CmdResult::new(true, format!("The {} is closed.", container_name))
-                } else if let Some(item) = container
-                    .contents_mut()
-                    .par_iter()
-                    .position_any(|x| x.name() == item_name)
-                {
+                } else if let Some(item) = container.position(item_name) {
                     player.take(item_name, Some(container.remove(item)));
                     CmdResult::new(true, "Taken.".to_owned())
                 } else {

@@ -11,7 +11,7 @@ mod tests {
             .ask("increase dex")
             .contains("Ability score increased by one."));
         assert!(cli.ask("c").contains("Stat points: 3"));
-        assert!(cli.ask("stats").contains("Dexterity:    14\n"));
+        assert!(cli.ask("stats").contains("Dexterity:    14 "));
         assert!(cli
             .ask("increase charisma")
             .contains("Ability score increased by one."));
@@ -26,7 +26,7 @@ mod tests {
             .ask("increase wisdom")
             .contains("Ability score increased by one."));
         assert!(cli.ask("c").contains("Stat points: 0"));
-        assert!(cli.ask("c").contains("Wisdom:       11\n"));
+        assert!(cli.ask("c").contains("Wisdom:       11 "));
         assert!(cli
             .ask("increase wisdom")
             .contains("You do not have any stat points."));

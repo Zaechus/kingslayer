@@ -84,7 +84,7 @@ impl Parser {
 
     fn parse_increase(words: CmdTokens, player: &mut Player) -> CmdResult {
         if words.num_words() > 1 && words.obj().len() >= 3 {
-            player.increase_ability_mod(&words.obj())
+            player.increase_ability_score(&words.obj())
         } else {
             CmdResult::do_what(
                 "increase?

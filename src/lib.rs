@@ -7,6 +7,7 @@ pub mod cli;
 
 mod entity;
 mod input;
+mod inventory;
 mod player;
 mod types;
 mod world;

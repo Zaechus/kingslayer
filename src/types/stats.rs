@@ -1,14 +1,16 @@
 use serde::{Deserialize, Serialize};
 
+use super::CmdResult;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Stats {
     pub pts: u32,
-    pub strngth: u32,
-    pub dex: u32,
-    pub con: u32,
-    pub int: u32,
-    pub wis: u32,
-    pub cha: u32,
+    pub strngth: i32,
+    pub dex: i32,
+    pub con: i32,
+    pub int: i32,
+    pub wis: i32,
+    pub cha: i32,
 }
 
 impl Stats {
@@ -26,33 +28,72 @@ impl Stats {
 
     pub fn print_stats(&self) -> String {
         format!(
-            "\
-             Strength:     {}\
-             \nDexterity:    {}\
-             \nConstitution: {}\
-             \nIntellect:    {}\
-             \nWisdom:       {}\
-             \nCharisma:     {} ",
-            self.strngth, self.dex, self.con, self.int, self.wis, self.cha
+            "Stat points: {}\
+                
+             \n  Strength:     {} ({})\
+             \n  Dexterity:    {} ({})\
+             \n  Constitution: {} ({})\
+             \n  Intellect:    {} ({})\
+             \n  Wisdom:       {} ({})\
+             \n  Charisma:     {} ({}) ",
+            self.pts,
+            self.strngth,
+            self.strngth_mod(),
+            self.dex,
+            self.dex_mod(),
+            self.con,
+            self.con_mod(),
+            self.int,
+            self.int_mod(),
+            self.wis,
+            self.wis_mod(),
+            self.cha,
+            self.cha_mod(),
         )
     }
 
-    pub fn strngth_mod(&self) -> u32 {
-        (f64::from(self.strngth - 10) / 2.0).floor() as u32
+    pub fn increase_ability_score(&mut self, ability_score: &str) -> CmdResult {
+        if self.pts > 0 {
+            match &ability_score[0..3] {
+                "str" | "dex" | "con" | "int" | "wis" | "cha" => {
+                    self.pts -= 1;
+                    match &ability_score[0..3] {
+                        "str" => self.strngth += 1,
+                        "dex" => self.dex += 1,
+                        "con" => self.con += 1,
+                        "int" => self.int += 1,
+                        "wis" => self.wis += 1,
+                        "cha" => self.cha += 1,
+                        _ => (),
+                    }
+                    CmdResult::new(true, "Ability score increased by one.".to_owned())
+                }
+                _ => CmdResult::new(
+                    false,
+                    format!("\"{}\" is not a valid ability score.", ability_score),
+                ),
+            }
+        } else {
+            CmdResult::new(false, "You do not have any stat points.".to_owned())
+        }
     }
-    pub fn dex_mod(&self) -> u32 {
-        (f64::from(self.dex - 10) / 2.0).floor() as u32
+
+    pub fn strngth_mod(&self) -> i32 {
+        (f64::from(self.strngth - 10) / 2.0).floor() as i32
     }
-    // pub fn con_mod(&self) -> u32 {
-    //     (f64::from(self.con - 10) / 2.0).floor() as u32
-    // }
-    // pub fn int_mod(&self) -> u32 {
-    //     (f64::from(self.int - 10) / 2.0).floor() as u32
-    // }
-    // pub fn wis_mod(&self) -> u32 {
-    //     (f64::from(self.wis - 10) / 2.0).floor() as u32
-    // }
-    // pub fn cha_mod(&self) -> u32 {
-    //     (f64::from(self.cha - 10) / 2.0).floor() as u32
-    // }
+    pub fn dex_mod(&self) -> i32 {
+        (f64::from(self.dex - 10) / 2.0).floor() as i32
+    }
+    pub fn con_mod(&self) -> i32 {
+        (f64::from(self.con - 10) / 2.0).floor() as i32
+    }
+    pub fn int_mod(&self) -> i32 {
+        (f64::from(self.int - 10) / 2.0).floor() as i32
+    }
+    pub fn wis_mod(&self) -> i32 {
+        (f64::from(self.wis - 10) / 2.0).floor() as i32
+    }
+    pub fn cha_mod(&self) -> i32 {
+        (f64::from(self.cha - 10) / 2.0).floor() as i32
+    }
 }

@@ -39,9 +39,9 @@ impl Enemy {
         &self.loot
     }
 
-    pub fn get_hit(&mut self, damage: u32) {
+    pub fn get_hit(&mut self, damage: i32) {
         self.make_angry();
-        self.hp -= damage as i32;
+        self.hp -= damage;
     }
 
     pub fn is_alive(&self) -> bool {

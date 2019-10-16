@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use serde::{Deserialize, Serialize};
 
 use super::Item;
@@ -40,15 +42,15 @@ impl Container {
         }
     }
 
+    pub fn position(&self, name: &str) -> Option<usize> {
+        self.contents.par_iter().position_any(|x| x.name() == name)
+    }
+
     pub fn push(&mut self, item: Box<Item>) {
         self.contents.push(item);
     }
     pub fn remove(&mut self, item: usize) -> Box<Item> {
         self.contents.remove(item)
-    }
-
-    pub fn contents_mut(&mut self) -> &mut Items {
-        &mut self.contents
     }
 }
 

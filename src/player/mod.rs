@@ -6,9 +6,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::{
-        Closeable, Entity,
-        Item::{self, Armor, Container, Weapon},
+        Entity,
+        Item::{self, Armor, Weapon},
     },
+    inventory::Inventory,
     types::{CmdResult, Items, Stats},
 };
 
@@ -21,7 +22,7 @@ pub struct Player {
     stats: Stats,
     main_hand: Option<Box<Item>>,
     armor: Option<Box<Item>>,
-    inventory: Items,
+    inventory: Inventory,
 }
 
 impl Player {
@@ -34,25 +35,19 @@ impl Player {
             stats: Stats::new(),
             main_hand: None,
             armor: None,
-            inventory: Items::new(),
+            inventory: Inventory::new(),
         }
     }
 
-    fn find_similar_item(&self, name: &str) -> Option<usize> {
-        self.inventory
-            .par_iter()
-            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+    fn deal_damage(&self, weapon_damage: u32) -> i32 {
+        weapon_damage as i32 + self.stats.strngth_mod()
     }
 
-    fn deal_damage(&self, weapon_damage: u32) -> u32 {
-        weapon_damage + self.stats.strngth_mod()
-    }
-
-    fn default_damage(&self) -> u32 {
+    fn default_damage(&self) -> i32 {
         rand::thread_rng().gen_range(1, 5)
     }
 
-    pub fn attack(&mut self) -> Option<u32> {
+    pub fn attack(&mut self) -> Option<i32> {
         if let Some(weapon) = &self.main_hand {
             if let Weapon(weapon) = &**weapon {
                 self.in_combat = true;
@@ -65,12 +60,8 @@ impl Player {
         }
     }
 
-    pub fn attack_with(&mut self, weapon_name: &str) -> Option<u32> {
-        if let Some(weapon) = self
-            .inventory
-            .par_iter()
-            .find_any(|x| x.name() == weapon_name)
-        {
+    pub fn attack_with(&mut self, weapon_name: &str) -> Option<i32> {
+        if let Some(weapon) = self.inventory.find(weapon_name) {
             if let Weapon(weapon) = &**weapon {
                 self.in_combat = true;
                 Some(self.deal_damage(weapon.damage()))
@@ -94,29 +85,7 @@ impl Player {
     }
 
     pub fn close(&mut self, item_name: &str) -> Option<CmdResult> {
-        if let Some(item) = self
-            .inventory
-            .par_iter_mut()
-            .find_any(|x| x.name() == item_name)
-        {
-            if let Container(item) = &mut **item {
-                Some(item.close())
-            } else {
-                Some(CmdResult::not_container(item_name))
-            }
-        } else if let Some(item) = self.find_similar_item(item_name) {
-            if let Some(item) = self.inventory.get_mut(item) {
-                if let Container(item) = &mut **item {
-                    Some(item.close())
-                } else {
-                    Some(CmdResult::not_container(&item_name))
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
+        self.inventory.close(item_name)
     }
 
     pub fn disengage_combat(&mut self) {
@@ -148,14 +117,10 @@ impl Player {
     }
 
     pub fn don_armor(&mut self, armor_name: &str) -> CmdResult {
-        if let Some(item) = self
-            .inventory
-            .par_iter()
-            .position_any(|x| x.name() == armor_name)
-        {
+        if let Some(item) = self.inventory.position(armor_name) {
             let item = self.inventory.remove(item);
             self.set_armor(armor_name, item)
-        } else if let Some(item) = self.find_similar_item(armor_name) {
+        } else if let Some(item) = self.inventory.find_similar_item(armor_name) {
             let item = self.inventory.remove(item);
             self.set_armor(&armor_name, item)
         } else {
@@ -198,14 +163,10 @@ impl Player {
 
     // equip an Item into main_hand to simplify fighting
     pub fn equip(&mut self, weapon_name: &str) -> CmdResult {
-        if let Some(item) = self
-            .inventory
-            .par_iter()
-            .position_any(|x| x.name() == weapon_name)
-        {
+        if let Some(item) = self.inventory.position(weapon_name) {
             let item = self.inventory.remove(item);
             self.set_equipped(weapon_name, item)
-        } else if let Some(item) = self.find_similar_item(weapon_name) {
+        } else if let Some(item) = self.inventory.find_similar_item(weapon_name) {
             let item = self.inventory.remove(item);
             self.set_equipped(weapon_name, item)
         } else {
@@ -218,10 +179,7 @@ impl Player {
     }
 
     pub fn has(&self, name: &str) -> bool {
-        self.inventory
-            .par_iter()
-            .find_any(|x| x.name() == name)
-            .is_some()
+        self.inventory.find(name).is_some()
     }
 
     pub fn hp(&self) -> i32 {
@@ -232,68 +190,12 @@ impl Player {
         self.hp.1
     }
 
-    pub fn increase_ability_mod(&mut self, ability_score: &str) -> CmdResult {
-        if self.stats.pts > 0 {
-            match &ability_score[0..3] {
-                "str" | "dex" | "con" | "int" | "wis" | "cha" => {
-                    self.stats.pts -= 1;
-                    match &ability_score[0..3] {
-                        "str" => self.stats.strngth += 1,
-                        "dex" => self.stats.dex += 1,
-                        "con" => self.stats.con += 1,
-                        "int" => self.stats.int += 1,
-                        "wis" => self.stats.wis += 1,
-                        "cha" => self.stats.cha += 1,
-                        _ => (),
-                    }
-                    CmdResult::new(true, "Ability score increased by one.".to_owned())
-                }
-                _ => CmdResult::new(
-                    false,
-                    format!("\"{}\" is not a valid ability score.", ability_score),
-                ),
-            }
-        } else {
-            CmdResult::new(false, "You do not have any stat points.".to_owned())
-        }
-    }
-
-    fn inventory_remove(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.inventory.par_iter().position_any(|x| x.name() == name) {
-            Some(self.inventory.remove(item))
-        } else {
-            None
-        }
+    pub fn increase_ability_score(&mut self, ability_score: &str) -> CmdResult {
+        self.stats.increase_ability_score(ability_score)
     }
 
     pub fn insert_into(&mut self, item_name: &str, container_name: &str) -> CmdResult {
-        let item = self.inventory_remove(item_name);
-
-        if let Some(item) = item {
-            if let Some(container) = self
-                .inventory
-                .par_iter_mut()
-                .find_any(|x| x.name() == container_name)
-            {
-                if let Container(container) = &mut **container {
-                    if container.is_closed() {
-                        self.inventory.push(item);
-                        CmdResult::new(true, format!("The {} is closed.", container_name))
-                    } else {
-                        container.push(item);
-                        CmdResult::new(true, "Placed.".to_owned())
-                    }
-                } else {
-                    self.inventory.push(item);
-                    CmdResult::not_container(container_name)
-                }
-            } else {
-                self.inventory.push(item);
-                CmdResult::dont_have(container_name)
-            }
-        } else {
-            CmdResult::dont_have(item_name)
-        }
+        self.inventory.insert_into(item_name, container_name)
     }
 
     pub fn info(&self) -> CmdResult {
@@ -301,19 +203,16 @@ impl Player {
             false,
             format!(
                 "Level: {}\
-                \nHP: ({} / {})\
-                \nAC: {}\
-                \nXP: ({} / {})\
-                \nStat points: {}\
-                
-                \n\n{}",
+                 \nHP: ({} / {})\
+                 \nAC: {}\
+                 \nXP: ({} / {})\
+                 \n{}",
                 self.lvl,
                 self.hp(),
                 self.hp_cap(),
                 self.ac(),
                 self.xp.0,
                 self.xp.1,
-                self.stats.pts,
                 self.stats.print_stats()
             ),
         )
@@ -322,7 +221,7 @@ impl Player {
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.info())
-        } else if let Some(item) = self.inventory.par_iter().find_any(|x| x.name() == name) {
+        } else if let Some(item) = self.inventory.find(name) {
             Some(CmdResult::new(true, item.inspect().to_owned()))
         } else if let Some(item) = &self.main_hand {
             Some(CmdResult::new(true, item.inspect().to_owned()))
@@ -352,29 +251,7 @@ impl Player {
     }
 
     pub fn open(&mut self, item_name: &str) -> Option<CmdResult> {
-        if let Some(item) = self
-            .inventory
-            .par_iter_mut()
-            .find_any(|x| x.name() == item_name)
-        {
-            if let Container(item) = &mut **item {
-                Some(item.open())
-            } else {
-                Some(CmdResult::not_container(item_name))
-            }
-        } else if let Some(item) = self.find_similar_item(item_name) {
-            if let Some(item) = self.inventory.get_mut(item) {
-                if let Container(item) = &mut **item {
-                    Some(item.open())
-                } else {
-                    Some(CmdResult::not_container(item_name))
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
+        self.inventory.open(item_name)
     }
 
     pub fn print_inventory(&self) -> CmdResult {
@@ -385,25 +262,12 @@ impl Player {
         if let Some(armor) = &self.armor {
             items_carried.push_str(&format!("Armor: {}\n", armor.name()));
         }
-        if self.inventory.is_empty() {
-            items_carried.push_str("Your inventory is empty.");
-        } else {
-            items_carried.push_str("You are carrying:");
-            for item in self.inventory.iter() {
-                items_carried = format!("{}\n  {}", items_carried, item.long_name());
-            }
-        }
+        items_carried.push_str(&self.inventory.print());
         CmdResult::new(true, items_carried)
     }
 
     fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.inventory.par_iter().position_any(|x| x.name() == name) {
-            Some(self.inventory.remove(item))
-        } else if let Some(item) = self.find_similar_item(name) {
-            Some(self.inventory.remove(item))
-        } else {
-            None
-        }
+        self.inventory.remove_item(name)
     }
 
     fn remove_main_hand(&mut self, name: &str) -> Option<Box<Item>> {
@@ -473,10 +337,10 @@ impl Player {
         }
     }
 
-    fn ac(&self) -> u32 {
+    fn ac(&self) -> i32 {
         if let Some(armor) = &self.armor {
             if let Armor(armor) = &**armor {
-                armor.ac() + self.stats.dex_mod()
+                armor.ac() as i32 + self.stats.dex_mod()
             } else {
                 10 + self.stats.dex_mod()
             }
@@ -513,70 +377,15 @@ impl Player {
     }
 
     pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
-        if let Some(obj) = item {
-            let mut res = String::from("Taken.");
-            if let Weapon(_) = *obj {
-                res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
-            }
-            self.inventory.push(obj);
-            CmdResult::new(true, res)
-        } else {
-            CmdResult::new(
-                false,
-                format!(
-                    "There is no \"{}\" here. Make sure you are being specific.",
-                    name
-                ),
-            )
-        }
+        self.inventory.take(name, item)
     }
 
     pub fn take_all(&mut self, items: Items) -> CmdResult {
-        if items.is_empty() {
-            CmdResult::new(false, "There is nothing to take.".to_owned())
-        } else {
-            let times = items.len();
-            self.inventory.par_extend(items);
-
-            let mut res = String::new();
-            for _ in 0..times {
-                res.push_str("Taken. ");
-            }
-            CmdResult::new(true, res)
-        }
-    }
-
-    fn take_out_of(&mut self, item_name: &str, container_name: &str) -> Option<Box<Item>> {
-        if let Some(container) = self
-            .inventory
-            .par_iter_mut()
-            .find_any(|x| x.name() == container_name)
-        {
-            if let Container(container) = &mut **container {
-                if let Some(item) = container
-                    .contents_mut()
-                    .par_iter()
-                    .position_any(|x| x.name() == item_name)
-                {
-                    Some(container.remove(item))
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
+        self.inventory.take_all(items)
     }
 
     pub fn take_from(&mut self, item_name: &str, container_name: &str) -> CmdResult {
-        if let Some(item) = self.take_out_of(item_name, container_name) {
-            self.inventory.push(item);
-            CmdResult::new(true, "Taken.".to_owned())
-        } else {
-            CmdResult::dont_have(container_name)
-        }
+        self.inventory.take_from(item_name, container_name)
     }
 
     pub fn wait() -> CmdResult {
