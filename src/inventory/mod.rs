@@ -158,13 +158,7 @@ impl Inventory {
             self.items.push(obj);
             CmdResult::new(true, res)
         } else {
-            CmdResult::new(
-                false,
-                format!(
-                    "There is no \"{}\" here. Make sure you are being specific.",
-                    name
-                ),
-            )
+            CmdResult::no_item_here(name)
         }
     }
 
