@@ -23,15 +23,14 @@
                     inspect: "The edges of the opening are cracked and rough."
                 ),
             },
-            enemies: {},
-            allies: {
-                "old man": Ally(
+            allies: [
+                Ally(
                     hp: 1,
                     name: "old man",
                     desc: "An old man stoically stands at the back of the gave.",
                     inspect: "\"Take the sword, brave one.\""
                 )
-            },
+            ],
             items: [
                 Weapon(Weapon(
                     name: "iron sword",
@@ -107,8 +106,8 @@
                     inspect: "The path expands into a larger room."
                 ),
             },
-            enemies: {
-                "ogre": Enemy(
+            enemies: [
+                Enemy(
                     hp: 10,
                     xp: 15,
                     damage: 4,
@@ -125,7 +124,7 @@
                         ))
                     ]
                 ),
-                "goblin": Enemy(
+                Enemy(
                     hp: 7,
                     xp: 10,
                     damage: 2,
@@ -134,7 +133,7 @@
                     inspect: "The goblin is small, grey-green, and skinny. He is brandishing a knife.",
                     is_angry: false,
                 ),
-            },
+            ],
         ),
         "Long Hallway": Room(
             name: "Long Hallway",

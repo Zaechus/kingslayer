@@ -120,7 +120,17 @@ impl Parser {
                     if player.has(&words.obj_prep()) {
                         player.insert_into(&words.obj(), &words.obj_prep())
                     } else {
-                        world.insert_into(player, &words.obj(), &words.obj_prep())
+                        let (res, rejected_item) = world.insert_into(
+                            &words.obj(),
+                            &words.obj_prep(),
+                            player.remove(&words.obj()),
+                        );
+                        if let Some(item) = rejected_item {
+                            player.take_back(item);
+                            res
+                        } else {
+                            res
+                        }
                     }
                 } else if words.num_words() < 3 {
                     CmdResult::do_what(words.verb())
@@ -147,7 +157,7 @@ impl Parser {
                 if player.has(&words.obj_prep()) {
                     player.take_from(&words.obj(), &words.obj_prep())
                 } else {
-                    world.give_from(player, &words.obj(), &words.obj_prep())
+                    player.take_item_from(world.give_from(&words.obj(), &words.obj_prep()))
                 }
             } else if words.obj().len() >= 3 && &words.obj()[0..3] == "all" {
                 player.take_all(world.give_all())

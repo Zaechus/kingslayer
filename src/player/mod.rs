@@ -384,8 +384,16 @@ impl Player {
         self.inventory.take_all(items)
     }
 
+    pub fn take_back(&mut self, item: Box<Item>) {
+        self.inventory.push(item);
+    }
+
     pub fn take_from(&mut self, item_name: &str, container_name: &str) -> CmdResult {
         self.inventory.take_from(item_name, container_name)
+    }
+
+    pub fn take_item_from(&mut self, item: Result<Box<Item>, CmdResult>) -> CmdResult {
+        self.inventory.take_item_from(item)
     }
 
     pub fn wait() -> CmdResult {

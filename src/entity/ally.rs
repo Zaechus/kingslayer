@@ -4,10 +4,10 @@ use super::Entity;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Ally {
-    hp: i32,
     name: String,
     desc: String,
     inspect: String,
+    hp: i32,
 }
 
 impl Ally {}

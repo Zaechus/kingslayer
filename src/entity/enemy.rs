@@ -7,12 +7,12 @@ use crate::types::Items;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Enemy {
-    hp: i32,
-    xp: u32,
-    damage: u32,
     name: String,
     desc: String,
     inspect: String,
+    hp: i32,
+    xp: u32,
+    damage: u32,
     is_angry: bool,
     #[serde(default)]
     loot: Items,

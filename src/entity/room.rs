@@ -6,7 +6,7 @@ use super::{
     Closeable, Entity,
     Item::{self, Container},
 };
-use crate::types::{AllyMap, CmdResult, EnemyMap, Items, PathMap};
+use crate::types::{Allies, CmdResult, Enemies, Items, PathMap};
 
 // A section of the world connected by paths
 #[derive(Debug, Serialize, Deserialize)]
@@ -15,9 +15,9 @@ pub struct Room {
     desc: String,
     paths: PathMap,
     #[serde(default)]
-    enemies: EnemyMap,
+    enemies: Enemies,
     #[serde(default)]
-    allies: AllyMap,
+    allies: Allies,
     #[serde(default)]
     items: Items,
 }
@@ -29,10 +29,10 @@ impl Room {
         for path in self.paths.values() {
             desc.push_str(&format!("\n{}", path.long_desc()));
         }
-        for enemy in self.enemies.values() {
+        for enemy in self.enemies.iter() {
             desc.push_str(&format!("\n{}", enemy.desc()));
         }
-        for ally in self.allies.values() {
+        for ally in self.allies.iter() {
             desc.push_str(&format!("\n{}", ally.desc()));
         }
         for item in self.items.iter() {
@@ -45,6 +45,81 @@ impl Room {
         self.items
             .par_iter()
             .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+    }
+
+    pub fn drain_all(&mut self) -> Items {
+        self.items.drain(0..).collect()
+    }
+
+    pub fn extend_items(&mut self, new_items: Items) {
+        self.items.par_extend(new_items);
+    }
+
+    // take an Item from a container Item in the current Room
+    pub fn give_from(
+        &mut self,
+        item_name: &str,
+        container_name: &str,
+    ) -> Result<Box<Item>, CmdResult> {
+        if let Some(container) = self
+            .items
+            .par_iter_mut()
+            .find_any(|x| x.name() == container_name)
+        {
+            if let Container(container) = &mut **container {
+                if container.is_closed() {
+                    Err(CmdResult::new(
+                        true,
+                        format!("The {} is closed.", container_name),
+                    ))
+                } else if let Some(item) = container.position(item_name) {
+                    Ok(container.remove(item))
+                } else {
+                    Err(CmdResult::new(
+                        false,
+                        format!("There is no \"{}\" in the {}.", item_name, container_name),
+                    ))
+                }
+            } else {
+                Err(CmdResult::not_container(container_name))
+            }
+        } else {
+            Err(CmdResult::no_item_here(container_name))
+        }
+    }
+
+    // insert an Item into a container Item in the current Room
+    pub fn insert_into(
+        &mut self,
+        item_name: &str,
+        container_name: &str,
+        item: Option<Box<Item>>,
+    ) -> (CmdResult, Option<Box<Item>>) {
+        if let Some(item) = item {
+            if let Some(container) = self
+                .items
+                .par_iter_mut()
+                .find_any(|x| x.name() == container_name)
+            {
+                if let Container(container) = &mut **container {
+                    if container.is_closed() {
+                        (
+                            CmdResult::new(true, format!("The {} is closed.", container_name)),
+                            Some(item),
+                        )
+                    } else {
+                        container.push(item);
+                        (CmdResult::new(true, "Placed.".to_owned()), None)
+                    }
+                } else {
+                    (CmdResult::not_container(container_name), Some(item))
+                }
+            } else {
+                (CmdResult::no_item_here(container_name), Some(item))
+            }
+        } else {
+            (CmdResult::dont_have(item_name), None)
+        }
     }
 
     pub fn open(&mut self, name: &str) -> CmdResult {
@@ -85,9 +160,32 @@ impl Room {
         }
     }
 
+    // interact with an Ally
+    pub fn hail(&self, ally_name: &str) -> CmdResult {
+        if let Some(_ally) = self.allies.par_iter().find_any(|x| x.name() == ally_name) {
+            CmdResult::new(false, "TODO: interact with ally".to_owned())
+        } else {
+            CmdResult::no_item_here(ally_name)
+        }
+    }
+
+    pub fn inspect(&self, name: &str) -> Option<CmdResult> {
+        if let Some(item) = self.items.par_iter().find_any(|x| x.name() == name) {
+            Some(CmdResult::new(true, item.inspect().to_owned()))
+        } else if let Some(pathway) = self.paths.get(name) {
+            Some(CmdResult::new(true, pathway.inspect().to_owned()))
+        } else if let Some(enemy) = self.enemies.par_iter().find_any(|x| x.name() == name) {
+            Some(CmdResult::new(true, enemy.inspect().to_owned()))
+        } else if let Some(ally) = self.allies.par_iter().find_any(|x| x.name() == name) {
+            Some(CmdResult::new(true, ally.inspect().to_owned()))
+        } else {
+            None
+        }
+    }
+
     pub fn take_item(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
-        if let Some(obj) = item {
-            self.items.push(obj);
+        if let Some(item) = item {
+            self.items.push(item);
             CmdResult::new(true, "Dropped.".to_owned())
         } else {
             CmdResult::dont_have(name)
@@ -108,22 +206,11 @@ impl Room {
         &self.paths
     }
 
-    pub fn items(&self) -> &Items {
-        &self.items
-    }
-    pub fn items_mut(&mut self) -> &mut Items {
-        &mut self.items
-    }
-
-    pub fn enemies(&self) -> &EnemyMap {
+    pub fn enemies(&self) -> &Enemies {
         &self.enemies
     }
-    pub fn enemies_mut(&mut self) -> &mut EnemyMap {
+    pub fn enemies_mut(&mut self) -> &mut Enemies {
         &mut self.enemies
-    }
-
-    pub fn allies(&self) -> &AllyMap {
-        &self.allies
     }
 }
 

@@ -3,7 +3,6 @@ run:
 
 test:
     cargo clippy
-    cargo bench
     cargo test
 
 c:
@@ -16,8 +15,7 @@ c:
     cargo doc
     cargo build
 
-    cargo bench
     cargo test
 
 docs:
-    cargo doc --open
+    cargo doc --document-private-items --open

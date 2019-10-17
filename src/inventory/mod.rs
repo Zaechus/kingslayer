@@ -150,12 +150,12 @@ impl Inventory {
     }
 
     pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
-        if let Some(obj) = item {
+        if let Some(item) = item {
             let mut res = String::from("Taken.");
-            if let Weapon(_) = *obj {
+            if let Weapon(_) = *item {
                 res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
             }
-            self.items.push(obj);
+            self.items.push(item);
             CmdResult::new(true, res)
         } else {
             CmdResult::no_item_here(name)
@@ -199,6 +199,20 @@ impl Inventory {
             CmdResult::new(true, "Taken.".to_owned())
         } else {
             CmdResult::dont_have(container_name)
+        }
+    }
+
+    pub fn take_item_from(&mut self, item: Result<Box<Item>, CmdResult>) -> CmdResult {
+        match item {
+            Ok(item) => {
+                let mut res = String::from("Taken.");
+                if let Weapon(_) = *item {
+                    res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
+                }
+                self.items.push(item);
+                CmdResult::new(true, res)
+            }
+            Err(res) => res,
         }
     }
 }

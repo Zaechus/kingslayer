@@ -173,7 +173,7 @@ Some available commands:
         let mut events_str = String::new();
         let mut loot = Items::new();
 
-        for enemy in world.get_curr_room_mut().enemies_mut().values_mut() {
+        for enemy in world.get_curr_room_mut().enemies_mut() {
             if enemy.is_angry() && enemy.is_alive() {
                 let enemy_damage = enemy.damage();
 
@@ -193,11 +193,8 @@ Some available commands:
                 loot.par_extend(enemy.drop_loot());
             }
         }
-        world.get_curr_room_mut().items_mut().par_extend(loot);
-        world
-            .get_curr_room_mut()
-            .enemies_mut()
-            .retain(|_, e| e.is_alive());
+        world.extend_items(loot);
+        world.clear_dead_enemies();
 
         if !self.player.borrow().is_alive() {
             events_str.push_str("\nYou died.");

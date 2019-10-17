@@ -3,12 +3,7 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    entity::{
-        Closeable, Entity,
-        Item::{self, Container},
-        Room,
-    },
-    player::Player,
+    entity::{Closeable, Entity, Item, Room},
     types::{CmdResult, Items, RoomMap},
 };
 
@@ -43,22 +38,7 @@ impl World {
     }
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
-        if let Some(item) = self
-            .get_curr_room()
-            .items()
-            .par_iter()
-            .find_any(|x| x.name() == name)
-        {
-            Some(CmdResult::new(true, item.inspect().to_owned()))
-        } else if let Some(pathway) = self.get_curr_room().paths().get(name) {
-            Some(CmdResult::new(true, pathway.inspect().to_owned()))
-        } else if let Some(enemy) = self.get_curr_room().enemies().get(name) {
-            Some(CmdResult::new(true, enemy.inspect().to_owned()))
-        } else if let Some(ally) = self.get_curr_room().allies().get(name) {
-            Some(CmdResult::new(true, ally.inspect().to_owned()))
-        } else {
-            None
-        }
+        self.get_curr_room().inspect(name)
     }
 
     // changes the current Room to the target of the current Room's chosen path
@@ -69,7 +49,7 @@ impl World {
             } else if new_room.is_closed() {
                 CmdResult::new(true, "The way is shut.".to_owned())
             } else {
-                for enemy in self.get_curr_room().enemies().values() {
+                for enemy in self.get_curr_room().enemies() {
                     if enemy.is_angry() {
                         return CmdResult::new(false, "Enemies bar your way.".to_owned());
                     }
@@ -90,34 +70,49 @@ impl World {
         self.get_curr_room_mut().close(name)
     }
 
+    pub fn clear_dead_enemies(&mut self) {
+        self.get_curr_room_mut()
+            .enemies_mut()
+            .retain(|e| e.is_alive());
+    }
+
     // let an Enemy in the current Room take damage
     pub fn harm_enemy(&mut self, damage: Option<i32>, enemy_name: &str, weapon: &str) -> CmdResult {
-        if let Some(enemy) = self.get_curr_room_mut().enemies_mut().get_mut(enemy_name) {
-            if let Some(damage) = damage {
-                enemy.get_hit(damage);
-                if enemy.is_alive() {
-                    CmdResult::new(
-                        true,
-                        format!(
-                            "You hit the {} with your {} for {} damage.",
-                            enemy_name, weapon, damage,
-                        ),
-                    )
-                } else {
-                    let mut res = format!(
-                        "You hit the {} with your {} for {} damage. It is dead.\n",
-                        enemy_name, weapon, damage
-                    );
-                    if !enemy.loot().is_empty() {
-                        res.push_str("It dropped:\n");
-                        for loot in enemy.loot() {
-                            res.push_str(&format!(" {},", loot.long_name()));
+        if let Some(enemy) = self
+            .get_curr_room()
+            .enemies()
+            .par_iter()
+            .position_any(|item| item.name() == enemy_name)
+        {
+            if let Some(enemy) = self.get_curr_room_mut().enemies_mut().get_mut(enemy) {
+                if let Some(damage) = damage {
+                    enemy.get_hit(damage);
+                    if enemy.is_alive() {
+                        CmdResult::new(
+                            true,
+                            format!(
+                                "You hit the {} with your {} for {} damage.",
+                                enemy_name, weapon, damage,
+                            ),
+                        )
+                    } else {
+                        let mut res = format!(
+                            "You hit the {} with your {} for {} damage. It is dead.\n",
+                            enemy_name, weapon, damage
+                        );
+                        if !enemy.loot().is_empty() {
+                            res.push_str("It dropped:\n");
+                            for loot in enemy.loot() {
+                                res.push_str(&format!(" {},", loot.long_name()));
+                            }
                         }
+                        CmdResult::new(true, res)
                     }
-                    CmdResult::new(true, res)
+                } else {
+                    CmdResult::dont_have(weapon)
                 }
             } else {
-                CmdResult::dont_have(weapon)
+                CmdResult::no_item_here(enemy_name)
             }
         } else {
             CmdResult::no_item_here(enemy_name)
@@ -132,38 +127,15 @@ impl World {
     // take an Item from a container Item in the current Room
     pub fn give_from(
         &mut self,
-        player: &mut Player,
         item_name: &str,
         container_name: &str,
-    ) -> CmdResult {
-        if let Some(container) = self
-            .get_curr_room_mut()
-            .items_mut()
-            .par_iter_mut()
-            .find_any(|x| x.name() == container_name)
-        {
-            if let Container(container) = &mut **container {
-                if container.is_closed() {
-                    CmdResult::new(true, format!("The {} is closed.", container_name))
-                } else if let Some(item) = container.position(item_name) {
-                    player.take(item_name, Some(container.remove(item)));
-                    CmdResult::new(true, "Taken.".to_owned())
-                } else {
-                    CmdResult::new(
-                        false,
-                        format!("There is no {} in the {}.", item_name, container_name),
-                    )
-                }
-            } else {
-                CmdResult::not_container(container_name)
-            }
-        } else {
-            CmdResult::no_item_here(container_name)
-        }
+    ) -> Result<Box<Item>, CmdResult> {
+        self.get_curr_room_mut()
+            .give_from(item_name, container_name)
     }
 
     pub fn give_all(&mut self) -> Items {
-        self.get_curr_room_mut().items_mut().drain(0..).collect()
+        self.get_curr_room_mut().drain_all()
     }
 
     // insert an Item into the current Room
@@ -174,44 +146,20 @@ impl World {
     // insert an Item into a container Item in the current Room
     pub fn insert_into(
         &mut self,
-        player: &mut Player,
         item_name: &str,
         container_name: &str,
-    ) -> CmdResult {
-        if let Some(item) = player.remove(item_name) {
-            if let Some(container) = self
-                .get_curr_room_mut()
-                .items_mut()
-                .par_iter_mut()
-                .find_any(|x| x.name() == container_name)
-            {
-                if let Container(container) = &mut **container {
-                    if container.is_closed() {
-                        player.take(item_name, Some(item));
-                        CmdResult::new(true, format!("The {} is closed.", container_name))
-                    } else {
-                        container.push(item);
-                        CmdResult::new(true, "Placed.".to_owned())
-                    }
-                } else {
-                    player.take(item_name, Some(item));
-                    CmdResult::not_container(container_name)
-                }
-            } else {
-                player.take(item_name, Some(item));
-                CmdResult::no_item_here(container_name)
-            }
-        } else {
-            CmdResult::dont_have(item_name)
-        }
+        item: Option<Box<Item>>,
+    ) -> (CmdResult, Option<Box<Item>>) {
+        self.get_curr_room_mut()
+            .insert_into(item_name, container_name, item)
+    }
+
+    pub fn extend_items(&mut self, items: Items) {
+        self.get_curr_room_mut().extend_items(items);
     }
 
     // interact with an Ally
     pub fn hail(&self, ally_name: &str) -> CmdResult {
-        if let Some(_ally) = self.get_curr_room().allies().get(ally_name) {
-            CmdResult::new(false, "TODO: interact with ally".to_owned())
-        } else {
-            CmdResult::no_item_here(ally_name)
-        }
+        self.get_curr_room().hail(ally_name)
     }
 }

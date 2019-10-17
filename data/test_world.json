@@ -23,14 +23,14 @@
                     "inspect": "The edges of the opening are cracked and rough."
                 }
             },
-            "allies": {
-                "old man": {
+            "allies": [
+                {
                     "hp": 1,
                     "name": "old man",
                     "desc": "An old man stoically stands at the back of the gave.",
                     "inspect": "\"Take the sword, brave one.\""
                 }
-            },
+            ],
             "items": [
                 {
                     "Weapon": {
