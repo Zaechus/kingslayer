@@ -66,7 +66,7 @@ impl Room {
             .par_iter_mut()
             .find_any(|x| x.name() == container_name)
         {
-            if let Container(container) = &mut **container {
+            if let Container(ref mut container) = **container {
                 if container.is_closed() {
                     Err(CmdResult::new(
                         true,
@@ -101,7 +101,7 @@ impl Room {
                 .par_iter_mut()
                 .find_any(|x| x.name() == container_name)
             {
-                if let Container(container) = &mut **container {
+                if let Container(ref mut container) = **container {
                     if container.is_closed() {
                         (
                             CmdResult::new(true, format!("The {} is closed.", container_name)),
@@ -131,7 +131,7 @@ impl Room {
                 CmdResult::already_opened(name)
             }
         } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
-            if let Container(container) = &mut **item {
+            if let Container(ref mut container) = **item {
                 container.open()
             } else {
                 CmdResult::not_container(name)
@@ -150,7 +150,7 @@ impl Room {
                 CmdResult::new(true, "Closed.".to_owned())
             }
         } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
-            if let Container(container) = &mut **item {
+            if let Container(ref mut container) = **item {
                 container.close()
             } else {
                 CmdResult::not_container(name)

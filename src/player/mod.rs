@@ -49,7 +49,7 @@ impl Player {
 
     pub fn attack(&mut self) -> Option<i32> {
         if let Some(weapon) = &self.main_hand {
-            if let Weapon(weapon) = &**weapon {
+            if let Weapon(ref weapon) = **weapon {
                 self.in_combat = true;
                 Some(self.deal_damage(weapon.damage()))
             } else {
@@ -62,7 +62,7 @@ impl Player {
 
     pub fn attack_with(&mut self, weapon_name: &str) -> Option<i32> {
         if let Some(weapon) = self.inventory.find(weapon_name) {
-            if let Weapon(weapon) = &**weapon {
+            if let Weapon(ref weapon) = **weapon {
                 self.in_combat = true;
                 Some(self.deal_damage(weapon.damage()))
             } else {
@@ -70,7 +70,7 @@ impl Player {
             }
         } else if let Some(weapon) = &self.main_hand {
             if weapon_name == weapon.name() {
-                if let Weapon(weapon) = &**weapon {
+                if let Weapon(ref weapon) = **weapon {
                     self.in_combat = true;
                     Some(self.deal_damage(weapon.damage()))
                 } else {
@@ -93,7 +93,7 @@ impl Player {
     }
 
     fn set_armor(&mut self, armor_name: &str, item: Box<Item>) -> CmdResult {
-        if let Armor(_) = &*item {
+        if let Armor(_) = *item {
             // move old armor back to inventory
             if let Some(armor) = self.armor.take() {
                 self.take(armor_name, Some(armor));
@@ -179,7 +179,7 @@ impl Player {
     }
 
     pub fn has(&self, name: &str) -> bool {
-        self.inventory.find(name).is_some()
+        self.inventory.has(name)
     }
 
     pub fn hp(&self) -> i32 {
@@ -267,10 +267,6 @@ impl Player {
         CmdResult::new(true, items_carried)
     }
 
-    fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
-        self.inventory.remove_item(name)
-    }
-
     fn remove_main_hand(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.main_hand.take() {
             if item.name() == name || item.name().par_split_whitespace().any(|word| word == name) {
@@ -299,7 +295,7 @@ impl Player {
 
     // remove an item from inventory and into the current Room
     pub fn remove(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.remove_item(name) {
+        if let Some(item) = self.inventory.remove_item(name) {
             Some(item)
         } else if let Some(item) = self.remove_main_hand(name) {
             Some(item)
@@ -340,7 +336,7 @@ impl Player {
 
     fn ac(&self) -> i32 {
         if let Some(armor) = &self.armor {
-            if let Armor(armor) = &**armor {
+            if let Armor(ref armor) = **armor {
                 armor.ac() as i32 + self.stats.dex_mod()
             } else {
                 10 + self.stats.dex_mod()
@@ -389,8 +385,8 @@ impl Player {
         self.inventory.push(item);
     }
 
-    pub fn take_from(&mut self, item_name: &str, container_name: &str) -> CmdResult {
-        self.inventory.take_from(item_name, container_name)
+    pub fn take_from_self(&mut self, item_name: &str, container_name: &str) -> CmdResult {
+        self.inventory.take_from_self(item_name, container_name)
     }
 
     pub fn take_item_from(&mut self, item: Result<Box<Item>, CmdResult>) -> CmdResult {

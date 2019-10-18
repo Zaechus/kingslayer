@@ -42,6 +42,12 @@ impl Container {
         }
     }
 
+    pub fn find_similar_item(&self, name: &str) -> Option<usize> {
+        self.contents
+            .par_iter()
+            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+    }
+
     pub fn position(&self, name: &str) -> Option<usize> {
         self.contents.par_iter().position_any(|x| x.name() == name)
     }

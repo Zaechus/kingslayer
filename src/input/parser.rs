@@ -155,7 +155,7 @@ impl Parser {
         if words.num_words() > 1 {
             if words.prep() == "from" || words.prep() == "out" || words.prep() == "in" {
                 if player.has(&words.obj_prep()) {
-                    player.take_from(&words.obj(), &words.obj_prep())
+                    player.take_from_self(&words.obj(), &words.obj_prep())
                 } else {
                     player.take_item_from(world.give_from(&words.obj(), &words.obj_prep()))
                 }

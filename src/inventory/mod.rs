@@ -30,14 +30,14 @@ impl Inventory {
 
     pub fn close(&mut self, item_name: &str) -> Option<CmdResult> {
         if let Some(item) = self.find_mut(item_name) {
-            if let Container(item) = &mut **item {
+            if let Container(ref mut item) = **item {
                 Some(item.close())
             } else {
                 Some(CmdResult::not_container(item_name))
             }
         } else if let Some(item) = self.find_similar_item(item_name) {
             if let Some(item) = self.items.get_mut(item) {
-                if let Container(item) = &mut **item {
+                if let Container(ref mut item) = **item {
                     Some(item.close())
                 } else {
                     Some(CmdResult::not_container(&item_name))
@@ -58,6 +58,20 @@ impl Inventory {
     pub fn find_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
         self.items.par_iter_mut().find_any(|x| x.name() == name)
     }
+    #[allow(clippy::borrowed_box)]
+    pub fn find_similar_item_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
+        self.items
+            .par_iter_mut()
+            .find_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+    }
+
+    pub fn has(&self, name: &str) -> bool {
+        if self.find(name).is_some() {
+            true
+        } else {
+            self.find_similar_item(name).is_some()
+        }
+    }
 
     fn inventory_remove(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.position(name) {
@@ -72,7 +86,7 @@ impl Inventory {
 
         if let Some(item) = item {
             if let Some(container) = self.find_mut(container_name) {
-                if let Container(container) = &mut **container {
+                if let Container(ref mut container) = **container {
                     if container.is_closed() {
                         self.items.push(item);
                         CmdResult::new(true, format!("The {} is closed.", container_name))
@@ -95,14 +109,14 @@ impl Inventory {
 
     pub fn open(&mut self, item_name: &str) -> Option<CmdResult> {
         if let Some(item) = self.find_mut(item_name) {
-            if let Container(item) = &mut **item {
+            if let Container(ref mut item) = **item {
                 Some(item.open())
             } else {
                 Some(CmdResult::not_container(item_name))
             }
         } else if let Some(item) = self.find_similar_item(item_name) {
             if let Some(item) = self.items.get_mut(item) {
-                if let Container(item) = &mut **item {
+                if let Container(ref mut item) = **item {
                     Some(item.open())
                 } else {
                     Some(CmdResult::not_container(item_name))
@@ -181,8 +195,22 @@ impl Inventory {
 
     fn take_out_of(&mut self, item_name: &str, container_name: &str) -> Option<Box<Item>> {
         if let Some(container) = self.find_mut(container_name) {
-            if let Container(container) = &mut **container {
+            if let Container(ref mut container) = **container {
                 if let Some(item) = container.position(item_name) {
+                    Some(container.remove(item))
+                } else if let Some(item) = container.find_similar_item(item_name) {
+                    Some(container.remove(item))
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else if let Some(container) = self.find_similar_item_mut(container_name) {
+            if let Container(ref mut container) = **container {
+                if let Some(item) = container.position(item_name) {
+                    Some(container.remove(item))
+                } else if let Some(item) = container.find_similar_item(item_name) {
                     Some(container.remove(item))
                 } else {
                     None
@@ -195,7 +223,7 @@ impl Inventory {
         }
     }
 
-    pub fn take_from(&mut self, item_name: &str, container_name: &str) -> CmdResult {
+    pub fn take_from_self(&mut self, item_name: &str, container_name: &str) -> CmdResult {
         if let Some(item) = self.take_out_of(item_name, container_name) {
             self.items.push(item);
             CmdResult::new(true, "Taken.".to_owned())
