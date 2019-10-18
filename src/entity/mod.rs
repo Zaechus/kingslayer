@@ -13,9 +13,9 @@ pub use pathway::Pathway;
 pub use room::Room;
 
 pub trait Entity {
-    fn name(&self) -> &String;
+    fn name(&self) -> &str;
 
-    fn desc(&self) -> &String;
+    fn desc(&self) -> &str;
 
-    fn inspect(&self) -> &String;
+    fn inspect(&self) -> &str;
 }

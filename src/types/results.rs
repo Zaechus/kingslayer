@@ -13,7 +13,7 @@ impl CmdResult {
         self.is_action
     }
 
-    pub fn output(&self) -> &String {
+    pub fn output(&self) -> &str {
         &self.output
     }
 

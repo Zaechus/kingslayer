@@ -41,7 +41,7 @@ impl Item {
 }
 
 impl Entity for Item {
-    fn name(&self) -> &String {
+    fn name(&self) -> &str {
         match self {
             Item::Armor(armor) => armor.name(),
             Item::Container(container) => container.name(),
@@ -50,7 +50,7 @@ impl Entity for Item {
         }
     }
 
-    fn desc(&self) -> &String {
+    fn desc(&self) -> &str {
         match self {
             Item::Armor(armor) => armor.desc(),
             Item::Container(container) => container.desc(),
@@ -59,7 +59,7 @@ impl Entity for Item {
         }
     }
 
-    fn inspect(&self) -> &String {
+    fn inspect(&self) -> &str {
         match self {
             Item::Armor(armor) => armor.inspect(),
             Item::Container(container) => container.inspect(),

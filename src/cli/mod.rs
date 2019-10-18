@@ -1,6 +1,9 @@
-use std::cell::RefCell;
-use std::fs::File;
-use std::io::{self, BufReader, Read, Write};
+use std::{
+    cell::RefCell,
+    convert::TryInto,
+    fs::{self, File},
+    io::{self, BufReader, Read, Write},
+};
 
 use rayon::prelude::*;
 
@@ -60,9 +63,10 @@ impl Cli {
     }
 
     fn get_world_ron(path: &str) -> RefCell<Box<World>> {
+        let metadata = fs::metadata(path).expect("Error getting metadata from file");
         let world_file = File::open(path).expect("Unable to open world file");
         let mut world_file_reader = BufReader::new(world_file);
-        let mut data = String::new();
+        let mut data = String::with_capacity(metadata.len().try_into().unwrap());
         world_file_reader
             .read_to_string(&mut data)
             .expect("Unable to read string from world file");
@@ -71,9 +75,10 @@ impl Cli {
     }
 
     fn get_world_json(path: &str) -> RefCell<Box<World>> {
+        let metadata = fs::metadata(path).expect("Error getting metadata from file");
         let world_file = File::open(path).expect("Unable to open world file");
         let mut world_file_reader = BufReader::new(world_file);
-        let mut data = String::new();
+        let mut data = String::with_capacity(metadata.len().try_into().unwrap());
         world_file_reader
             .read_to_string(&mut data)
             .expect("Unable to read string from world file");
@@ -170,7 +175,7 @@ Some available commands:
 
     // manages actions taken by Enemies in the current room
     fn combat(&self, world: &mut World) -> String {
-        let mut events_str = String::new();
+        let mut events_str = String::with_capacity(50 * world.get_curr_room().enemies().len());
         let mut loot = Items::new();
 
         for enemy in world.get_curr_room_mut().enemies_mut() {
@@ -201,6 +206,7 @@ Some available commands:
         } else {
             events_str.push_str(&self.player.borrow_mut().level_up());
         }
+        events_str.shrink_to_fit();
         events_str
     }
 }

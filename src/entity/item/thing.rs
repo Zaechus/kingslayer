@@ -11,15 +11,15 @@ pub struct Thing {
 }
 
 impl Entity for Thing {
-    fn name(&self) -> &String {
+    fn name(&self) -> &str {
         &self.name
     }
 
-    fn desc(&self) -> &String {
+    fn desc(&self) -> &str {
         &self.desc
     }
 
-    fn inspect(&self) -> &String {
+    fn inspect(&self) -> &str {
         &self.inspect
     }
 }

@@ -120,16 +120,18 @@ impl Inventory {
     }
 
     pub fn print(&self) -> String {
-        let mut items_carried = String::new();
         if self.items.is_empty() {
-            items_carried.push_str("Your inventory is empty.");
+            String::from("Your inventory is empty.")
         } else {
-            items_carried.push_str("You are carrying:");
+            let mut items_carried = String::from("You are carrying:");
+            items_carried.reserve(5 * self.items.len());
+
             for item in self.items.iter() {
                 items_carried = format!("{}\n  {}", items_carried, item.long_name());
             }
+            items_carried.shrink_to_fit();
+            items_carried
         }
-        items_carried
     }
 
     pub fn push(&mut self, item: Box<Item>) {
@@ -169,7 +171,7 @@ impl Inventory {
             let times = items.len();
             self.items.par_extend(items);
 
-            let mut res = String::new();
+            let mut res = String::with_capacity(7 * times);
             for _ in 0..times {
                 res.push_str("Taken. ");
             }

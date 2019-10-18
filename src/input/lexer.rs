@@ -49,7 +49,7 @@ impl Lexer {
     }
 
     fn mod_words(&self, words: &[String]) -> Vec<String> {
-        let mut modified = Vec::with_capacity(words.len());
+        let mut modified = Vec::with_capacity(5 * words.len());
         for w in words {
             modified.push(
                 match w.as_str() {
@@ -68,6 +68,7 @@ impl Lexer {
                 .to_owned(),
             );
         }
+        modified.shrink_to_fit();
         modified
     }
 }

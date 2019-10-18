@@ -8,7 +8,7 @@ mod tests {
 
         println!("{}", cli.ask("l"));
         loop {
-            let s = cli.ask(&String::new());
+            let s = cli.ask("");
             println!("{}", s);
             if s.contains("You died.") {
                 break;

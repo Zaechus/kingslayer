@@ -15,10 +15,6 @@ pub struct Pathway {
 }
 
 impl Pathway {
-    pub fn target(&self) -> &String {
-        &self.target
-    }
-
     pub fn long_desc(&self) -> String {
         if let Some(true) = self.is_closed {
             format!("{} The way is shut.", self.desc)
@@ -29,25 +25,21 @@ impl Pathway {
         }
     }
 
-    // pub fn is_closed(&self) -> Option<bool> {
-    //     self.is_closed
-    // }
-
     pub fn is_locked(&self) -> Option<bool> {
         self.is_locked
     }
 }
 
 impl Entity for Pathway {
-    fn name(&self) -> &String {
+    fn name(&self) -> &str {
         &self.target
     }
 
-    fn desc(&self) -> &String {
+    fn desc(&self) -> &str {
         &self.desc
     }
 
-    fn inspect(&self) -> &String {
+    fn inspect(&self) -> &str {
         &self.inspect
     }
 }

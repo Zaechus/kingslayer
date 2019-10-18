@@ -255,7 +255,7 @@ impl Player {
     }
 
     pub fn print_inventory(&self) -> CmdResult {
-        let mut items_carried = String::new();
+        let mut items_carried = String::with_capacity(25);
         if let Some(weapon) = &self.main_hand {
             items_carried.push_str(&format!("Main hand: {}\n", weapon.name()));
         }
@@ -263,6 +263,7 @@ impl Player {
             items_carried.push_str(&format!("Armor: {}\n", armor.name()));
         }
         items_carried.push_str(&self.inventory.print());
+        items_carried.shrink_to_fit();
         CmdResult::new(true, items_carried)
     }
 

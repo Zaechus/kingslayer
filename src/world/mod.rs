@@ -54,7 +54,7 @@ impl World {
                         return CmdResult::new(false, "Enemies bar your way.".to_owned());
                     }
                 }
-                self.curr_room = new_room.target().to_owned();
+                self.curr_room = new_room.name().to_owned();
                 self.look()
             }
         } else {
