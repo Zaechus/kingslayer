@@ -15,7 +15,7 @@ rooms: {
 ),
 "Small Cave": Room(
     name: "Small Cave",
-    desc: "This isn't a very large or clean closet.",
+    desc: "The cave is dark and musty.",
     paths: {
         "s": Pathway(
             target: "Circle Room",
@@ -27,7 +27,7 @@ rooms: {
         Ally(
             hp: 1,
             name: "old man",
-            desc: "An old man stoically stands at the back of the gave.",
+            desc: "An old man stoically stands at the back of the cave.",
             inspect: "\"Take the sword, brave one.\""
         )
     ],
@@ -56,6 +56,11 @@ rooms: {
             inspect: "The cave opening glows with a soft flickering light."
         ),
         "s": Pathway(
+            target: "Long Hallway",
+            desc: "",
+            inspect: ""
+        ),
+        "hallway": Pathway(
             target: "Long Hallway",
             desc: "There is a hallway to the south.",
             inspect: "The hallway seems narrow and foreboding."

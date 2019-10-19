@@ -134,9 +134,6 @@ impl Player {
 
     fn set_equipped(&mut self, item_name: &str, item: Box<Item>) -> CmdResult {
         // move old main hand back to inventory
-        if let Some(weapon) = self.main_hand.take() {
-            self.take(&weapon.name().to_owned(), Some(weapon));
-        }
         match &*item {
             Armor(_) => {
                 self.take(item_name, Some(item));
@@ -144,6 +141,9 @@ impl Player {
                 CmdResult::new(true, "Donned.".to_owned())
             }
             Weapon(_) => {
+                if let Some(weapon) = self.main_hand.take() {
+                    self.take(&weapon.name().to_owned(), Some(weapon));
+                }
                 self.main_hand = Some(item);
                 CmdResult::new(
                     true,
