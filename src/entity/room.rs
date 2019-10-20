@@ -27,7 +27,9 @@ impl Room {
     pub fn long_desc(&self) -> String {
         let mut desc = format!("{}\n{}", self.name, self.desc);
         for path in self.paths.values() {
-            desc.push_str(&format!("\n{}", path.long_desc()));
+            if !path.desc().is_empty() {
+                desc.push_str(&format!("\n{}", path.long_desc()));
+            }
         }
         for enemy in self.enemies.iter() {
             desc.push_str(&format!("\n{}", enemy.desc()));
