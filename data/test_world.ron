@@ -1,0 +1,66 @@
+(
+curr_room: "Central Room",
+rooms: {
+"Closet": Room(
+    name: "Closet",
+    desc: "This isn't a very large or clean closet.",
+    paths: {
+        "door": Pathway(
+            target: "Central Room",
+            desc: "The door leads back into the room.",
+            inspect: "The door is plain and wooden.",
+            is_closed: Some(false)
+        ),
+    },
+),
+"Central Room": Room(
+    name: "Central Room",
+    desc: "You are in the central room.",
+    paths: {
+        "n": Pathway(
+            target: "Small Cave",
+            desc: "There is a mouth of a cave to the north.",
+            inspect: "The cave opening glows with a soft flickering light."
+        ),
+        "door": Pathway(
+            target: "Closet",
+            desc: "The door leads back into the room.",
+            inspect: "The door is plain and wooden.",
+            is_closed: Some(true)
+        ),
+    },
+    items: [
+        Thing(Thing(
+            name: "leaf",
+            desc: "A leaf lies on the ground.",
+            inspect: "It's small, brown, and dry."
+        )),
+    ]
+),
+"Small Cave": Room(
+    name: "Small Cave",
+    desc: "You are in a small cave.",
+    paths: {
+        "s": Pathway(
+            target: "Central Room",
+            desc: "The cave opening leads south.",
+            inspect: "The cave opening glows with a soft flickering light."
+        ),
+    },
+    items: [
+        Armor(Armor(
+            name: "leather armor",
+            desc: "There is a set of leather armor lying in a heap.",
+            inspect: "The armor is worn but light and sturdy.",
+            ac: 11,
+        )),
+        Weapon(Weapon(
+            name: "iron sword",
+            desc: "There is an iron sword on the ground.",
+            inspect: "The iron sword is of crude workmanship, but it should be usable.",
+            damage: 6   
+        )),
+    ]
+)
+}
+)

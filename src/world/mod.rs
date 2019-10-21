@@ -20,7 +20,10 @@ impl World {
         if let Some(room) = self.rooms.get(&self.curr_room) {
             room
         } else {
-            panic!("ERROR: You are not in a valid room (The world should be fixed).")
+            panic!(format!(
+                "ERROR: {} is not a valid room (The world should be fixed).",
+                self.curr_room
+            ))
         }
     }
 
@@ -28,7 +31,10 @@ impl World {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             room
         } else {
-            panic!("ERROR: You are not in a valid room (The world should be fixed).")
+            panic!(format!(
+                "ERROR: {} is not a valid room (The world should be fixed).",
+                self.curr_room
+            ))
         }
     }
 

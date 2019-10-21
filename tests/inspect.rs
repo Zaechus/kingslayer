@@ -4,8 +4,9 @@ mod tests {
 
     #[test]
     fn player_inspect() {
-        let cli = Cli::from_json_file("data/test_world.json");
+        let cli = Cli::from_ron_file("data/test_world.ron");
 
+        assert_eq!(cli.ask("inspect leaf"), "It's small, brown, and dry.");
         cli.ask("take leaf");
         assert!(cli.ask("i").contains("leaf") && !cli.ask("l").contains("leaf"));
         assert_eq!(cli.ask("inspect leaf"), "It's small, brown, and dry.");

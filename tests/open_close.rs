@@ -4,15 +4,24 @@ mod tests {
 
     #[test]
     fn open_close_path() {
-        let cli = Cli::from_json_file("data/test_world.json");
+        let cli = Cli::from_ron_file("data/test_world.ron");
 
+        assert!(cli.ask("l").contains("The way is shut."));
         assert_eq!(cli.ask("enter door"), "The way is shut.");
         assert_eq!(cli.ask("open door"), "Opened.");
-        assert!(cli.ask("enter door").contains("Closet"));
+        assert!(cli.ask("l").contains("The way is open."));
+
+        assert!(
+            cli.ask("enter door").contains("Closet") && cli.ask("l").contains("The way is open.")
+        );
         assert_eq!(cli.ask("close door"), "Closed.");
+        assert!(cli.ask("l").contains("The way is shut."));
         assert_eq!(cli.ask("enter door"), "The way is shut.");
         assert_eq!(cli.ask("open door"), "Opened.");
-        assert!(cli.ask("enter door").contains("Circle Room"));
+        assert!(cli.ask("l").contains("The way is open."));
+
+        assert!(cli.ask("enter door").contains("Central Room"));
+        assert!(cli.ask("l").contains("The way is open."));
     }
 
     #[test]
