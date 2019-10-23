@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::{Closeable, Entity, Item, Room},
-    types::{CmdResult, Items, RoomMap},
+    types::{Action, CmdResult, Items, RoomMap},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -40,7 +40,7 @@ impl World {
 
     // displays description of the current Room
     pub fn look(&self) -> CmdResult {
-        CmdResult::new(true, self.get_curr_room().long_desc())
+        CmdResult::new(Action::Active, self.get_curr_room().long_desc())
     }
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
@@ -51,20 +51,20 @@ impl World {
     pub fn move_room(&mut self, direction: &str) -> CmdResult {
         if let Some(new_room) = self.get_curr_room().paths().get(direction) {
             if new_room.is_locked() == Some(true) {
-                CmdResult::new(true, "The way is locked.".to_owned())
+                CmdResult::new(Action::Active, "The way is locked.".to_owned())
             } else if new_room.is_closed() {
-                CmdResult::new(true, "The way is shut.".to_owned())
+                CmdResult::new(Action::Active, "The way is shut.".to_owned())
             } else {
                 for enemy in self.get_curr_room().enemies() {
                     if enemy.is_angry() {
-                        return CmdResult::new(false, "Enemies bar your way.".to_owned());
+                        return CmdResult::new(Action::Passive, "Enemies bar your way.".to_owned());
                     }
                 }
                 self.curr_room = new_room.name().to_owned();
                 self.look()
             }
         } else {
-            CmdResult::new(false, "You cannot go that way.".to_owned())
+            CmdResult::new(Action::Passive, "You cannot go that way.".to_owned())
         }
     }
 
@@ -95,7 +95,7 @@ impl World {
                     enemy.get_hit(damage);
                     if enemy.is_alive() {
                         CmdResult::new(
-                            true,
+                            Action::Active,
                             format!(
                                 "You hit the {} with your {} for {} damage.",
                                 enemy_name, weapon, damage,
@@ -112,7 +112,7 @@ impl World {
                                 res.push_str(&format!(" {},", loot.long_name()));
                             }
                         }
-                        CmdResult::new(true, res)
+                        CmdResult::new(Action::Active, res)
                     }
                 } else {
                     CmdResult::dont_have(weapon)

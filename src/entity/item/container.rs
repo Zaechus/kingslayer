@@ -3,8 +3,10 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use super::Item;
-use crate::entity::{Closeable, Entity};
-use crate::types::{CmdResult, Items};
+use crate::{
+    entity::{Closeable, Entity},
+    types::{Action, CmdResult, Items},
+};
 
 // An object to be interacted with by the user
 #[derive(Debug, Serialize, Deserialize)]
@@ -78,7 +80,7 @@ impl Closeable for Container {
     fn open(&mut self) -> CmdResult {
         if self.is_closed {
             self.is_closed = false;
-            CmdResult::new(true, "Opened.".to_owned())
+            CmdResult::new(Action::Active, "Opened.".to_owned())
         } else {
             CmdResult::already_opened(&self.name)
         }
@@ -89,7 +91,7 @@ impl Closeable for Container {
             CmdResult::already_closed(&self.name)
         } else {
             self.is_closed = true;
-            CmdResult::new(true, "Closed.".to_owned())
+            CmdResult::new(Action::Active, "Closed.".to_owned())
         }
     }
 

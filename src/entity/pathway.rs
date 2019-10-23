@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{Closeable, Entity};
-use crate::types::CmdResult;
+use crate::types::{Action, CmdResult};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Pathway {
@@ -48,18 +48,18 @@ impl Closeable for Pathway {
     fn open(&mut self) -> CmdResult {
         if self.is_closed.is_some() {
             self.is_closed = Some(false);
-            CmdResult::new(true, "Opened.".to_owned())
+            CmdResult::new(Action::Active, "Opened.".to_owned())
         } else {
-            CmdResult::new(false, String::new())
+            CmdResult::new(Action::Passive, String::new())
         }
     }
 
     fn close(&mut self) -> CmdResult {
         if self.is_closed.is_some() {
             self.is_closed = Some(true);
-            CmdResult::new(true, "Closed.".to_owned())
+            CmdResult::new(Action::Active, "Closed.".to_owned())
         } else {
-            CmdResult::new(false, String::new())
+            CmdResult::new(Action::Passive, String::new())
         }
     }
 

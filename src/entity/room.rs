@@ -6,7 +6,7 @@ use super::{
     Closeable, Entity,
     Item::{self, Container},
 };
-use crate::types::{Allies, CmdResult, Enemies, Items, PathMap};
+use crate::types::{Action, Allies, CmdResult, Enemies, Items, PathMap};
 
 // A section of the world connected by paths
 #[derive(Debug, Serialize, Deserialize)]
@@ -71,14 +71,14 @@ impl Room {
             if let Container(ref mut container) = **container {
                 if container.is_closed() {
                     Err(CmdResult::new(
-                        true,
+                        Action::Active,
                         format!("The {} is closed.", container_name),
                     ))
                 } else if let Some(item) = container.position(item_name) {
                     Ok(container.remove(item))
                 } else {
                     Err(CmdResult::new(
-                        false,
+                        Action::Passive,
                         format!("There is no \"{}\" in the {}.", item_name, container_name),
                     ))
                 }
@@ -106,12 +106,15 @@ impl Room {
                 if let Container(ref mut container) = **container {
                     if container.is_closed() {
                         (
-                            CmdResult::new(true, format!("The {} is closed.", container_name)),
+                            CmdResult::new(
+                                Action::Active,
+                                format!("The {} is closed.", container_name),
+                            ),
                             Some(item),
                         )
                     } else {
                         container.push(item);
-                        (CmdResult::new(true, "Placed.".to_owned()), None)
+                        (CmdResult::new(Action::Active, "Placed.".to_owned()), None)
                     }
                 } else {
                     (CmdResult::not_container(container_name), Some(item))
@@ -128,7 +131,7 @@ impl Room {
         if let Some(path) = self.paths.get_mut(name) {
             if path.is_closed() {
                 path.open();
-                CmdResult::new(true, "Opened.".to_owned())
+                CmdResult::new(Action::Active, "Opened.".to_owned())
             } else {
                 CmdResult::already_opened(name)
             }
@@ -149,7 +152,7 @@ impl Room {
                 CmdResult::already_closed(name)
             } else {
                 path.close();
-                CmdResult::new(true, "Closed.".to_owned())
+                CmdResult::new(Action::Active, "Closed.".to_owned())
             }
         } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
             if let Container(ref mut container) = **item {
@@ -165,7 +168,7 @@ impl Room {
     // interact with an Ally
     pub fn hail(&self, ally_name: &str) -> CmdResult {
         if let Some(_ally) = self.allies.par_iter().find_any(|x| x.name() == ally_name) {
-            CmdResult::new(false, "TODO: interact with ally".to_owned())
+            CmdResult::new(Action::Passive, "TODO: interact with ally".to_owned())
         } else {
             CmdResult::no_item_here(ally_name)
         }
@@ -173,13 +176,13 @@ impl Room {
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.items.par_iter().find_any(|x| x.name() == name) {
-            Some(CmdResult::new(true, item.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(pathway) = self.paths.get(name) {
-            Some(CmdResult::new(true, pathway.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, pathway.inspect().to_owned()))
         } else if let Some(enemy) = self.enemies.par_iter().find_any(|x| x.name() == name) {
-            Some(CmdResult::new(true, enemy.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, enemy.inspect().to_owned()))
         } else if let Some(ally) = self.allies.par_iter().find_any(|x| x.name() == name) {
-            Some(CmdResult::new(true, ally.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, ally.inspect().to_owned()))
         } else {
             None
         }
@@ -188,7 +191,7 @@ impl Room {
     pub fn take_item(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
         if let Some(item) = item {
             self.items.push(item);
-            CmdResult::new(true, "Dropped.".to_owned())
+            CmdResult::new(Action::Active, "Dropped.".to_owned())
         } else {
             CmdResult::dont_have(name)
         }

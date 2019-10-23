@@ -7,7 +7,7 @@ use crate::{
         Closeable, Entity,
         Item::{self, Container, Weapon},
     },
-    types::{CmdResult, Items},
+    types::{Action, CmdResult, Items},
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -89,10 +89,10 @@ impl Inventory {
                 if let Container(ref mut container) = **container {
                     if container.is_closed() {
                         self.items.push(item);
-                        CmdResult::new(true, format!("The {} is closed.", container_name))
+                        CmdResult::new(Action::Active, format!("The {} is closed.", container_name))
                     } else {
                         container.push(item);
-                        CmdResult::new(true, "Placed.".to_owned())
+                        CmdResult::new(Action::Active, "Placed.".to_owned())
                     }
                 } else {
                     self.items.push(item);
@@ -172,7 +172,7 @@ impl Inventory {
                 res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
             }
             self.items.push(item);
-            CmdResult::new(true, res)
+            CmdResult::new(Action::Active, res)
         } else {
             CmdResult::no_item_here(name)
         }
@@ -180,7 +180,7 @@ impl Inventory {
 
     pub fn take_all(&mut self, items: Items) -> CmdResult {
         if items.is_empty() {
-            CmdResult::new(false, "There is nothing to take.".to_owned())
+            CmdResult::new(Action::Passive, "There is nothing to take.".to_owned())
         } else {
             let times = items.len();
             self.items.par_extend(items);
@@ -189,7 +189,7 @@ impl Inventory {
             for _ in 0..times {
                 res.push_str("Taken. ");
             }
-            CmdResult::new(true, res)
+            CmdResult::new(Action::Active, res)
         }
     }
 
@@ -226,7 +226,7 @@ impl Inventory {
     pub fn take_from_self(&mut self, item_name: &str, container_name: &str) -> CmdResult {
         if let Some(item) = self.take_out_of(item_name, container_name) {
             self.items.push(item);
-            CmdResult::new(true, "Taken.".to_owned())
+            CmdResult::new(Action::Active, "Taken.".to_owned())
         } else {
             CmdResult::dont_have(container_name)
         }
@@ -240,7 +240,7 @@ impl Inventory {
                     res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
                 }
                 self.items.push(item);
-                CmdResult::new(true, res)
+                CmdResult::new(Action::Active, res)
             }
             Err(res) => res,
         }

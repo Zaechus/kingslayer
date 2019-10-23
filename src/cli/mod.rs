@@ -13,7 +13,7 @@ use crate::{
     entity::Entity,
     input::{read_line, Lexer, Parser},
     player::Player,
-    types::{CmdResult, Items},
+    types::{Action, CmdResult, Items},
     world::World,
 };
 
@@ -103,7 +103,7 @@ impl Cli {
     /// Returns a helpful list of game commands
     pub fn help() -> CmdResult {
         CmdResult::new(
-            false,
+            Action::Passive,
             "Typical format: <action> [object] [preposition] [object]
     some prepositions: in, inside, from, on, with
 
@@ -159,7 +159,7 @@ Some available commands:
                 &mut self.player.borrow_mut(),
             );
 
-            if res.is_action() {
+            if res.is_active() {
                 format!("{}{}", res.output(), self.combat())
             } else {
                 res.output().to_owned()

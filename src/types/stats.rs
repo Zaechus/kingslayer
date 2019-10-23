@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::CmdResult;
+use super::{Action, CmdResult};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Stats {
@@ -66,15 +66,18 @@ impl Stats {
                         "cha" => self.cha += 1,
                         _ => (),
                     }
-                    CmdResult::new(true, "Ability score increased by one.".to_owned())
+                    CmdResult::new(Action::Active, "Ability score increased by one.".to_owned())
                 }
                 _ => CmdResult::new(
-                    false,
+                    Action::Passive,
                     format!("\"{}\" is not a valid ability score.", ability_score),
                 ),
             }
         } else {
-            CmdResult::new(false, "You do not have any stat points.".to_owned())
+            CmdResult::new(
+                Action::Passive,
+                "You do not have any stat points.".to_owned(),
+            )
         }
     }
 

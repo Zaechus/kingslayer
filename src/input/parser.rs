@@ -4,7 +4,7 @@ use crate::{
     cli::Cli,
     entity::Entity,
     player::Player,
-    types::{CmdResult, CmdTokens},
+    types::{Action, CmdResult, CmdTokens},
     world::World,
 };
 
@@ -78,7 +78,10 @@ impl Parser {
         if words.num_words() > 1 {
             world.move_room(&words.obj())
         } else {
-            CmdResult::new(false, format!("Where do you want to {}?", words.verb()))
+            CmdResult::new(
+                Action::Passive,
+                format!("Where do you want to {}?", words.verb()),
+            )
         }
     }
 
@@ -97,7 +100,7 @@ impl Parser {
         if words.num_words() > 1 {
             world.hail(&words.obj())
         } else {
-            CmdResult::new(false, "Who do you want to talk to?".to_owned())
+            CmdResult::new(Action::Passive, "Who do you want to talk to?".to_owned())
         }
     }
 
@@ -215,7 +218,7 @@ impl Parser {
             "insert" | "place" | "put" => Parser::parse_put(words, world, player),
             "wait" | "z" => Player::wait(),
             _ => CmdResult::new(
-                false,
+                Action::Passive,
                 format!("I do not know the word \"{}\".", words.verb()),
             ),
         }

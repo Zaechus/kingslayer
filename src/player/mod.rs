@@ -10,14 +10,20 @@ use crate::{
         Item::{self, Armor, Weapon},
     },
     inventory::Inventory,
-    types::{CmdResult, Items, Stats},
+    types::{Action, CmdResult, Items, Stats},
 };
+
+#[derive(Debug, Serialize, Deserialize)]
+enum CombatStatus {
+    InCombat,
+    Resting,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Player {
     hp: (i32, u32),
     xp: (u32, u32),
-    in_combat: bool,
+    in_combat: CombatStatus,
     lvl: u32,
     stats: Stats,
     main_hand: Option<Box<Item>>,
@@ -30,7 +36,7 @@ impl Player {
         Self {
             hp: (13, 13),
             xp: (0, 1000),
-            in_combat: false,
+            in_combat: CombatStatus::Resting,
             lvl: 1,
             stats: Stats::new(),
             main_hand: None,
@@ -50,7 +56,7 @@ impl Player {
     pub fn attack(&mut self) -> Option<i32> {
         if let Some(weapon) = &self.main_hand {
             if let Weapon(ref weapon) = **weapon {
-                self.in_combat = true;
+                self.in_combat = CombatStatus::InCombat;
                 Some(self.deal_damage(weapon.damage()))
             } else {
                 Some(self.default_damage())
@@ -63,7 +69,7 @@ impl Player {
     pub fn attack_with(&mut self, weapon_name: &str) -> Option<i32> {
         if let Some(weapon) = self.inventory.find(weapon_name) {
             if let Weapon(ref weapon) = **weapon {
-                self.in_combat = true;
+                self.in_combat = CombatStatus::InCombat;
                 Some(self.deal_damage(weapon.damage()))
             } else {
                 Some(self.default_damage())
@@ -71,7 +77,7 @@ impl Player {
         } else if let Some(weapon) = &self.main_hand {
             if weapon_name == weapon.name() {
                 if let Weapon(ref weapon) = **weapon {
-                    self.in_combat = true;
+                    self.in_combat = CombatStatus::InCombat;
                     Some(self.deal_damage(weapon.damage()))
                 } else {
                     Some(self.default_damage())
@@ -89,7 +95,7 @@ impl Player {
     }
 
     pub fn disengage_combat(&mut self) {
-        self.in_combat = false;
+        self.in_combat = CombatStatus::Resting;
     }
 
     fn set_armor(&mut self, armor_name: &str, item: Box<Item>) -> CmdResult {
@@ -100,14 +106,14 @@ impl Player {
             }
             self.armor = Some(item);
             CmdResult::new(
-                    true,
+                    Action::Active,
                     "Donned.\n(You can remove armor with \"drop\" or by donning a different set or armor)"
                         .to_owned()
                 )
         } else {
             self.inventory.push(item);
             CmdResult::new(
-                false,
+                Action::Passive,
                 format!(
                     "You cannot put on the \"{}\", which isn't armor.",
                     armor_name
@@ -129,7 +135,7 @@ impl Player {
     }
 
     pub fn engage_combat(&mut self) {
-        self.in_combat = true;
+        self.in_combat = CombatStatus::InCombat;
     }
 
     fn set_equipped(&mut self, item_name: &str, item: Box<Item>) -> CmdResult {
@@ -138,7 +144,7 @@ impl Player {
             Armor(_) => {
                 self.take(item_name, Some(item));
                 self.don_armor(item_name);
-                CmdResult::new(true, "Donned.".to_owned())
+                CmdResult::new(Action::Active, "Donned.".to_owned())
             }
             Weapon(_) => {
                 if let Some(weapon) = self.main_hand.take() {
@@ -146,7 +152,7 @@ impl Player {
                 }
                 self.main_hand = Some(item);
                 CmdResult::new(
-                    true,
+                    Action::Active,
                     "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
                         .to_owned(),
                 )
@@ -154,7 +160,7 @@ impl Player {
             _ => {
                 self.inventory.push(item);
                 CmdResult::new(
-                    false,
+                    Action::Active,
                     format!("The {} is neither armor nor weapon.", item_name),
                 )
             }
@@ -200,7 +206,7 @@ impl Player {
 
     pub fn info(&self) -> CmdResult {
         CmdResult::new(
-            false,
+            Action::Passive,
             format!(
                 "Level: {}\
                  \nHP: ({} / {})\
@@ -222,9 +228,9 @@ impl Player {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.info())
         } else if let Some(item) = self.inventory.find(name) {
-            Some(CmdResult::new(true, item.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(item) = &self.main_hand {
-            Some(CmdResult::new(true, item.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else {
             None
         }
@@ -264,7 +270,7 @@ impl Player {
         }
         items_carried.push_str(&self.inventory.print());
         items_carried.shrink_to_fit();
-        CmdResult::new(true, items_carried)
+        CmdResult::new(Action::Active, items_carried)
     }
 
     fn remove_main_hand(&mut self, name: &str) -> Option<Box<Item>> {
@@ -309,7 +315,7 @@ impl Player {
     // rest for a random amount of time to regain a random amount of HP
     pub fn rest(&mut self) -> CmdResult {
         if self.hp() < self.hp_cap() as i32 {
-            if !self.in_combat {
+            if let CombatStatus::Resting = self.in_combat {
                 let regained_hp = rand::thread_rng().gen_range(1, 7);
                 let new_hp = self.hp() + regained_hp;
                 if new_hp < self.hp_cap() as i32 {
@@ -318,7 +324,7 @@ impl Player {
                     self.hp = (self.hp_cap() as i32, self.hp_cap());
                 }
                 CmdResult::new(
-                    true,
+                    Action::Active,
                     format!(
                         "You regained {} HP for a total of ({} / {}) HP.",
                         regained_hp,
@@ -327,10 +333,13 @@ impl Player {
                     ),
                 )
             } else {
-                CmdResult::new(false, "You cannot rest while in combat.".to_owned())
+                CmdResult::new(
+                    Action::Passive,
+                    "You cannot rest while in combat.".to_owned(),
+                )
             }
         } else {
-            CmdResult::new(false, "You already have full health.".to_owned())
+            CmdResult::new(Action::Passive, "You already have full health.".to_owned())
         }
     }
 
@@ -394,6 +403,6 @@ impl Player {
     }
 
     pub fn wait() -> CmdResult {
-        CmdResult::new(true, "Time passes...".to_owned())
+        CmdResult::new(Action::Active, "Time passes...".to_owned())
     }
 }
