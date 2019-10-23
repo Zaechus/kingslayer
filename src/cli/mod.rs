@@ -160,11 +160,7 @@ Some available commands:
             );
 
             if res.is_action() {
-                format!(
-                    "{}{}",
-                    res.output(),
-                    self.combat(&mut self.world.borrow_mut())
-                )
+                format!("{}{}", res.output(), self.combat())
             } else {
                 res.output().to_owned()
             }
@@ -174,11 +170,12 @@ Some available commands:
     }
 
     // manages actions taken by Enemies in the current room
-    fn combat(&self, world: &mut World) -> String {
-        let mut events_str = String::with_capacity(50 * world.get_curr_room().enemies().len());
+    fn combat(&self) -> String {
+        let mut events_str =
+            String::with_capacity(50 * self.world.borrow().get_curr_room().enemies().len());
         let mut loot = Items::new();
 
-        for enemy in world.get_curr_room_mut().enemies_mut() {
+        for enemy in self.world.borrow_mut().get_curr_room_mut().enemies_mut() {
             if enemy.is_angry() && enemy.is_alive() {
                 let enemy_damage = enemy.damage();
 
@@ -198,8 +195,8 @@ Some available commands:
                 loot.par_extend(enemy.drop_loot());
             }
         }
-        world.extend_items(loot);
-        world.clear_dead_enemies();
+        self.world.borrow_mut().extend_items(loot);
+        self.world.borrow_mut().clear_dead_enemies();
 
         if !self.player.borrow().is_alive() {
             events_str.push_str("\nYou died.");
