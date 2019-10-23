@@ -50,9 +50,7 @@ impl World {
     // changes the current Room to the target of the current Room's chosen path
     pub fn move_room(&mut self, direction: &str) -> CmdResult {
         if let Some(new_room) = self.get_curr_room().paths().get(direction) {
-            if new_room.is_locked() == Some(true) {
-                CmdResult::new(Action::Active, "The way is locked.".to_owned())
-            } else if new_room.is_closed() {
+            if new_room.is_closed() {
                 CmdResult::new(Action::Active, "The way is shut.".to_owned())
             } else {
                 for enemy in self.get_curr_room().enemies() {

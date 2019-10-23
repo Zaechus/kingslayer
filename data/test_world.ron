@@ -9,7 +9,7 @@ rooms: {
             target: "Central Room",
             desc: "The door leads back into the room.",
             inspect: "The door is plain and wooden.",
-            is_closed: Some(false)
+            opening: Some(Open)
         ),
     },
 ),
@@ -26,7 +26,7 @@ rooms: {
             target: "Closet",
             desc: "The door leads back into the room.",
             inspect: "The door is plain and wooden.",
-            is_closed: Some(true)
+            opening: Some(Closed)
         ),
     },
     items: [

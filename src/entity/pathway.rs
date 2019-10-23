@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{Closeable, Entity};
+use super::{Closeable, Entity, Opening};
 use crate::types::{Action, CmdResult};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -10,23 +10,19 @@ pub struct Pathway {
     desc: String,
     #[serde(default)]
     inspect: String,
-    is_closed: Option<bool>,
-    is_locked: Option<bool>,
+    opening: Option<Opening>,
 }
 
 impl Pathway {
     pub fn long_desc(&self) -> String {
-        if let Some(true) = self.is_closed {
-            format!("{} The way is shut.", self.desc)
-        } else if let Some(false) = self.is_closed {
-            format!("{} The way is open.", self.desc)
+        if let Some(opening) = self.opening {
+            match opening {
+                Opening::Open => format!("{} The way is open.", self.desc),
+                Opening::Closed => format!("{} The way is shut.", self.desc),
+            }
         } else {
             self.desc.to_owned()
         }
-    }
-
-    pub fn is_locked(&self) -> Option<bool> {
-        self.is_locked
     }
 }
 
@@ -46,26 +42,34 @@ impl Entity for Pathway {
 
 impl Closeable for Pathway {
     fn open(&mut self) -> CmdResult {
-        if self.is_closed.is_some() {
-            self.is_closed = Some(false);
-            CmdResult::new(Action::Active, "Opened.".to_owned())
+        if let Some(opening) = self.opening {
+            if opening.is_closed() {
+                self.opening = Some(Opening::Open);
+                CmdResult::new(Action::Active, "Opened.".to_owned())
+            } else {
+                CmdResult::new(Action::Passive, String::from("The way is already open."))
+            }
         } else {
-            CmdResult::new(Action::Passive, String::new())
+            CmdResult::new(Action::Passive, String::from("The way is already open."))
         }
     }
 
     fn close(&mut self) -> CmdResult {
-        if self.is_closed.is_some() {
-            self.is_closed = Some(true);
-            CmdResult::new(Action::Active, "Closed.".to_owned())
+        if let Some(opening) = self.opening {
+            if opening.is_open() {
+                self.opening = Some(Opening::Closed);
+                CmdResult::new(Action::Active, "Closed.".to_owned())
+            } else {
+                CmdResult::new(Action::Passive, String::from("The way cannot be closed."))
+            }
         } else {
-            CmdResult::new(Action::Passive, String::new())
+            CmdResult::new(Action::Passive, String::from("The way cannot be closed."))
         }
     }
 
     fn is_closed(&self) -> bool {
-        if let Some(is_closed) = self.is_closed {
-            is_closed
+        if let Some(opening) = self.opening {
+            opening.is_closed()
         } else {
             false
         }

@@ -9,7 +9,7 @@
                     "target": "Circle Room",
                     "desc": "The door leads back into the room.",
                     "inspect": "The door is plain and wooden.",
-                    "is_closed": false
+                    "opening": "Open"
                 }
             }
         },
@@ -50,7 +50,7 @@
                     "target": "Closet",
                     "desc": "There is a door on one side.",
                     "inspect": "The door is plain and wooden.",
-                    "is_closed": true
+                    "opening": "Closed"
                 },
                 "n": {
                     "target": "Small Cave",
@@ -113,8 +113,7 @@
                         "name": "capsule",
                         "desc": "There is a capsule here.",
                         "inspect": "The capsule appears to be able to hold things.",
-                        "is_closed": false,
-                        "is_locked": false,
+                        "opening": "Open",
                         "contents": [
                             {
                                 "Thing": {

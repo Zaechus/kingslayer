@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use super::Item;
 use crate::{
-    entity::{Closeable, Entity},
+    entity::{Closeable, Entity, Opening},
     types::{Action, CmdResult, Items},
 };
 
@@ -14,14 +14,13 @@ pub struct Container {
     name: String,
     desc: String,
     inspect: String,
-    is_closed: bool,
-    is_locked: bool,
+    opening: Opening,
     contents: Items,
 }
 
 impl Container {
     pub fn long_name(&self) -> String {
-        if !self.contents.is_empty() && !self.is_closed {
+        if !self.contents.is_empty() && self.opening.is_open() {
             let mut desc = format!("{}; it contains:", self.name);
             for item in self.contents.iter() {
                 desc = format!("{}\n    {}", desc, item.name());
@@ -33,7 +32,7 @@ impl Container {
     }
 
     pub fn long_desc(&self) -> String {
-        if !self.contents.is_empty() && !self.is_closed {
+        if !self.contents.is_empty() && self.opening.is_open() {
             let mut desc = format!("{}\nThe {} contains:", self.desc, self.name);
             for item in self.contents.iter() {
                 desc = format!("{}\n  {}", desc, item.name());
@@ -78,8 +77,8 @@ impl Entity for Container {
 
 impl Closeable for Container {
     fn open(&mut self) -> CmdResult {
-        if self.is_closed {
-            self.is_closed = false;
+        if self.opening.is_closed() {
+            self.opening = Opening::Open;
             CmdResult::new(Action::Active, "Opened.".to_owned())
         } else {
             CmdResult::already_opened(&self.name)
@@ -87,15 +86,15 @@ impl Closeable for Container {
     }
 
     fn close(&mut self) -> CmdResult {
-        if self.is_closed {
-            CmdResult::already_closed(&self.name)
-        } else {
-            self.is_closed = true;
+        if self.opening.is_open() {
+            self.opening = Opening::Closed;
             CmdResult::new(Action::Active, "Closed.".to_owned())
+        } else {
+            CmdResult::already_closed(&self.name)
         }
     }
 
     fn is_closed(&self) -> bool {
-        self.is_closed
+        self.opening.is_closed()
     }
 }

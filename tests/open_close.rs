@@ -6,7 +6,7 @@ mod tests {
     fn open_close_path() {
         let cli = Cli::from_ron_file("data/test_world.ron");
 
-        assert!(cli.ask("l").contains("The way is shut."));
+        assert!(cli.ask("l").contains("way is shut"));
         assert_eq!(cli.ask("enter door"), "The way is shut.");
         assert_eq!(cli.ask("open door"), "Opened.");
         assert!(cli.ask("l").contains("The way is open."));
@@ -15,7 +15,7 @@ mod tests {
             cli.ask("enter door").contains("Closet") && cli.ask("l").contains("The way is open.")
         );
         assert_eq!(cli.ask("close door"), "Closed.");
-        assert!(cli.ask("l").contains("The way is shut."));
+        assert!(cli.ask("l").contains("way is shut"));
         assert_eq!(cli.ask("enter door"), "The way is shut.");
         assert_eq!(cli.ask("open door"), "Opened.");
         assert!(cli.ask("l").contains("The way is open."));

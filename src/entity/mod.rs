@@ -7,6 +7,7 @@ mod room;
 
 pub use ally::Ally;
 pub use closeable::Closeable;
+pub use closeable::Opening;
 pub use enemy::Enemy;
 pub use item::Item;
 pub use pathway::Pathway;

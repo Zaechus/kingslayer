@@ -9,7 +9,7 @@ rooms: {
             target: "Circle Room",
             desc: "The door leads back into the room.",
             inspect: "The door is plain and wooden.",
-            is_closed: Some(false)
+            opening: Some(Open)
         ),
     },
 ),
@@ -48,7 +48,7 @@ rooms: {
             target: "Closet",
             desc: "There is a door on one side.",
             inspect: "The door is plain and wooden.",
-            is_closed: Some(true)
+            opening: Some(Closed)
         ),
         "n": Pathway(
             target: "Small Cave",
@@ -155,8 +155,7 @@ rooms: {
             name: "large capsule",
             desc: "There is a large capsule here.",
             inspect: "The capsule appears to be able to hold things.",
-            is_closed: false,
-            is_locked: false,
+            opening: Open,
             contents: [
                 Thing(Thing(
                     name: "curious object",

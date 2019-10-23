@@ -17,8 +17,7 @@ rooms: {
             name: "small mailbox",
             desc: "There is a small mailbox here.",
             inspect: "The small mailbox is white.",
-            is_closed: true,
-            is_locked: false,
+            opening: Closed,
             contents: [
                 Thing(Thing(
                     name: "leaflet",
