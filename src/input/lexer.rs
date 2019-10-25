@@ -43,8 +43,11 @@ impl Lexer {
     }
 
     fn filter_parts(&self, s: &str) -> Vec<String> {
-        let mut words: Vec<String> = s.par_split_whitespace().map(str::to_lowercase).collect();
-        words.retain(|w| !(&self.filter_out).contains(&w));
+        let words: Vec<String> = s
+            .par_split_whitespace()
+            .map(str::to_lowercase)
+            .filter(|w| !(&self.filter_out).contains(&w))
+            .collect();
         words
     }
 
