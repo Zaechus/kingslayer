@@ -1,4 +1,4 @@
-
+pkg
 
 # Cargo
 /target
@@ -7,3 +7,6 @@ Cargo.lock
 
 # IDE
 .vscode
+
+# wapm
+wapm_packages
