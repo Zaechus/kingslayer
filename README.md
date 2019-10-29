@@ -1,4 +1,4 @@
-# Kingslayer
+# 👑 Kingslayer ⚔️
 
 [![Current Crates.io Version](https://img.shields.io/crates/v/kingslayer)](https://crates.io/crates/kingslayer)
 [![Kingslayer documentation](https://docs.rs/kingslayer/badge.svg)](https://docs.rs/kingslayer)
