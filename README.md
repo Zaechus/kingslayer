@@ -15,7 +15,7 @@ You can play the online WASM version here: [maxgy.github.io/kingslayer-wasm](htt
 
 or clone the project and run:
 ```
-$ cargo run --release
+cargo run --release
 ```
 
 ### Creating and Running your own World
