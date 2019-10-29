@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::{
     cli::Cli,
@@ -8,7 +8,7 @@ use crate::{
     world::World,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct Parser;
 
 impl Parser {

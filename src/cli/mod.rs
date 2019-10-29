@@ -7,8 +7,6 @@ use std::{
 
 use rayon::prelude::*;
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     entity::Entity,
     input::{read_line, Lexer, Parser},
@@ -18,7 +16,7 @@ use crate::{
 };
 
 /// The Cli type provides a simple way to interface into the mechanics of Kingslayer with custom worlds
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Cli {
     lexer: Lexer,
     player: RefCell<Box<Player>>,

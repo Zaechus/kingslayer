@@ -1,11 +1,11 @@
 use rand::Rng;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::entity::Entity;
 
 // An object to be interacted with by the user
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Weapon {
     name: String,
     desc: String,

@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use super::{
     Closeable, Entity,
@@ -9,7 +9,7 @@ use super::{
 use crate::types::{Action, Allies, CmdResult, Enemies, Items, PathMap};
 
 // A section of the world connected by paths
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Room {
     name: String,
     desc: String,
@@ -130,8 +130,7 @@ impl Room {
     pub fn open(&mut self, name: &str) -> CmdResult {
         if let Some(path) = self.paths.get_mut(name) {
             if path.is_closed() {
-                path.open();
-                CmdResult::new(Action::Active, "Opened.".to_owned())
+                path.open()
             } else {
                 CmdResult::already_opened(name)
             }
@@ -140,6 +139,16 @@ impl Room {
                 container.open()
             } else {
                 CmdResult::not_container(name)
+            }
+        } else if let Some(item) = self.find_similar_item(name) {
+            if let Some(item) = self.items.get_mut(item) {
+                if let Container(ref mut item) = **item {
+                    item.open()
+                } else {
+                    CmdResult::not_container(name)
+                }
+            } else {
+                CmdResult::no_item_here(name)
             }
         } else {
             CmdResult::no_item_here(name)
@@ -155,10 +164,20 @@ impl Room {
                 CmdResult::new(Action::Active, "Closed.".to_owned())
             }
         } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
-            if let Container(ref mut container) = **item {
-                container.close()
+            if let Container(ref mut item) = **item {
+                item.close()
             } else {
                 CmdResult::not_container(name)
+            }
+        } else if let Some(item) = self.find_similar_item(name) {
+            if let Some(item) = self.items.get_mut(item) {
+                if let Container(ref mut item) = **item {
+                    item.close()
+                } else {
+                    CmdResult::not_container(name)
+                }
+            } else {
+                CmdResult::no_item_here(name)
             }
         } else {
             CmdResult::no_item_here(name)

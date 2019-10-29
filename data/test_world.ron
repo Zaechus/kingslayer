@@ -24,9 +24,14 @@ rooms: {
         ),
         "door": Pathway(
             target: "Closet",
-            desc: "The door leads back into the room.",
+            desc: "There is a door off to the side.",
             inspect: "The door is plain and wooden.",
             opening: Some(Closed)
+        ),
+        "s": Pathway(
+            target: "Bedroom",
+            desc: "There is a doorway to the south.",
+            inspect: "The doorway is plain and wooden.",
         ),
     },
     items: [
@@ -61,6 +66,32 @@ rooms: {
             damage: 6   
         )),
     ]
-)
+),
+"Bedroom": Room(
+    name: "Bedroom",
+    desc: "You are in a small bedroom.",
+    paths: {
+        "n": Pathway(
+            target: "Central Room",
+            desc: "There is a doorway to the north.",
+            inspect: "The doorway is plain and wooden."
+        ),
+    },
+    items: [
+        Container(Container(
+            name: "large capsule",
+            desc: "There is a large capsule here.",
+            inspect: "The capsule appears to be able to hold things.",
+            opening: Open,
+            contents: [
+                Thing(Thing(
+                    name: "red block",
+                    desc: "There is a red block.",
+                    inspect: "It is a red cube."
+                )),
+            ]
+        )),
+    ]
+),
 }
 )

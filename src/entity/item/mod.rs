@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::entity::Entity;
 
@@ -12,7 +12,7 @@ pub use container::Container;
 pub use thing::Thing;
 pub use weapon::Weapon;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub enum Item {
     Armor(Armor),
     Container(Container),

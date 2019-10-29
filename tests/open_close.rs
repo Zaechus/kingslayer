@@ -26,7 +26,7 @@ mod tests {
 
     #[test]
     fn open_close_item() {
-        let cli = Cli::from_json_file("data/test_world.json");
+        let cli = Cli::from_ron_file("data/test_world.ron");
 
         cli.ask("s");
 
@@ -35,20 +35,20 @@ mod tests {
         assert!(
             cli.ask("l").contains("capsule")
                 && !cli.ask("l").contains("contains")
-                && !cli.ask("l").contains("curious object")
+                && !cli.ask("l").contains("red block")
         );
         assert_eq!(cli.ask("open capsule"), "Opened.");
         assert!(
             cli.ask("l").contains("capsule")
                 && cli.ask("l").contains("contains")
-                && cli.ask("l").contains("curious object")
+                && cli.ask("l").contains("red block")
         );
         assert_eq!(cli.ask("close capsule"), "Closed.");
         assert!(cli.ask("close capsule").contains("already closed"));
         assert!(
             cli.ask("l").contains("capsule")
                 && !cli.ask("l").contains("contains")
-                && !cli.ask("l").contains("curious object")
+                && !cli.ask("l").contains("red block")
         );
 
         cli.ask("take all");
@@ -56,21 +56,21 @@ mod tests {
             !cli.ask("l").contains("capsule")
                 && cli.ask("i").contains("capsule")
                 && !cli.ask("i").contains("contains")
-                && !cli.ask("i").contains("curious object")
+                && !cli.ask("i").contains("red block")
         );
         assert_eq!(cli.ask("open capsule"), "Opened.");
         assert!(cli.ask("open capsule").contains("already opened"));
         assert!(
             cli.ask("i").contains("capsule")
                 && cli.ask("i").contains("contains")
-                && cli.ask("i").contains("curious object")
+                && cli.ask("i").contains("red block")
         );
         assert_eq!(cli.ask("close capsule"), "Closed.");
         assert!(cli.ask("close capsule").contains("already closed"));
         assert!(
             cli.ask("i").contains("capsule")
                 && !cli.ask("i").contains("contains")
-                && !cli.ask("i").contains("curious object")
+                && !cli.ask("i").contains("red block")
         );
     }
 }

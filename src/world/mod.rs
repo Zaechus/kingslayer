@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::{
     entity::{Closeable, Entity, Item, Room},
@@ -9,7 +9,7 @@ use crate::{
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
 // A World is a graph data structure that encapsulates a collection of Room nodes.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct World {
     curr_room: String,
     rooms: RoomMap,

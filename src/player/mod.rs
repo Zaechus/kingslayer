@@ -2,8 +2,6 @@ use rand::Rng;
 
 use rayon::prelude::*;
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     entity::{
         Entity,
@@ -13,13 +11,13 @@ use crate::{
     types::{Action, CmdResult, Items, Stats},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 enum CombatStatus {
     InCombat,
     Resting,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Player {
     hp: (i32, u32),
     xp: (u32, u32),

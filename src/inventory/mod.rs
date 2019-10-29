@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::{
     entity::{
@@ -10,7 +10,7 @@ use crate::{
     types::{Action, CmdResult, Items},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Inventory {
     items: Items,
 }

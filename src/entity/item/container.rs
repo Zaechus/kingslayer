@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use super::Item;
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
 };
 
 // An object to be interacted with by the user
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Container {
     name: String,
     desc: String,
