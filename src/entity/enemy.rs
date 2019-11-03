@@ -1,11 +1,11 @@
 use rand::Rng;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::Entity;
 use crate::types::Items;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Enemy {
     name: String,
     desc: String,

@@ -1,10 +1,10 @@
 use rayon::prelude::*;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::types::CmdTokens;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Lexer {
     filter_out: Vec<String>,
 }

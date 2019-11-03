@@ -204,4 +204,9 @@ Some available commands:
         events_str.shrink_to_fit();
         events_str
     }
+
+    pub fn save(world: &World) -> CmdResult {
+        let saved = ron::ser::to_string(world).expect("Error serializing world save file.");
+        CmdResult::new(Action::Passive, saved)
+    }
 }

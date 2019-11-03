@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::{
     Closeable, Entity,
@@ -9,7 +9,7 @@ use super::{
 use crate::types::{Action, Allies, CmdResult, Enemies, Items, PathMap};
 
 // A section of the world connected by paths
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Room {
     name: String,
     desc: String,

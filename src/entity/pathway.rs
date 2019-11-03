@@ -1,9 +1,9 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::{Closeable, Entity, Opening};
 use crate::types::{Action, CmdResult};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Pathway {
     target: String,
     #[serde(default)]
