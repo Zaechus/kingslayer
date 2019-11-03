@@ -23,19 +23,19 @@ pub enum Item {
 impl Item {
     pub fn long_name(&self) -> String {
         match self {
-            Item::Armor(armor) => armor.name().to_owned(),
-            Item::Container(container) => container.long_name(),
-            Item::Thing(thing) => thing.name().to_owned(),
-            Item::Weapon(weapon) => weapon.name().to_owned(),
+            Self::Armor(armor) => armor.name().to_owned(),
+            Self::Container(container) => container.long_name(),
+            Self::Thing(thing) => thing.name().to_owned(),
+            Self::Weapon(weapon) => weapon.name().to_owned(),
         }
     }
 
     pub fn long_desc(&self) -> String {
         match self {
-            Item::Armor(armor) => armor.desc().to_owned(),
-            Item::Container(container) => container.long_desc(),
-            Item::Thing(thing) => thing.desc().to_owned(),
-            Item::Weapon(weapon) => weapon.desc().to_owned(),
+            Self::Armor(armor) => armor.desc().to_owned(),
+            Self::Container(container) => container.long_desc(),
+            Self::Thing(thing) => thing.desc().to_owned(),
+            Self::Weapon(weapon) => weapon.desc().to_owned(),
         }
     }
 }
@@ -43,28 +43,28 @@ impl Item {
 impl Entity for Item {
     fn name(&self) -> &str {
         match self {
-            Item::Armor(armor) => armor.name(),
-            Item::Container(container) => container.name(),
-            Item::Thing(thing) => thing.name(),
-            Item::Weapon(weapon) => weapon.name(),
+            Self::Armor(armor) => armor.name(),
+            Self::Container(container) => container.name(),
+            Self::Thing(thing) => thing.name(),
+            Self::Weapon(weapon) => weapon.name(),
         }
     }
 
     fn desc(&self) -> &str {
         match self {
-            Item::Armor(armor) => armor.desc(),
-            Item::Container(container) => container.desc(),
-            Item::Thing(thing) => thing.desc(),
-            Item::Weapon(weapon) => weapon.desc(),
+            Self::Armor(armor) => armor.desc(),
+            Self::Container(container) => container.desc(),
+            Self::Thing(thing) => thing.desc(),
+            Self::Weapon(weapon) => weapon.desc(),
         }
     }
 
     fn inspect(&self) -> &str {
         match self {
-            Item::Armor(armor) => armor.inspect(),
-            Item::Container(container) => container.inspect(),
-            Item::Thing(thing) => thing.inspect(),
-            Item::Weapon(weapon) => weapon.inspect(),
+            Self::Armor(armor) => armor.inspect(),
+            Self::Container(container) => container.inspect(),
+            Self::Thing(thing) => thing.inspect(),
+            Self::Weapon(weapon) => weapon.inspect(),
         }
     }
 }
