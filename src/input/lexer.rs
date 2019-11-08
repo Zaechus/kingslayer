@@ -23,22 +23,28 @@ impl Lexer {
         let words = self.mod_words(&self.filter_parts(s));
 
         if words.is_empty() {
-            CmdTokens::new(0, "", "", "", "")
+            CmdTokens::new(0, None, None, None, None)
         } else if words.len() < 2 {
-            CmdTokens::new(1, &words[0], "", "", "")
+            CmdTokens::new(1, Some(words[0].to_owned()), None, None, None)
         } else if let Some(pos) = words
             .par_iter()
             .position_any(|r| ["in", "inside", "from", "on", "with"].contains(&r.as_str()))
         {
             CmdTokens::new(
                 words.len(),
-                &words[0],
-                &words[1..pos].join(" "),
-                &words[pos],
-                &words[pos + 1..].join(" "),
+                Some(words[0].to_owned()),
+                Some(words[1..pos].join(" ")),
+                Some(words[pos].to_owned()),
+                Some(words[pos + 1..].join(" ")),
             )
         } else {
-            CmdTokens::new(words.len(), &words[0], &words[1..].join(" "), "", "")
+            CmdTokens::new(
+                words.len(),
+                Some(words[0].to_owned()),
+                Some(words[1..].join(" ")),
+                None,
+                None,
+            )
         }
     }
 

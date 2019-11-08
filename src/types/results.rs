@@ -42,6 +42,13 @@ impl CmdResult {
         )
     }
 
+    pub fn no_comprendo() -> CmdResult {
+        CmdResult::new(
+            Action::Passive,
+            "I do not understand that phrase.".to_owned(),
+        )
+    }
+
     pub fn no_item_here(name: &str) -> CmdResult {
         CmdResult::new(Action::Passive, format!("There is no \"{}\" here.", name))
     }

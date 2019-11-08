@@ -150,20 +150,16 @@ Some available commands:
     pub fn ask(&self, input: &str) -> String {
         let command = self.lexer.lex(input);
 
-        if !command.verb().is_empty() {
-            let res = Parser::parse(
-                command,
-                &mut self.world.borrow_mut(),
-                &mut self.player.borrow_mut(),
-            );
+        let res = Parser::parse(
+            command,
+            &mut self.world.borrow_mut(),
+            &mut self.player.borrow_mut(),
+        );
 
-            if res.is_active() {
-                format!("{}{}", res.output(), self.combat())
-            } else {
-                res.output().to_owned()
-            }
+        if res.is_active() {
+            format!("{}{}", res.output(), self.combat())
         } else {
-            "I do not understand that phrase.".to_owned()
+            res.output().to_owned()
         }
     }
 
