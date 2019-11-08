@@ -197,7 +197,7 @@ Some available commands:
         self.world.borrow_mut().clear_dead_enemies();
 
         if !self.player.borrow().is_alive() {
-            events_str.push_str("\nYou died.");
+            events_str.push_str("\n\nYou died.");
         } else {
             events_str.push_str(&self.player.borrow_mut().level_up());
         }

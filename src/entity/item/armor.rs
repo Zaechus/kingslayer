@@ -12,7 +12,7 @@ pub struct Armor {
 }
 
 impl Armor {
-    pub fn ac(&self) -> u32 {
+    pub const fn ac(&self) -> u32 {
         self.ac
     }
 }

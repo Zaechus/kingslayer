@@ -226,11 +226,11 @@ impl Room {
         }
     }
 
-    pub fn paths(&self) -> &PathMap {
+    pub const fn paths(&self) -> &PathMap {
         &self.paths
     }
 
-    pub fn enemies(&self) -> &Enemies {
+    pub const fn enemies(&self) -> &Enemies {
         &self.enemies
     }
     pub fn enemies_mut(&mut self) -> &mut Enemies {

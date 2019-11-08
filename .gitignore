@@ -3,7 +3,7 @@ pkg
 # Cargo
 /target
 **/*.rs.bk
-Cargo.lock
+# Cargo.lock
 
 # IDE
 .vscode

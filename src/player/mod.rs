@@ -30,7 +30,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             hp: (13, 13),
             xp: (0, 1000),
@@ -186,11 +186,11 @@ impl Player {
         self.inventory.has(name)
     }
 
-    pub fn hp(&self) -> i32 {
+    pub const fn hp(&self) -> i32 {
         self.hp.0
     }
 
-    pub fn hp_cap(&self) -> u32 {
+    pub const fn hp_cap(&self) -> u32 {
         self.hp.1
     }
 
@@ -234,7 +234,7 @@ impl Player {
         }
     }
 
-    pub fn is_alive(&self) -> bool {
+    pub const fn is_alive(&self) -> bool {
         self.hp.0 > 0
     }
 
@@ -250,7 +250,7 @@ impl Player {
         }
     }
 
-    pub fn main_hand(&self) -> &Option<Box<Item>> {
+    pub const fn main_hand(&self) -> &Option<Box<Item>> {
         &self.main_hand
     }
 

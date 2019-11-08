@@ -11,7 +11,7 @@ pub struct CmdResult {
 }
 
 impl CmdResult {
-    pub fn new(action: Action, output: String) -> Self {
+    pub const fn new(action: Action, output: String) -> Self {
         Self { action, output }
     }
 

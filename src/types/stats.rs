@@ -14,7 +14,7 @@ pub struct Stats {
 }
 
 impl Stats {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             pts: 4,
             strngth: 14,

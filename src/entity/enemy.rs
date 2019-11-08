@@ -19,7 +19,7 @@ pub struct Enemy {
 }
 
 impl Enemy {
-    pub fn xp(&self) -> u32 {
+    pub const fn xp(&self) -> u32 {
         self.xp
     }
 
@@ -27,7 +27,7 @@ impl Enemy {
         rand::thread_rng().gen_range(1, self.damage + 1)
     }
 
-    pub fn is_angry(&self) -> bool {
+    pub const fn is_angry(&self) -> bool {
         self.is_angry
     }
 
@@ -35,7 +35,7 @@ impl Enemy {
         self.is_angry = true;
     }
 
-    pub fn loot(&self) -> &Items {
+    pub const fn loot(&self) -> &Items {
         &self.loot
     }
 
@@ -44,7 +44,7 @@ impl Enemy {
         self.hp -= damage;
     }
 
-    pub fn is_alive(&self) -> bool {
+    pub const fn is_alive(&self) -> bool {
         self.hp > 0
     }
 
