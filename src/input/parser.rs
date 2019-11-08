@@ -14,33 +14,66 @@ pub struct Parser;
 impl Parser {
     fn parse_attack(
         verb: &str,
-        after_verb: &str,
-        obj: &str,
+        words: &CmdTokens,
         world: &mut World,
         player: &mut Player,
     ) -> CmdResult {
-        let damage = player.attack();
+        if let Some(obj) = words.obj() {
+            if let Some(prep) = words.prep() {
+                if prep == "with" {
+                    if let Some(obj_prep) = words.obj_prep() {
+                        world.harm_enemy(player.attack_with(&obj_prep), &obj, &obj_prep)
+                    } else {
+                        CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
+                    }
+                } else {
+                    CmdResult::no_comprendo()
+                }
+            } else {
+                let damage = player.attack();
 
-        if let Some(main_hand) = player.main_hand() {
-            world.harm_enemy(damage, obj, &main_hand.name())
+                if let Some(main_hand) = player.main_hand() {
+                    world.harm_enemy(damage, obj, &main_hand.name())
+                } else {
+                    CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
+                }
+            }
         } else {
-            CmdResult::do_what(&format!("{} the {} with?", verb, after_verb))
+            CmdResult::do_what(verb)
         }
     }
 
-    fn parse_close(obj: &str, world: &mut World, player: &mut Player) -> CmdResult {
-        if let Some(res) = player.close(obj) {
-            res
+    fn parse_close(
+        verb: &str,
+        words: &CmdTokens,
+        world: &mut World,
+        player: &mut Player,
+    ) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            if let Some(res) = player.close(obj) {
+                res
+            } else {
+                world.close(obj)
+            }
         } else {
-            world.close(obj)
+            CmdResult::do_what(verb)
         }
     }
 
-    fn parse_open(obj: &str, world: &mut World, player: &mut Player) -> CmdResult {
-        if let Some(res) = player.open(obj) {
-            res
+    fn parse_open(
+        verb: &str,
+        words: &CmdTokens,
+        world: &mut World,
+        player: &mut Player,
+    ) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            if let Some(res) = player.open(obj) {
+                res
+            } else {
+                world.open(obj)
+            }
         } else {
-            world.open(obj)
+            CmdResult::do_what(verb)
         }
     }
 
@@ -88,41 +121,52 @@ impl Parser {
         }
     }
 
-    fn parse_take(obj: &str, world: &mut World, player: &mut Player) -> CmdResult {
-        if obj.starts_with("all") || obj.len() >= 4 && obj.starts_with("all ") {
-            player.take_all(world.give_all())
-        } else if obj.starts_with("u ") {
-            player.take(&obj[2..], world.give(&obj[2..]))
-        } else {
-            player.take(obj, world.give(obj))
-        }
-    }
-
-    fn parse_take_from(
-        obj: &str,
-        prep: &str,
-        obj_prep: &str,
+    fn parse_take(
+        verb: &str,
+        words: &CmdTokens,
         world: &mut World,
         player: &mut Player,
     ) -> CmdResult {
-        if prep == "from" || prep == "out" || prep == "in" {
-            if player.has(obj_prep) {
-                player.take_from_self(obj, obj_prep)
+        if let Some(obj) = words.obj() {
+            if let Some(prep) = words.prep() {
+                if prep == "from" || prep == "out" || prep == "in" {
+                    if let Some(obj_prep) = words.obj_prep() {
+                        if player.has(obj_prep) {
+                            player.take_from_self(obj, obj_prep)
+                        } else {
+                            player.take_item_from(world.give_from(obj, obj_prep))
+                        }
+                    } else {
+                        CmdResult::no_comprendo()
+                    }
+                } else {
+                    CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
+                }
             } else {
-                player.take_item_from(world.give_from(obj, obj_prep))
+                if obj.starts_with("all") || obj.len() >= 4 && obj.starts_with("all ") {
+                    player.take_all(world.give_all())
+                } else if obj.starts_with("u ") {
+                    player.take(&obj[2..], world.give(&obj[2..]))
+                } else {
+                    player.take(obj, world.give(obj))
+                }
             }
         } else {
-            CmdResult::no_comprendo()
+            CmdResult::do_what(verb)
         }
     }
 
-    fn parse_x(obj: &str, world: &mut World, player: &mut Player) -> CmdResult {
-        if let Some(s) = player.inspect(obj) {
-            s
-        } else if let Some(s) = world.inspect(obj) {
-            s
+    fn parse_x(verb: &str, words: &CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            if let Some(s) = player.inspect(obj) {
+                s
+            } else if let Some(s) = world.inspect(obj) {
+                s
+            } else {
+                CmdResult::no_item_here(obj)
+            }
         } else {
-            CmdResult::no_item_here(obj)
+            CmdResult::do_what(verb)
         }
     }
 
@@ -131,6 +175,9 @@ impl Parser {
             match verb {
                 "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                     world.move_room(verb)
+                }
+                "attack" | "cut" | "hit" | "kill" | "slay" => {
+                    Parser::parse_attack(verb, &words, world, player)
                 }
                 "c" | "stat" | "stats" => player.info(),
                 "heal" | "rest" | "sleep" => player.rest(),
@@ -151,6 +198,12 @@ impl Parser {
                         CmdResult::new(Action::Passive, "Who do you want to talk to?".to_owned())
                     }
                 }
+                "close" => Parser::parse_close(&obj, world, player),
+                "don" => player.don_armor(&obj),
+                "draw" | "equip" | "hold" | "use" => player.equip(&obj),
+                "drop" | "remove" | "throw" => world.insert(&obj, player.remove(&obj)),
+                "examin" | "inspec" | "read" | "x" => Parser::parse_x(&obj, world, player),
+                "get" | "pick" | "take" => Parser::parse_take(verb, &words, world, player),
                 "increa" => {
                     if let Some(obj) = words.obj() {
                         player.increase_ability_score(&obj)
@@ -161,63 +214,14 @@ impl Parser {
                         )
                     }
                 }
+                "open" => Parser::parse_open(verb, &words, world, player),
+                "save" => Cli::save(world),
                 "wait" | "z" => Player::wait(),
                 "insert" | "place" | "put" => Parser::parse_put(&words, verb, world, player),
-                _ => {
-                    if let Some(obj) = words.obj() {
-                        match verb {
-                            "attack" | "cut" | "hit" | "kill" | "slay" => {
-                                if let Some(prep) = words.prep() {
-                                    if prep == "with" {
-                                        world.harm_enemy(
-                                            player.attack_with(&words.obj_prep().unwrap()),
-                                            &obj,
-                                            &words.obj_prep().unwrap(),
-                                        )
-                                    } else {
-                                        CmdResult::no_comprendo()
-                                    }
-                                } else {
-                                    Parser::parse_attack(
-                                        verb,
-                                        &words.after_verb(),
-                                        &obj,
-                                        world,
-                                        player,
-                                    )
-                                }
-                            }
-                            "close" => Parser::parse_close(&obj, world, player),
-                            "don" => player.don_armor(&obj),
-                            "draw" | "equip" | "hold" | "use" => player.equip(&obj),
-                            "drop" | "remove" | "throw" => world.insert(&obj, player.remove(&obj)),
-                            "examin" | "inspec" | "read" | "x" => {
-                                Parser::parse_x(&obj, world, player)
-                            }
-                            "get" | "pick" | "take" => {
-                                if let Some(prep) = words.prep() {
-                                    Parser::parse_take_from(
-                                        &obj,
-                                        &prep,
-                                        &words.obj_prep().unwrap(),
-                                        world,
-                                        player,
-                                    )
-                                } else {
-                                    Parser::parse_take(&obj, world, player)
-                                }
-                            }
-                            "open" => Parser::parse_open(&obj, world, player),
-                            "save" => Cli::save(world),
-                            _ => CmdResult::new(
-                                Action::Passive,
-                                format!("I do not know the word \"{}\".", verb,),
-                            ),
-                        }
-                    } else {
-                        CmdResult::do_what(verb)
-                    }
-                }
+                _ => CmdResult::new(
+                    Action::Passive,
+                    format!("I do not know the word \"{}\"", verb),
+                ),
             }
         } else {
             CmdResult::no_comprendo()
