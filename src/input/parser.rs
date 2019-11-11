@@ -60,6 +60,62 @@ impl Parser {
         }
     }
 
+    fn parse_don(verb: &str, words: &CmdTokens, player: &mut Player) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            player.don_armor(obj)
+        } else {
+            CmdResult::do_what(verb)
+        }
+    }
+
+    fn parse_drop(
+        verb: &str,
+        words: &CmdTokens,
+        world: &mut World,
+        player: &mut Player,
+    ) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            world.insert(&obj, player.remove(&obj))
+        } else {
+            CmdResult::do_what(verb)
+        }
+    }
+
+    fn parse_equip(verb: &str, words: &CmdTokens, player: &mut Player) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            player.equip(obj)
+        } else {
+            CmdResult::do_what(verb)
+        }
+    }
+
+    fn parse_hail(words: &CmdTokens, world: &mut World) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            world.hail(&obj)
+        } else {
+            CmdResult::new(Action::Passive, "Who do you want to talk to?".to_owned())
+        }
+    }
+
+    fn parse_increase(words: &CmdTokens, player: &mut Player) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            player.increase_ability_score(&obj)
+        } else {
+            CmdResult::do_what(
+                "increase?
+                    \r(strength, dexterity, constitution, intellect, wisdom, charisma)",
+            )
+        }
+    }
+
+    fn parse_move(verb: &str, words: &CmdTokens, world: &mut World) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            world.move_room(&obj)
+        } else {
+            CmdResult::new(Action::Passive, format!("Where do you want to {}?", verb))
+        }
+    }
+
     fn parse_open(
         verb: &str,
         words: &CmdTokens,
@@ -142,14 +198,12 @@ impl Parser {
                 } else {
                     CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
                 }
+            } else if obj.starts_with("all") || obj.len() >= 4 && obj.starts_with("all ") {
+                player.take_all(world.give_all())
+            } else if obj.starts_with("u ") {
+                player.take(&obj[2..], world.give(&obj[2..]))
             } else {
-                if obj.starts_with("all") || obj.len() >= 4 && obj.starts_with("all ") {
-                    player.take_all(world.give_all())
-                } else if obj.starts_with("u ") {
-                    player.take(&obj[2..], world.give(&obj[2..]))
-                } else {
-                    player.take(obj, world.give(obj))
-                }
+                player.take(obj, world.give(obj))
             }
         } else {
             CmdResult::do_what(verb)
@@ -176,48 +230,27 @@ impl Parser {
                 "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                     world.move_room(verb)
                 }
+                "enter" | "go" | "move" => Parser::parse_move(verb, &words, world),
+                "c" | "stat" | "stats" => player.info(),
+                "i" | "invent" => player.print_inventory(),
+                "l" | "look" => world.look(),
                 "attack" | "cut" | "hit" | "kill" | "slay" => {
                     Parser::parse_attack(verb, &words, world, player)
                 }
-                "c" | "stat" | "stats" => player.info(),
                 "heal" | "rest" | "sleep" => player.rest(),
-                "help" => Cli::help(),
-                "i" | "invent" => player.print_inventory(),
-                "l" | "look" => world.look(),
-                "enter" | "go" | "move" => {
-                    if let Some(obj) = words.obj() {
-                        world.move_room(&obj)
-                    } else {
-                        CmdResult::new(Action::Passive, format!("Where do you want to {}?", verb))
-                    }
-                }
-                "hail" | "talk" | "hi" | "hello" | "greet" => {
-                    if let Some(obj) = words.obj() {
-                        world.hail(&obj)
-                    } else {
-                        CmdResult::new(Action::Passive, "Who do you want to talk to?".to_owned())
-                    }
-                }
-                "close" => Parser::parse_close(&obj, world, player),
-                "don" => player.don_armor(&obj),
-                "draw" | "equip" | "hold" | "use" => player.equip(&obj),
-                "drop" | "remove" | "throw" => world.insert(&obj, player.remove(&obj)),
-                "examin" | "inspec" | "read" | "x" => Parser::parse_x(&obj, world, player),
+                "hail" | "talk" | "hi" | "hello" | "greet" => Parser::parse_hail(&words, world),
+                "close" => Parser::parse_close(verb, &words, world, player),
+                "don" => Parser::parse_don(verb, &words, player),
+                "draw" | "equip" | "hold" | "use" => Parser::parse_equip(verb, &words, player),
+                "drop" | "remove" | "throw" => Parser::parse_drop(verb, &words, world, player),
+                "examin" | "inspec" | "read" | "x" => Parser::parse_x(verb, &words, world, player),
                 "get" | "pick" | "take" => Parser::parse_take(verb, &words, world, player),
-                "increa" => {
-                    if let Some(obj) = words.obj() {
-                        player.increase_ability_score(&obj)
-                    } else {
-                        CmdResult::do_what(
-                            "increase?
-                    \r(strength, dexterity, constitution, intellect, wisdom, charisma)",
-                        )
-                    }
-                }
+                "increa" => Parser::parse_increase(&words, player),
                 "open" => Parser::parse_open(verb, &words, world, player),
+                "insert" | "place" | "put" => Parser::parse_put(&words, verb, world, player),
                 "save" => Cli::save(world),
                 "wait" | "z" => Player::wait(),
-                "insert" | "place" | "put" => Parser::parse_put(&words, verb, world, player),
+                "help" => Cli::help(),
                 _ => CmdResult::new(
                     Action::Passive,
                     format!("I do not know the word \"{}\"", verb),
