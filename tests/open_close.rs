@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn open_close_path() {
-        let cli = Cli::from_ron_file("data/test_world.ron");
+        let cli = Cli::from_ron_file("worlds/test_world.ron");
 
         assert!(cli.ask("l").contains("way is shut"));
         assert_eq!(cli.ask("enter door"), "The way is shut.");
@@ -26,7 +26,7 @@ mod tests {
 
     #[test]
     fn open_close_item() {
-        let cli = Cli::from_ron_file("data/test_world.ron");
+        let cli = Cli::from_ron_file("worlds/test_world.ron");
 
         cli.ask("s");
 

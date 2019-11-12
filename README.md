@@ -25,7 +25,7 @@ Worlds can be created with RON or JSON. Running the world on the command line lo
 use kingslayer::Cli;
 
 fn main() {
-    let cli = Cli::from_ron_file("data/world.ron");
+    let cli = Cli::from_ron_file("worlds/world.ron");
 
     cli.start();
 }
@@ -35,7 +35,7 @@ or the loop can be managed manually like this:
 use kingslayer::Cli;
 
 fn main() {
-    let cli = Cli::from_ron_file("data/world.ron");
+    let cli = Cli::from_ron_file("worlds/world.ron");
 
     println!("{}", cli.ask("l"));
     loop {
