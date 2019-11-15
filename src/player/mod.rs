@@ -30,7 +30,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             hp: (13, 13),
             xp: (0, 1000),

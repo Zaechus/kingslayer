@@ -16,7 +16,7 @@ pub struct Inventory {
 }
 
 impl Inventory {
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             items: Items::new(),
         }
