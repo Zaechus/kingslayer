@@ -2,8 +2,6 @@
 
 [![Current Crates.io Version](https://img.shields.io/crates/v/kingslayer)](https://crates.io/crates/kingslayer)
 [![Kingslayer documentation](https://docs.rs/kingslayer/badge.svg)](https://docs.rs/kingslayer)
-[![Build Status](https://travis-ci.com/Maxgy/kingslayer.svg?branch=master)](https://travis-ci.com/Maxgy/kingslayer)
-[![Build status](https://ci.appveyor.com/api/projects/status/b5p7b1efiy9t0fm7/branch/master?svg=true)](https://ci.appveyor.com/project/Maxgy/kingslayer/branch/master)
 
 Kingslayer is a text-based dungeon crawler written in Rust. It is a continuation of [thekinggame](https://github.com/Maxgy/thekinggame).
 
