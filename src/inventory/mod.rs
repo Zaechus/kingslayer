@@ -10,7 +10,7 @@ use crate::{
     types::{Action, CmdResult, Items},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Inventory {
     items: Items,
 }

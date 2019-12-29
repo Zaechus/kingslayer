@@ -8,7 +8,8 @@ fn main() {
 
         cli.start();
     } else {
-        let cli = Cli::from_ron_str(r#"(
+        let cli = Cli::from_ron_str(
+            r#"(
 curr_room: "Circle Room",
 rooms: {
 "Closet": Room(
@@ -177,7 +178,8 @@ rooms: {
     ]
 )
 }
-)"#);
+)"#,
+        );
 
         cli.start();
     }

@@ -16,7 +16,7 @@ use crate::{
 };
 
 /// The Cli type provides a simple way to interface into the mechanics of Kingslayer with custom worlds
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Cli {
     lexer: Lexer,
     player: RefCell<Box<Player>>,
@@ -24,6 +24,15 @@ pub struct Cli {
 }
 
 impl Cli {
+    /// Construct a new Cli with an empty World
+    pub fn new() -> Self {
+        Self {
+            lexer: Lexer::new(),
+            player: RefCell::new(Box::new(Player::new())),
+            world: RefCell::new(Box::new(World::new())),
+        }
+    }
+
     /// Construct from a RON file
     pub fn from_ron_file(path: &str) -> Self {
         Self {

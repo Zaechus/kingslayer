@@ -187,7 +187,7 @@ impl Room {
     // interact with an Ally
     pub fn hail(&self, ally_name: &str) -> CmdResult {
         if let Some(_ally) = self.allies.par_iter().find_any(|x| x.name() == ally_name) {
-            CmdResult::new(Action::Passive, "TODO: interact with ally".to_owned())
+            CmdResult::new(Action::Passive, "Hail, friend.".to_owned())
         } else {
             CmdResult::no_item_here(ally_name)
         }

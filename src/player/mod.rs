@@ -17,7 +17,13 @@ enum CombatStatus {
     Resting,
 }
 
-#[derive(Debug)]
+impl Default for CombatStatus {
+    fn default() -> Self {
+        CombatStatus::Resting
+    }
+}
+
+#[derive(Debug, Default)]
 pub struct Player {
     hp: (i32, u32),
     xp: (u32, u32),

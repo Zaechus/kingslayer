@@ -15,7 +15,7 @@
         },
         "Small Cave": {
             "name": "Small Cave",
-            "desc": "This isn't a very large or clean closet.",
+            "desc": "The cave is dark and cold.",
             "paths": {
                 "s": {
                     "target": "Circle Room",

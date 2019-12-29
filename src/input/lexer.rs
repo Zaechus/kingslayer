@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::CmdTokens;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Lexer {
     filter_out: Vec<String>,
 }
