@@ -2,7 +2,7 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 
-use super::Entity;
+use super::{Entity, Item};
 use crate::types::Items;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,6 +19,23 @@ pub struct Enemy {
 }
 
 impl Enemy {
+    pub fn new_goblin(is_angry: bool) -> Self {
+        Self {
+            name: String::from("goblin"),
+            desc: String::from("A goblin cowers off to the side."),
+            inspect: String::from("The creature snarls at you. It is small and dark green."),
+            hp: 7,
+            xp: 10,
+            damage: 3,
+            is_angry,
+            loot: Items::new(),
+        }
+    }
+    pub fn with_item(mut self, item: Item) -> Self {
+        self.loot.push(Box::new(item));
+        self
+    }
+
     pub const fn xp(&self) -> u32 {
         self.xp
     }

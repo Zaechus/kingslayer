@@ -1,7 +1,7 @@
 mod ally;
 mod closeable;
 mod enemy;
-mod item;
+pub mod item;
 mod pathway;
 mod room;
 

@@ -14,6 +14,15 @@ pub struct Weapon {
 }
 
 impl Weapon {
+    pub fn new(name: &str, inspect: &str, damage: u32) -> Self {
+        Self {
+            name: name.to_string(),
+            desc: format!("There is a {} here.", name),
+            inspect: inspect.to_string(),
+            damage,
+        }
+    }
+
     pub fn damage(&self) -> u32 {
         rand::thread_rng().gen_range(1, self.damage + 1)
     }

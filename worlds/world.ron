@@ -66,9 +66,9 @@ rooms: {
             inspect: "The hallway seems narrow and foreboding."
         ),
         "e": Pathway(
-            target: "Next Room E",
+            target: "Dank Tunnel 1",
             desc: "There is a pathway to the east.",
-            inspect: "The opening is spacious."
+            inspect: "The opening is small and dark."
         ),
         "w": Pathway(
             target: "Next Room W",
@@ -101,44 +101,32 @@ rooms: {
         ),
     },
 ),
-"Next Room E": Room(
-    name: "Next Room",
-    desc: "You are in the next room over.",
+"Dank Tunnel 1": Room(
+    name: "Dank Tunnel",
+    desc: "You are in a dank, dark tunnel.",
     paths: {
         "w": Pathway(
             target: "Circle Room",
             desc: "There is a pathway to the west.",
             inspect: "The path expands into a larger room."
         ),
+        "e": Pathway(
+            target: "Dank Tunnel 2",
+            desc: "There is a pathway to the east.",
+            inspect: "The path proceeds into a dark tunnel."
+        ),
     },
-    enemies: [
-        Enemy(
-            hp: 10,
-            xp: 15,
-            damage: 4,
-            name: "ogre",
-            desc: "An ogre stands there menacingly with a club.",
-            inspect: "The ogre is holding a long club made of wood. He is wearing nothing but a loincloth and a leather jerkin.",
-            is_angry: false,
-            loot: [
-                Weapon(Weapon(
-                    name: "club",
-                    desc: "There is a club on the ground.",
-                    inspect: "The club is very thick and heavy.",
-                    damage: 4
-                ))
-            ]
+),
+"Dank Tunnel 2": Room(
+    name: "Dank Tunnel",
+    desc: "You are in a dank, dark tunnel.",
+    paths: {
+        "w": Pathway(
+            target: "Dank Tunnel 1",
+            desc: "There is a pathway to the west.",
+            inspect: "The path leads into a dark tunnel."
         ),
-        Enemy(
-            hp: 7,
-            xp: 10,
-            damage: 2,
-            name: "goblin",
-            desc: "A goblin cowers in a corner holding a knife.",
-            inspect: "The goblin is small, grey-green, and skinny. He is brandishing a knife.",
-            is_angry: false,
-        ),
-    ],
+    },
 ),
 "Long Hallway": Room(
     name: "Long Hallway",

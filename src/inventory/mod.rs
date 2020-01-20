@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     entity::{
         Closeable, Entity,
-        Item::{self, Container, Weapon},
+        Item::{self, Container, Gold, Weapon},
     },
     types::{Action, CmdResult, Items},
 };
@@ -13,12 +13,14 @@ use crate::{
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Inventory {
     items: Items,
+    gold: u32,
 }
 
 impl Inventory {
     pub fn new() -> Self {
         Self {
             items: Items::new(),
+            gold: 0,
         }
     }
 
@@ -138,7 +140,7 @@ impl Inventory {
             String::from("Your inventory is empty.")
         } else {
             let mut items_carried = String::from("You are carrying:");
-            items_carried.reserve(5 * self.items.len());
+            items_carried.reserve(5 * self.items.len() + 8);
 
             for item in self.items.iter() {
                 items_carried = format!("{}\n  {}", items_carried, item.long_name());
@@ -171,7 +173,11 @@ impl Inventory {
             if let Weapon(_) = *item {
                 res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
             }
-            self.items.push(item);
+            if let Gold(g) = *item {
+                self.gold += g.amount();
+            } else {
+                self.items.push(item);
+            }
             CmdResult::new(Action::Active, res)
         } else {
             CmdResult::no_item_here(name)

@@ -3,7 +3,7 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    entity::{Closeable, Entity, Item, Room},
+    entity::{Closeable, Enemy, Entity, Item, Room},
     types::{Action, CmdResult, Items, RoomMap},
 };
 
@@ -172,5 +172,16 @@ impl World {
     // interact with an Ally
     pub fn hail(&self, ally_name: &str) -> CmdResult {
         self.get_curr_room().hail(ally_name)
+    }
+
+    pub fn spawn_enemy(&mut self, room: &str, enemy: Enemy) {
+        if let Some(room) = self.rooms.get_mut(room) {
+            room.spawn_enemy(enemy);
+        } else {
+            panic!(format!(
+                "ERROR: {} is not a valid room (The world should be fixed).",
+                self.curr_room
+            ))
+        }
     }
 }

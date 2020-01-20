@@ -8,7 +8,7 @@ use std::{
 use rayon::prelude::*;
 
 use crate::{
-    entity::Entity,
+    entity::{Enemy, Entity},
     input::{read_line, Lexer, Parser},
     player::Player,
     types::{Action, CmdResult, Items},
@@ -208,6 +208,10 @@ Some available commands:
         }
         events_str.shrink_to_fit();
         events_str
+    }
+
+    pub fn spawn_enemy(&self, room_name: &str, enemy: Enemy) {
+        self.world.borrow_mut().spawn_enemy(room_name, enemy)
     }
 
     pub fn save(world: &World) -> CmdResult {

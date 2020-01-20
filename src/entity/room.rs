@@ -3,7 +3,7 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Closeable, Entity,
+    Closeable, Enemy, Entity,
     Item::{self, Container},
 };
 use crate::types::{Action, Allies, CmdResult, Enemies, Items, PathMap};
@@ -224,6 +224,10 @@ impl Room {
         } else {
             None
         }
+    }
+
+    pub fn spawn_enemy(&mut self, enemy: Enemy) {
+        self.enemies.push(Box::new(enemy));
     }
 
     pub const fn paths(&self) -> &PathMap {
