@@ -43,7 +43,7 @@ impl Cli {
     }
 
     /// Construct from a string containing RON
-    pub fn from_str(ron: &str) -> Self {
+    pub fn from_ron_str(ron: &str) -> Self {
         Self {
             lexer: Lexer::new(),
             player: RefCell::new(Box::new(Player::new())),
