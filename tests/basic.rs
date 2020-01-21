@@ -22,6 +22,5 @@ mod tests {
         let _cli = Cli::from_json_file("worlds/test_world.json");
         let _cli = Cli::from_ron_file("worlds/test_world.ron");
         let _cli = Cli::from_ron_file("worlds/world.ron");
-        let _cli = Cli::from_ron_file("worlds/zork.ron");
     }
 }
