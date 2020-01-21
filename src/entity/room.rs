@@ -48,6 +48,11 @@ impl Room {
             .par_iter()
             .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
     }
+    fn find_similar_enemy(&self, name: &str) -> Option<usize> {
+        self.enemies
+            .par_iter()
+            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+    }
 
     pub fn drain_all(&mut self) -> Items {
         self.items.drain(0..).collect()
