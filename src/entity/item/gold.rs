@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::entity::Entity;
 
 // An object to be interacted with by the user
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Gold {
     name: String,
     desc: String,
@@ -12,6 +12,15 @@ pub struct Gold {
 }
 
 impl Gold {
+    pub fn new(amount: u32) -> Self {
+        Self {
+            name: String::from("gold"),
+            desc: format!("There is {} gold here.", amount),
+            inspect: String::from("It is shiny and smooth"),
+            amount,
+        }
+    }
+
     pub fn amount(&self) -> u32 {
         self.amount
     }

@@ -18,12 +18,12 @@ cargo run --release
 
 ### Creating and Running your own World
 
-Worlds can be created with RON or JSON. Running the world on the command line looks like this:
+Worlds can be created with RON and Rust helper functions. Running the world on the command line looks like this:
 ```rust
 use kingslayer::Cli;
 
 fn main() {
-    let cli = Cli::from_ron_file("worlds/world.ron");
+    let cli = Cli::from_file("worlds/world.ron");
 
     cli.start();
 }
@@ -33,7 +33,7 @@ or the loop can be managed manually like this:
 use kingslayer::Cli;
 
 fn main() {
-    let cli = Cli::from_ron_file("worlds/world.ron");
+    let cli = Cli::from_file("worlds/world.ron");
 
     println!("{}", cli.ask("l"));
     loop {
@@ -45,14 +45,13 @@ fn main() {
     }
 }
 ```
-This method allows you to manage other forms of input and output such as within a website. The content for the world can also be passed as a raw string with `Cli::from_ron_str` or `Cli::from_json_str`.
+This method allows you to manage other forms of input and output such as within a website. The content for the world can also be passed as a raw string with `Cli::from_str`.
 
 ### Dependencies
-* Rust ^1.38.0
+* Rust ^1.40.0
 
 ### Crates
 * rand = "0.7"
 * rayon = "1.0"
 * serde = "1.0"
 * ron = "0.5"
-* serde_json = "1.0"

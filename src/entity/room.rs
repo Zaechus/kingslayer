@@ -226,6 +226,10 @@ impl Room {
         }
     }
 
+    pub fn add_item(&mut self, item: Item) {
+        self.items.push(Box::new(item));
+    }
+
     pub fn spawn_enemy(&mut self, enemy: Enemy) {
         self.enemies.push(Box::new(enemy));
     }

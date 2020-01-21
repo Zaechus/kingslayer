@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::CmdResult;
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Opening {
     Open,
     Closed,

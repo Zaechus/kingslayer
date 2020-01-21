@@ -9,7 +9,7 @@ use crate::{
 };
 
 // An object to be interacted with by the user
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Container {
     name: String,
     desc: String,

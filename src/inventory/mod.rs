@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     entity::{
         Closeable, Entity,
-        Item::{self, Container, Gold, Weapon},
+        Item::{self, Container, Gold},
     },
     types::{Action, CmdResult, Items},
 };
@@ -139,7 +139,7 @@ impl Inventory {
         if self.items.is_empty() {
             String::from("Your inventory is empty.")
         } else {
-            let mut items_carried = String::from("You are carrying:");
+            let mut items_carried = format!("Gold: {}\nYou are carrying:", self.gold);
             items_carried.reserve(5 * self.items.len() + 8);
 
             for item in self.items.iter() {
@@ -169,16 +169,12 @@ impl Inventory {
 
     pub fn take(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
         if let Some(item) = item {
-            let mut res = String::from("Taken.");
-            if let Weapon(_) = *item {
-                res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
-            }
             if let Gold(g) = *item {
                 self.gold += g.amount();
             } else {
                 self.items.push(item);
             }
-            CmdResult::new(Action::Active, res)
+            CmdResult::new(Action::Active, String::from("Taken."))
         } else {
             CmdResult::no_item_here(name)
         }
@@ -195,6 +191,16 @@ impl Inventory {
             for _ in 0..times {
                 res.push_str("Taken. ");
             }
+            let mut gold = 0;
+            self.items.retain(|x| {
+                if let Gold(g) = &**x {
+                    gold += g.amount();
+                    false
+                } else {
+                    true
+                }
+            });
+            self.gold += gold;
             CmdResult::new(Action::Active, res)
         }
     }
@@ -241,12 +247,8 @@ impl Inventory {
     pub fn take_item_from(&mut self, item: Result<Box<Item>, CmdResult>) -> CmdResult {
         match item {
             Ok(item) => {
-                let mut res = String::from("Taken.");
-                if let Weapon(_) = *item {
-                    res.push_str("\n(You can equip weapons with \"equip\" or \"draw\")");
-                }
                 self.items.push(item);
-                CmdResult::new(Action::Active, res)
+                CmdResult::new(Action::Active, String::from("Taken."))
             }
             Err(res) => res,
         }

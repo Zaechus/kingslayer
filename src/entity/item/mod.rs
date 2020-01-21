@@ -14,7 +14,7 @@ pub use gold::Gold;
 pub use thing::Thing;
 pub use weapon::Weapon;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Item {
     Armor(Armor),
     Container(Container),

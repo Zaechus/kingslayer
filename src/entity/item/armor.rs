@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::entity::Entity;
 
 // An object to be interacted with by the user
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Armor {
     name: String,
     desc: String,
@@ -12,6 +12,15 @@ pub struct Armor {
 }
 
 impl Armor {
+    pub fn new(name: &str, inspect: &str, ac: u32) -> Self {
+        Self {
+            name: name.to_string(),
+            desc: format!("There is a {} here.", name),
+            inspect: inspect.to_string(),
+            ac,
+        }
+    }
+
     pub const fn ac(&self) -> u32 {
         self.ac
     }

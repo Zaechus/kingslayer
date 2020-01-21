@@ -174,6 +174,17 @@ impl World {
         self.get_curr_room().hail(ally_name)
     }
 
+    pub fn add_item(&mut self, room: &str, item: Item) {
+        if let Some(room) = self.rooms.get_mut(room) {
+            room.add_item(item);
+        } else {
+            panic!(format!(
+                "ERROR: {} is not a valid room (The world should be fixed).",
+                self.curr_room
+            ))
+        }
+    }
+
     pub fn spawn_enemy(&mut self, room: &str, enemy: Enemy) {
         if let Some(room) = self.rooms.get_mut(room) {
             room.spawn_enemy(enemy);

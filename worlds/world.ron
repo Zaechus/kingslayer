@@ -1,158 +1,82 @@
 (
-curr_room: "Circle Room",
+curr_room: "Brig",
 rooms: {
-"Closet": Room(
-    name: "Closet",
-    desc: "This isn't a very large or clean closet.",
+"Brig": Room(
+    name: "Brig",
+    desc: "You are in a small wooden room with wood pillar in the middle.
+    The ground slowly creaks and rocks beneath you.",
     paths: {
         "door": Pathway(
-            target: "Circle Room",
-            desc: "The door leads back into the room.",
-            inspect: "The door is plain and wooden.",
-            opening: Some(Open)
-        ),
-    },
-),
-"Small Cave": Room(
-    name: "Small Cave",
-    desc: "The cave is dark and musty.",
-    paths: {
-        "s": Pathway(
-            target: "Circle Room",
-            desc: "The opening of the cave leads south back into the circle room.",
-            inspect: "The edges of the opening are cracked and rough."
-        ),
-    },
-    allies: [
-        Ally(
-            hp: 1,
-            name: "old man",
-            desc: "An old man stoically stands at the back of the cave.",
-            inspect: "\"Take the sword, brave one.\""
-        )
-    ],
-    items: [
-        Weapon(Weapon(
-            name: "iron sword",
-            desc: "There is an iron sword on the ground.",
-            inspect: "The iron sword is of crude workmanship, but it should be usable.",
-            damage: 6   
-        )),
-    ],
-),
-"Circle Room": Room(
-    name: "Circle Room",
-    desc: "You stand in a circular room crafted in stone.",
-    paths: {
-        "door": Pathway(
-            target: "Closet",
+            target: "Hold 1",
             desc: "There is a door on one side.",
             inspect: "The door is plain and wooden.",
-            opening: Some(Closed)
+            opening: Some(Closed),
+        ),
+    }
+),
+"Hold 1": Room(
+    name: "Hold",
+    desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.
+    You can detect the slight scent of root beer.",
+    paths: {
+        "door": Pathway(
+            target: "Brig",
+            desc: "There is a door at the back of the hold.",
+            inspect: "The door is plain and wooden.",
+            opening: Some(Open),
         ),
         "n": Pathway(
-            target: "Small Cave",
-            desc: "There is a mouth of a cave to the north.",
-            inspect: "The cave opening glows with a soft flickering light."
+            target: "Hold 2",
+            desc: "The hold continues to the north.",
+            inspect: "This end of the hold is too dark to see into.",
+        ),
+    }
+),
+"Hold 2": Room(
+    name: "Hold",
+    desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.
+    You can detect the slight scent of root beer.",
+    paths: {
+        "hatch": Pathway(
+            target: "Crew Deck",
+            desc: "There is a hatch above you.",
+            inspect: "It looks like a metal grate.",
+            opening: Some(Closed),
         ),
         "s": Pathway(
-            target: "Long Hallway",
-            desc: "",
-            inspect: ""
+            target: "Hold 1",
+            desc: "The hold continues to the south.",
+            inspect: "The middle of the hold is lit by a lantern.",
         ),
-        "hallway": Pathway(
-            target: "Long Hallway",
-            desc: "There is a hallway to the south.",
-            inspect: "The hallway seems narrow and foreboding."
-        ),
-        "e": Pathway(
-            target: "Dank Tunnel 1",
-            desc: "There is a pathway to the east.",
-            inspect: "The opening is small and dark."
-        ),
-        "w": Pathway(
-            target: "Next Room W",
-            desc: "There is a pathway to the west.",
-            inspect: "The opening is spacious."
-        ),
-    },
-    items: [
-        Armor(Armor(
-            name: "leather armor",
-            desc: "There is a set of leather armor lying in a heap.",
-            inspect: "The armor is worn but light and sturdy.",
-            ac: 11,
-        )),
-        Thing(Thing(
-            name: "leaf",
-            desc: "A leaf lies on the ground.",
-            inspect: "It's small, brown, and dry."
-        )),
-    ]
+    }
 ),
-"Next Room W": Room(
-    name: "Next Room",
-    desc: "You are in the next room over.",
+"Crew Deck": Room(
+    name: "Crew Deck",
+    desc: "You are on a deck with dirty hammocks hanging everywhere.",
     paths: {
-        "e": Pathway(
-            target: "Circle Room",
-            desc: "There is a pathway to the east.",
-            inspect: "The path expands into a larger room."
+        "hatch": Pathway(
+            target: "Hold 2",
+            desc: "There is a hatch on the ground",
+            inspect: "It looks like a metal grate.",
+            opening: Some(Open),
         ),
-    },
+        "s": Pathway(
+            target: "Infirmary",
+            desc: "There is an empty doorway to the south.",
+            inspect: "The doorway flickers with lantern light.",
+        ),
+    }
 ),
-"Dank Tunnel 1": Room(
-    name: "Dank Tunnel",
-    desc: "You are in a dank, dark tunnel.",
-    paths: {
-        "w": Pathway(
-            target: "Circle Room",
-            desc: "There is a pathway to the west.",
-            inspect: "The path expands into a larger room."
-        ),
-        "e": Pathway(
-            target: "Dank Tunnel 2",
-            desc: "There is a pathway to the east.",
-            inspect: "The path proceeds into a dark tunnel."
-        ),
-    },
-),
-"Dank Tunnel 2": Room(
-    name: "Dank Tunnel",
-    desc: "You are in a dank, dark tunnel.",
-    paths: {
-        "w": Pathway(
-            target: "Dank Tunnel 1",
-            desc: "There is a pathway to the west.",
-            inspect: "The path leads into a dark tunnel."
-        ),
-    },
-),
-"Long Hallway": Room(
-    name: "Long Hallway",
-    desc: "You are in a long, dark hallway.",
+"Infirmary": Room(
+    name: "Infirmary",
+    desc: "You are in a room with empty beds lining one wall.",
     paths: {
         "n": Pathway(
-            target: "Circle Room",
-            desc: "There is a room to the north.",
-            inspect: "The hallway seems narrow and foreboding."
-        )
-    },
-    items: [
-        Container(Container(
-            name: "large capsule",
-            desc: "There is a large capsule here.",
-            inspect: "The capsule appears to be able to hold things.",
-            opening: Open,
-            contents: [
-                Thing(Thing(
-                    name: "curious object",
-                    desc: "There is a curious object here.",
-                    inspect: "The object's appearance confuses your weak mind."
-                )),
-            ]
-        )),
-    ]
-)
+            target: "Crew Deck",
+            desc: "The doorway leads back into the crew's quarters.",
+            inspect: "The doorway flickers with lantern light.",
+        ),
+    }
+),
 }
 )

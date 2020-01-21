@@ -109,11 +109,7 @@ impl Player {
                 self.take(armor_name, Some(armor));
             }
             self.armor = Some(item);
-            CmdResult::new(
-                    Action::Active,
-                    "Donned.\n(You can remove armor with \"drop\" or by donning a different set or armor)"
-                        .to_owned()
-                )
+            CmdResult::new(Action::Active, "Donned.".to_owned())
         } else {
             self.inventory.push(item);
             CmdResult::new(
@@ -155,11 +151,7 @@ impl Player {
                     self.take(&weapon.name().to_owned(), Some(weapon));
                 }
                 self.main_hand = Some(item);
-                CmdResult::new(
-                    Action::Active,
-                    "Equipped.\n(You can unequip items with \"drop\" or by equipping a different item)"
-                        .to_owned(),
-                )
+                CmdResult::new(Action::Active, "Equipped.".to_owned())
             }
             _ => {
                 self.inventory.push(item);

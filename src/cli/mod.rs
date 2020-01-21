@@ -8,7 +8,7 @@ use std::{
 use rayon::prelude::*;
 
 use crate::{
-    entity::{Enemy, Entity},
+    entity::{Enemy, Entity, Item},
     input::{read_line, Lexer, Parser},
     player::Player,
     types::{Action, CmdResult, Items},
@@ -34,7 +34,7 @@ impl Cli {
     }
 
     /// Construct from a RON file
-    pub fn from_ron_file(path: &str) -> Self {
+    pub fn from_file(path: &str) -> Self {
         Self {
             lexer: Lexer::new(),
             player: RefCell::new(Box::new(Player::new())),
@@ -43,29 +43,11 @@ impl Cli {
     }
 
     /// Construct from a string containing RON
-    pub fn from_ron_str(json: &str) -> Self {
+    pub fn from_str(ron: &str) -> Self {
         Self {
             lexer: Lexer::new(),
             player: RefCell::new(Box::new(Player::new())),
-            world: ron::de::from_str(json).expect("Error creating world from string."),
-        }
-    }
-
-    /// Construct from a JSON file
-    pub fn from_json_file(path: &str) -> Self {
-        Self {
-            lexer: Lexer::new(),
-            player: RefCell::new(Box::new(Player::new())),
-            world: Cli::get_world_json(path),
-        }
-    }
-
-    /// Construct from a string containing JSON
-    pub fn from_json_str(json: &str) -> Self {
-        Self {
-            lexer: Lexer::new(),
-            player: RefCell::new(Box::new(Player::new())),
-            world: serde_json::from_str(json).expect("Error creating world from string."),
+            world: ron::de::from_str(ron).expect("Error creating world from string."),
         }
     }
 
@@ -79,18 +61,6 @@ impl Cli {
             .expect("Unable to read string from world file");
 
         ron::de::from_str(&data).expect("Error creating world from RON file.")
-    }
-
-    fn get_world_json(path: &str) -> RefCell<Box<World>> {
-        let metadata = fs::metadata(path).expect("Error getting metadata from file");
-        let world_file = File::open(path).expect("Unable to open world file");
-        let mut world_file_reader = BufReader::new(world_file);
-        let mut data = String::with_capacity(metadata.len().try_into().unwrap());
-        world_file_reader
-            .read_to_string(&mut data)
-            .expect("Unable to read string from world file");
-
-        serde_json::from_str(&data).expect("Error creating world from JSON file.")
     }
 
     /// Prompts the user for input from stdin
@@ -210,8 +180,12 @@ Some available commands:
         events_str
     }
 
-    pub fn spawn_enemy(&self, room_name: &str, enemy: Enemy) {
-        self.world.borrow_mut().spawn_enemy(room_name, enemy)
+    pub fn add_item(&self, room: &str, item: Item) {
+        self.world.borrow_mut().add_item(room, item)
+    }
+
+    pub fn spawn_enemy(&self, room: &str, enemy: Enemy) {
+        self.world.borrow_mut().spawn_enemy(room, enemy)
     }
 
     pub fn save(world: &World) -> CmdResult {

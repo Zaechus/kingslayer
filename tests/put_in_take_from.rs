@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn put_in_take_from() {
-        let cli = Cli::from_json_file("worlds/test_world.json");
+        let cli = Cli::from_file("worlds/test_world.ron");
 
         cli.ask("take leaf");
         cli.ask("drop the leaf");
@@ -19,9 +19,9 @@ mod tests {
         assert!(
             cli.ask("l").contains("capsule")
                 && cli.ask("l").contains("contains")
-                && cli.ask("l").contains("curious object")
+                && cli.ask("l").contains("red block")
         );
-        assert_eq!(cli.ask("put leaf in capsule"), "Placed.");
+        assert_eq!(cli.ask("put leaf in large capsule"), "Placed.");
         assert!(
             cli.ask("l").contains("leaf")
                 && cli.ask("l").contains("capsule")
@@ -31,10 +31,12 @@ mod tests {
         assert_eq!(cli.ask("i"), "Your inventory is empty.");
 
         assert_eq!(cli.ask("close capsule"), "Closed.");
-        assert!(cli.ask("take leaf from capsule").contains("is closed"));
+        assert!(cli
+            .ask("take leaf from large capsule")
+            .contains("is closed"));
         assert_eq!(cli.ask("open capsule"), "Opened.");
-        assert_eq!(cli.ask("take leaf from capsule"), "Taken.");
-        assert_eq!(cli.ask("take curious object from capsule"), "Taken.");
+        assert_eq!(cli.ask("take leaf from large capsule"), "Taken.");
+        assert_eq!(cli.ask("take red block from large capsule"), "Taken.");
         assert!(
             cli.ask("i").contains("leaf")
                 && cli.ask("l").contains("capsule")
@@ -46,9 +48,9 @@ mod tests {
         assert!(cli.ask("i").contains("leaf") && cli.ask("i").contains("capsule"));
 
         assert_eq!(cli.ask("close capsule"), "Closed.");
-        assert!(cli.ask("put leaf in capsule").contains("is closed"));
+        assert!(cli.ask("put leaf in large capsule").contains("is closed"));
         assert_eq!(cli.ask("open capsule"), "Opened.");
-        assert_eq!(cli.ask("put leaf in capsule"), "Placed.");
+        assert_eq!(cli.ask("put leaf in large capsule"), "Placed.");
         assert!(
             cli.ask("i").contains("leaf")
                 && cli.ask("i").contains("capsule")

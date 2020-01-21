@@ -3,7 +3,7 @@ use rand::Rng;
 use serde::{Deserialize, Serialize};
 
 use super::{Entity, Item};
-use crate::types::Items;
+use crate::{dice_roll, types::Items};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Enemy {
@@ -19,18 +19,32 @@ pub struct Enemy {
 }
 
 impl Enemy {
-    pub fn new_goblin(is_angry: bool) -> Self {
+    pub fn new_rats(is_angry: bool) -> Self {
         Self {
-            name: String::from("goblin"),
-            desc: String::from("A goblin cowers off to the side."),
-            inspect: String::from("The creature snarls at you. It is small and dark green."),
-            hp: 7,
-            xp: 10,
+            name: String::from("swarm rats"),
+            desc: String::from("A swarm of rats raves along the floor."),
+            inspect: String::from("The creatures chatter and scrape viciously."),
+            hp: 24,
+            xp: 50,
             damage: 3,
             is_angry,
             loot: Items::new(),
         }
     }
+
+    pub fn new_pirate(is_angry: bool) -> Self {
+        Self {
+            name: String::from("pirate"),
+            desc: String::from("There is a pirate here."),
+            inspect: String::from("The pirate is armed and smells vile."),
+            hp: dice_roll(3, 8) as i32,
+            xp: 50,
+            damage: 10,
+            is_angry,
+            loot: Items::new(),
+        }
+    }
+
     pub fn with_item(mut self, item: Item) -> Self {
         self.loot.push(Box::new(item));
         self

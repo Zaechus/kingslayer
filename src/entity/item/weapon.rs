@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::entity::Entity;
 
 // An object to be interacted with by the user
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Weapon {
     name: String,
     desc: String,
