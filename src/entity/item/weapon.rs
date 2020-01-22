@@ -16,9 +16,9 @@ pub struct Weapon {
 impl Weapon {
     pub fn new(name: &str, inspect: &str, damage: u32) -> Self {
         Self {
-            name: name.to_string(),
+            name: name.to_owned(),
             desc: format!("There is a {} here.", name),
-            inspect: inspect.to_string(),
+            inspect: inspect.to_owned(),
             damage,
         }
     }

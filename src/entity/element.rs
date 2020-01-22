@@ -11,11 +11,11 @@ pub struct Element {
 }
 
 impl Element {
-    pub fn new(name: &str, inspect: &str) -> Self {
+    pub fn new(name: &str, desc: &str, inspect: &str) -> Self {
         Self {
-            name: name.to_string(),
-            desc: format!("There is a {} here.", name),
-            inspect: inspect.to_string(),
+            name: name.to_owned(),
+            desc: desc.to_owned(),
+            inspect: inspect.to_owned(),
         }
     }
 

@@ -47,8 +47,7 @@ rooms: {
 ),
 "Hold 2": Room(
     name: "Hold",
-    desc: "You are at the end of a spacious hold. Crates and barrels array the sides.
-    You can detect the slight scent of root beer.",
+    desc: "You are at the end of a spacious hold. Crates and barrels array the sides.",
     paths: [
         Pathway(
             directions: ["hatch", "u"],

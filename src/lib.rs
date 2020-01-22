@@ -5,7 +5,7 @@ use rand::Rng;
 pub use cli::Cli;
 pub use entity::{
     item::{Armor, Container, Gold, Thing, Weapon},
-    Enemy, Item,
+    Element, Enemy, Item,
 };
 
 /// A command line interface for controlling interactions between objects in a game

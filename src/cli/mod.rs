@@ -3,12 +3,13 @@ use std::{
     convert::TryInto,
     fs::{self, File},
     io::{self, BufReader, Read, Write},
+    path::Path,
 };
 
 use rayon::prelude::*;
 
 use crate::{
-    entity::{Enemy, Entity, Item},
+    entity::{Element, Enemy, Entity, Item},
     input::{read_line, Lexer, Parser},
     player::Player,
     types::{Action, CmdResult, Items},
@@ -180,6 +181,10 @@ Some available commands:
         events_str
     }
 
+    pub fn add_element(&self, room: &str, el: Element) {
+        self.world.borrow_mut().add_element(room, el)
+    }
+
     pub fn add_item(&self, room: &str, item: Item) {
         self.world.borrow_mut().add_item(room, item)
     }
@@ -190,6 +195,28 @@ Some available commands:
 
     pub fn save(world: &World) -> CmdResult {
         let saved = ron::ser::to_string(world).expect("Error serializing world save file.");
-        CmdResult::new(Action::Passive, saved)
+        let file = if Path::new("worlds/world.save.ron").is_file() {
+            File::open("worlds/save.ron")
+        } else if Path::new("worlds/").exists() {
+            File::create("worlds/save.ron")
+        } else {
+            match fs::create_dir(Path::new("worlds")) {
+                Ok(()) => File::create("worlds/world.save.ron"),
+                Err(err) => Result::Err(err),
+            }
+        };
+
+        if let Ok(mut file) = file {
+            if let Ok(()) = file.write_all(saved.as_bytes()) {
+                CmdResult::new(
+                    Action::Passive,
+                    String::from("Saved to 'worlds/world.save.ron'."),
+                )
+            } else {
+                CmdResult::new(Action::Passive, String::from("Error saving world."))
+            }
+        } else {
+            CmdResult::new(Action::Passive, String::from("Error saving world."))
+        }
     }
 }

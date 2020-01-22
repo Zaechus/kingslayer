@@ -13,3 +13,6 @@ pkg
 # flamegraph
 *.svg
 perf.data*
+
+# kingslayer
+*.save.ron

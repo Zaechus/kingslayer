@@ -3,22 +3,24 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    Closeable, Enemy, Entity,
+    Closeable, Element, Enemy, Entity,
     Item::{self, Container},
     Pathway,
 };
-use crate::types::{Action, Allies, CmdResult, Enemies, Items, PathMap};
+use crate::types::{Action, Allies, CmdResult, Elements, Enemies, Items, Paths};
 
 // A section of the world connected by paths
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Room {
     name: String,
     desc: String,
-    paths: PathMap,
+    paths: Paths,
     #[serde(default)]
     enemies: Enemies,
     #[serde(default)]
     allies: Allies,
+    #[serde(default)]
+    elements: Elements,
     #[serde(default)]
     items: Items,
 }
@@ -27,19 +29,22 @@ impl Room {
     // collects all descriptions of entities in the Room for printing
     pub fn long_desc(&self) -> String {
         let mut desc = format!("{}\n{}", self.name, self.desc);
+        for el in self.elements.iter() {
+            desc.push_str(&format!("\n{}", el.desc()));
+        }
         for path in self.paths.iter() {
             if !path.desc().is_empty() {
                 desc.push_str(&format!("\n{}", path.long_desc()));
             }
         }
-        for enemy in self.enemies.iter() {
-            desc.push_str(&format!("\n{}", enemy.desc()));
+        for item in self.items.iter() {
+            desc.push_str(&format!("\n{}", item.long_desc()));
         }
         for ally in self.allies.iter() {
             desc.push_str(&format!("\n{}", ally.desc()));
         }
-        for item in self.items.iter() {
-            desc.push_str(&format!("\n{}", item.long_desc()));
+        for enemy in self.enemies.iter() {
+            desc.push_str(&format!("\n{}", enemy.desc()));
         }
         desc
     }
@@ -50,11 +55,11 @@ impl Room {
             .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
     }
     #[allow(clippy::borrowed_box)]
-    pub fn find_similar_item(&self, name: &str) -> Option<&Box<Item>> {
-        self.items.par_iter().find_any(|item| {
-            item.name().par_split_whitespace().any(|item_word| {
+    pub fn find_similar_element(&self, name: &str) -> Option<&Box<Element>> {
+        self.elements.par_iter().find_any(|el| {
+            el.name().par_split_whitespace().any(|el_word| {
                 name.par_split_whitespace()
-                    .any(|name_word| name_word == item_word)
+                    .any(|name_word| name_word == el_word)
             })
         })
     }
@@ -62,10 +67,6 @@ impl Room {
         self.enemies
             .par_iter()
             .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
-    }
-
-    pub fn drain_all(&mut self) -> Items {
-        self.items.drain(0..).collect()
     }
 
     #[allow(clippy::borrowed_box)]
@@ -85,6 +86,10 @@ impl Room {
                 .position_any(|d| d == direction)
                 .is_some()
         })
+    }
+
+    pub fn drain_all(&mut self) -> Items {
+        self.items.drain(0..).collect()
     }
 
     pub fn extend_items(&mut self, new_items: Items) {
@@ -283,7 +288,9 @@ impl Room {
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.items.par_iter().find_any(|x| x.name() == name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
-        } else if let Some(item) = self.find_similar_item(name) {
+        } else if let Some(el) = self.elements.par_iter().find_any(|x| x.name() == name) {
+            Some(CmdResult::new(Action::Active, el.inspect().to_owned()))
+        } else if let Some(item) = self.find_similar_element(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(pathway) = self.get_path(name) {
             Some(CmdResult::new(Action::Active, pathway.inspect().to_owned()))
@@ -315,6 +322,10 @@ impl Room {
         }
     }
 
+    pub fn add_element(&mut self, el: Element) {
+        self.elements.push(Box::new(el));
+    }
+
     pub fn add_item(&mut self, item: Item) {
         self.items.push(Box::new(item));
     }
@@ -323,7 +334,7 @@ impl Room {
         self.enemies.push(Box::new(enemy));
     }
 
-    pub const fn paths(&self) -> &PathMap {
+    pub const fn paths(&self) -> &Paths {
         &self.paths
     }
 

@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    entity::{Closeable, Enemy, Entity, Item, Room},
-    types::{Action, CmdResult, Items, RoomMap},
+    entity::{Closeable, Element, Enemy, Entity, Item, Room},
+    types::{Action, CmdResult, Items, Rooms},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -10,14 +10,14 @@ use crate::{
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct World {
     curr_room: String,
-    rooms: RoomMap,
+    rooms: Rooms,
 }
 
 impl World {
     pub fn new() -> Self {
         Self {
             curr_room: String::new(),
-            rooms: RoomMap::new(),
+            rooms: Rooms::new(),
         }
     }
 
@@ -132,6 +132,17 @@ impl World {
     // interact with an Ally
     pub fn hail(&self, ally_name: &str) -> CmdResult {
         self.get_curr_room().hail(ally_name)
+    }
+
+    pub fn add_element(&mut self, room: &str, el: Element) {
+        if let Some(room) = self.rooms.get_mut(room) {
+            room.add_element(el);
+        } else {
+            panic!(format!(
+                "ERROR: {} is not a valid room (The world should be fixed).",
+                self.curr_room
+            ))
+        }
     }
 
     pub fn add_item(&mut self, room: &str, item: Item) {
