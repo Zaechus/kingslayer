@@ -4,36 +4,40 @@ rooms: {
 "Closet": Room(
     name: "Closet",
     desc: "This isn't a very large or clean closet.",
-    paths: {
-        "door": Pathway(
+    paths: [
+        Pathway(
+            directions: ["door"],
             target: "Central Room",
             desc: "The door leads back into the room.",
             inspect: "The door is plain and wooden.",
             opening: Some(Open)
         ),
-    },
+    ],
 ),
 "Central Room": Room(
     name: "Central Room",
     desc: "You are in the central room.",
-    paths: {
-        "n": Pathway(
+    paths: [
+        Pathway(
+            directions: ["n"],
             target: "Small Cave",
             desc: "There is a mouth of a cave to the north.",
             inspect: "The cave opening glows with a soft flickering light."
         ),
-        "door": Pathway(
+        Pathway(
+            directions: ["door"],
             target: "Closet",
             desc: "There is a door off to the side.",
             inspect: "The door is plain and wooden.",
             opening: Some(Closed)
         ),
-        "s": Pathway(
+        Pathway(
+            directions: ["s"],
             target: "Bedroom",
             desc: "There is a doorway to the south.",
             inspect: "The doorway is plain and wooden.",
         ),
-    },
+    ],
     items: [
         Thing(Thing(
             name: "leaf",
@@ -45,13 +49,14 @@ rooms: {
 "Small Cave": Room(
     name: "Small Cave",
     desc: "You are in a small cave.",
-    paths: {
-        "s": Pathway(
+    paths: [
+        Pathway(
+            directions: ["s"],
             target: "Central Room",
             desc: "The cave opening leads south.",
             inspect: "The cave opening glows with a soft flickering light."
         ),
-    },
+    ],
     items: [
         Armor(Armor(
             name: "leather armor",
@@ -70,13 +75,14 @@ rooms: {
 "Bedroom": Room(
     name: "Bedroom",
     desc: "You are in a small bedroom.",
-    paths: {
-        "n": Pathway(
+    paths: [
+        Pathway(
+            directions: ["n"],
             target: "Central Room",
             desc: "There is a doorway to the north.",
             inspect: "The doorway is plain and wooden."
         ),
-    },
+    ],
     items: [
         Container(Container(
             name: "large capsule",

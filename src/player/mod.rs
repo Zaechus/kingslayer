@@ -226,7 +226,11 @@ impl Player {
         } else if let Some(item) = self.inventory.find(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(item) = &self.main_hand {
-            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
+            if item.name() == name {
+                Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
+            } else {
+                None
+            }
         } else {
             None
         }

@@ -5,6 +5,7 @@ use crate::types::{Action, CmdResult};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Pathway {
+    directions: Vec<String>,
     target: String,
     #[serde(default)]
     desc: String,
@@ -23,6 +24,10 @@ impl Pathway {
         } else {
             self.desc.to_owned()
         }
+    }
+
+    pub fn directions(&self) -> &Vec<String> {
+        &self.directions
     }
 }
 

@@ -1,6 +1,6 @@
 use std::env;
 
-use kingslayer::{Armor, Cli, Enemy, Gold, Item, Weapon};
+use kingslayer::{Armor, Cli, Enemy, Gold, Item, Thing, Weapon};
 
 fn main() {
     if let Some(path) = env::args().nth(1) {
@@ -12,6 +12,14 @@ fn main() {
         cli.add_item(
             "Brig",
             Item::Weapon(Weapon::new("stick", "It's short but stout.", 4)),
+        );
+
+        cli.add_item(
+            "Hold 1",
+            Item::Thing(
+                Thing::new("root beer barrel barrels", "You can find no way to open the barrels, but there is definitely root beer inside.")
+                    .with_desc("You can detect the slight scent of root beer."),
+            ),
         );
 
         // Hold 2

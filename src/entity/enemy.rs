@@ -37,7 +37,7 @@ impl Enemy {
             name: String::from("pirate"),
             desc: String::from("There is a pirate here."),
             inspect: String::from("The pirate is armed and smells vile."),
-            hp: dice_roll(3, 8) as i32,
+            hp: dice_roll(3, 8) as i32 + 8,
             xp: 50,
             damage: 10,
             is_angry,
@@ -45,6 +45,10 @@ impl Enemy {
         }
     }
 
+    pub fn with_desc(mut self, desc: &str) -> Self {
+        self.desc = String::from(desc);
+        self
+    }
     pub fn with_item(mut self, item: Item) -> Self {
         self.loot.push(Box::new(item));
         self

@@ -243,7 +243,9 @@ impl Parser {
                 "don" => Parser::parse_don(verb, &words, player),
                 "draw" | "equip" | "hold" | "use" => Parser::parse_equip(verb, &words, player),
                 "drop" | "remove" | "throw" => Parser::parse_drop(verb, &words, world, player),
-                "examin" | "inspec" | "read" | "x" => Parser::parse_x(verb, &words, world, player),
+                "examin" | "inspec" | "read" | "search" | "x" => {
+                    Parser::parse_x(verb, &words, world, player)
+                }
                 "get" | "pick" | "take" => Parser::parse_take(verb, &words, world, player),
                 "increa" => Parser::parse_increase(&words, player),
                 "open" => Parser::parse_open(verb, &words, world, player),

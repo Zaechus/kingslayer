@@ -4,13 +4,13 @@ use crate::entity::Entity;
 
 // An object to be interacted with by the user
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct Thing {
+pub struct Element {
     name: String,
     desc: String,
     inspect: String,
 }
 
-impl Thing {
+impl Element {
     pub fn new(name: &str, inspect: &str) -> Self {
         Self {
             name: name.to_string(),
@@ -25,7 +25,7 @@ impl Thing {
     }
 }
 
-impl Entity for Thing {
+impl Entity for Element {
     fn name(&self) -> &str {
         &self.name
     }

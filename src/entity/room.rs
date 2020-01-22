@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::{
     Closeable, Enemy, Entity,
     Item::{self, Container},
+    Pathway,
 };
 use crate::types::{Action, Allies, CmdResult, Enemies, Items, PathMap};
 
@@ -26,7 +27,7 @@ impl Room {
     // collects all descriptions of entities in the Room for printing
     pub fn long_desc(&self) -> String {
         let mut desc = format!("{}\n{}", self.name, self.desc);
-        for path in self.paths.values() {
+        for path in self.paths.iter() {
             if !path.desc().is_empty() {
                 desc.push_str(&format!("\n{}", path.long_desc()));
             }
@@ -43,10 +44,19 @@ impl Room {
         desc
     }
 
-    fn find_similar_item(&self, name: &str) -> Option<usize> {
+    fn similar_item_pos(&self, name: &str) -> Option<usize> {
         self.items
             .par_iter()
             .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+    }
+    #[allow(clippy::borrowed_box)]
+    pub fn find_similar_item(&self, name: &str) -> Option<&Box<Item>> {
+        self.items.par_iter().find_any(|item| {
+            item.name().par_split_whitespace().any(|item_word| {
+                name.par_split_whitespace()
+                    .any(|name_word| name_word == item_word)
+            })
+        })
     }
     fn find_similar_enemy(&self, name: &str) -> Option<usize> {
         self.enemies
@@ -56,6 +66,25 @@ impl Room {
 
     pub fn drain_all(&mut self) -> Items {
         self.items.drain(0..).collect()
+    }
+
+    #[allow(clippy::borrowed_box)]
+    pub fn get_path(&self, direction: &str) -> Option<&Box<Pathway>> {
+        self.paths.par_iter().find_any(|path| {
+            path.directions()
+                .par_iter()
+                .position_any(|d| d == direction)
+                .is_some()
+        })
+    }
+    #[allow(clippy::borrowed_box)]
+    pub fn get_path_mut(&mut self, direction: &str) -> Option<&mut Box<Pathway>> {
+        self.paths.par_iter_mut().find_any(|path| {
+            path.directions()
+                .par_iter()
+                .position_any(|d| d == direction)
+                .is_some()
+        })
     }
 
     pub fn extend_items(&mut self, new_items: Items) {
@@ -133,7 +162,7 @@ impl Room {
     }
 
     pub fn open(&mut self, name: &str) -> CmdResult {
-        if let Some(path) = self.paths.get_mut(name) {
+        if let Some(path) = self.get_path_mut(name) {
             if path.is_closed() {
                 path.open()
             } else {
@@ -145,7 +174,7 @@ impl Room {
             } else {
                 CmdResult::not_container(name)
             }
-        } else if let Some(item) = self.find_similar_item(name) {
+        } else if let Some(item) = self.similar_item_pos(name) {
             if let Some(item) = self.items.get_mut(item) {
                 if let Container(ref mut item) = **item {
                     item.open()
@@ -161,7 +190,7 @@ impl Room {
     }
 
     pub fn close(&mut self, name: &str) -> CmdResult {
-        if let Some(path) = self.paths.get_mut(name) {
+        if let Some(path) = self.get_path_mut(name) {
             if path.is_closed() {
                 CmdResult::already_closed(name)
             } else {
@@ -174,7 +203,7 @@ impl Room {
             } else {
                 CmdResult::not_container(name)
             }
-        } else if let Some(item) = self.find_similar_item(name) {
+        } else if let Some(item) = self.similar_item_pos(name) {
             if let Some(item) = self.items.get_mut(item) {
                 if let Container(ref mut item) = **item {
                     item.close()
@@ -254,7 +283,9 @@ impl Room {
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.items.par_iter().find_any(|x| x.name() == name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
-        } else if let Some(pathway) = self.paths.get(name) {
+        } else if let Some(item) = self.find_similar_item(name) {
+            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
+        } else if let Some(pathway) = self.get_path(name) {
             Some(CmdResult::new(Action::Active, pathway.inspect().to_owned()))
         } else if let Some(enemy) = self.enemies.par_iter().find_any(|x| x.name() == name) {
             Some(CmdResult::new(Action::Active, enemy.inspect().to_owned()))
@@ -277,7 +308,7 @@ impl Room {
     pub fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.items.par_iter().position_any(|x| x.name() == name) {
             Some(self.items.remove(item))
-        } else if let Some(item) = self.find_similar_item(name) {
+        } else if let Some(item) = self.similar_item_pos(name) {
             Some(self.items.remove(item))
         } else {
             None

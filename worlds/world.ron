@@ -5,78 +5,96 @@ rooms: {
     name: "Brig",
     desc: "You are in a small wooden room with a wood pillar in the middle.
     The ground slowly creaks and rocks beneath you.",
-    paths: {
-        "door": Pathway(
+    paths: [
+        Pathway(
+            directions: ["door", "n"],
             target: "Hold 1",
-            desc: "There is a door on one side.",
+            desc: "There is a door on the north side.",
             inspect: "The door is plain and wooden.",
             opening: Some(Closed),
         ),
-    }
+    ]
 ),
 "Hold 1": Room(
     name: "Hold",
-    desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.
-    You can detect the slight scent of root beer.",
-    paths: {
-        "door": Pathway(
+    desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.",
+    paths: [
+        Pathway(
+            directions: ["door", "s"],
             target: "Brig",
-            desc: "There is a door at the back of the hold.",
+            desc: "There is a door at the south end of the hold.",
             inspect: "The door is plain and wooden.",
             opening: Some(Open),
         ),
-        "n": Pathway(
+        Pathway(
+            directions: ["n"],
             target: "Hold 2",
             desc: "The hold continues to the north.",
             inspect: "This end of the hold is too dark to see into.",
         ),
-    }
+    ],
+    enemies: [
+        Enemy(
+            name: "sleeping pirate",
+            desc: "There is a pirate sleeping in a chair.",
+            inspect: "He seems to be intently snoring.",
+            hp: 1,
+            xp: 50,
+            damage: 0,
+            is_angry: false,
+        )
+    ]
 ),
 "Hold 2": Room(
     name: "Hold",
-    desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.
+    desc: "You are at the end of a spacious hold. Crates and barrels array the sides.
     You can detect the slight scent of root beer.",
-    paths: {
-        "hatch": Pathway(
+    paths: [
+        Pathway(
+            directions: ["hatch", "u"],
             target: "Crew Deck",
             desc: "There is a hatch above you.",
             inspect: "It looks like a metal grate.",
             opening: Some(Closed),
         ),
-        "s": Pathway(
+        Pathway(
+            directions: ["s"],
             target: "Hold 1",
             desc: "The hold continues to the south.",
             inspect: "The middle of the hold is lit by a lantern.",
         ),
-    }
+    ]
 ),
 "Crew Deck": Room(
     name: "Crew Deck",
     desc: "You are on a deck with dirty hammocks hanging everywhere.",
-    paths: {
-        "hatch": Pathway(
+    paths: [
+        Pathway(
+            directions: ["hatch", "s"],
             target: "Hold 2",
             desc: "There is a hatch on the ground",
             inspect: "It looks like a metal grate.",
             opening: Some(Open),
         ),
-        "s": Pathway(
+        Pathway(
+            directions: ["empty doorway", "s"],
             target: "Infirmary",
             desc: "There is an empty doorway to the south.",
             inspect: "The doorway flickers with lantern light.",
         ),
-    }
+    ]
 ),
 "Infirmary": Room(
     name: "Infirmary",
     desc: "You are in a room with empty beds lining one wall.",
-    paths: {
-        "n": Pathway(
+    paths: [
+        Pathway(
+            directions: ["doorway", "n"],
             target: "Crew Deck",
             desc: "The doorway leads back into the crew's quarters.",
             inspect: "The doorway flickers with lantern light.",
         ),
-    }
+    ]
 ),
 }
 )

@@ -4,12 +4,14 @@ use crate::entity::Entity;
 
 mod armor;
 mod container;
+mod element;
 mod gold;
 mod thing;
 mod weapon;
 
 pub use armor::Armor;
 pub use container::Container;
+pub use element::Element;
 pub use gold::Gold;
 pub use thing::Thing;
 pub use weapon::Weapon;
