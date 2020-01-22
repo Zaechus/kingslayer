@@ -1,5 +1,3 @@
-use rayon::prelude::*;
-
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -88,46 +86,8 @@ impl World {
     }
 
     // let an Enemy in the current Room take damage
-    pub fn harm_enemy(&mut self, damage: Option<i32>, enemy_name: &str, weapon: &str) -> CmdResult {
-        if let Some(enemy) = self
-            .get_curr_room()
-            .enemies()
-            .par_iter()
-            .position_any(|item| item.name() == enemy_name)
-        {
-            if let Some(enemy) = self.get_curr_room_mut().enemies_mut().get_mut(enemy) {
-                if let Some(damage) = damage {
-                    enemy.get_hit(damage);
-                    if enemy.is_alive() {
-                        CmdResult::new(
-                            Action::Active,
-                            format!(
-                                "You hit the {} with your {} for {} damage.",
-                                enemy_name, weapon, damage,
-                            ),
-                        )
-                    } else {
-                        let mut res = format!(
-                            "You hit the {} with your {} for {} damage. It is dead.\n",
-                            enemy_name, weapon, damage
-                        );
-                        if !enemy.loot().is_empty() {
-                            res.push_str("It dropped:\n");
-                            for loot in enemy.loot() {
-                                res.push_str(&format!(" {},", loot.long_name()));
-                            }
-                        }
-                        CmdResult::new(Action::Active, res)
-                    }
-                } else {
-                    CmdResult::dont_have(weapon)
-                }
-            } else {
-                CmdResult::no_item_here(enemy_name)
-            }
-        } else {
-            CmdResult::no_item_here(enemy_name)
-        }
+    pub fn harm_enemy(&mut self, damage: Option<i32>, enemy: &str, weapon: &str) -> CmdResult {
+        self.get_curr_room_mut().harm_enemy(damage, enemy, weapon)
     }
 
     // move an Item out of the current Room

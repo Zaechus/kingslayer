@@ -21,8 +21,8 @@ pub struct Enemy {
 impl Enemy {
     pub fn new_rats(is_angry: bool) -> Self {
         Self {
-            name: String::from("rat swarm"),
-            desc: String::from("A rat swarm raves along the floor."),
+            name: String::from("swarm rats"),
+            desc: String::from("A swarm of rats raves along the floor."),
             inspect: String::from("The creatures chatter and scrape viciously."),
             hp: 24,
             xp: 50,

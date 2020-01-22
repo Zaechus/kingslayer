@@ -198,6 +198,59 @@ impl Room {
         }
     }
 
+    pub fn harm(
+        &mut self,
+        enemy: usize,
+        damage: Option<i32>,
+        enemy_name: &str,
+        weapon: &str,
+    ) -> CmdResult {
+        if let Some(enemy) = self.enemies.get_mut(enemy) {
+            if let Some(damage) = damage {
+                enemy.get_hit(damage);
+                if enemy.is_alive() {
+                    CmdResult::new(
+                        Action::Active,
+                        format!(
+                            "You hit the {} with your {} for {} damage.",
+                            enemy_name, weapon, damage,
+                        ),
+                    )
+                } else {
+                    let mut res = format!(
+                        "You hit the {} with your {} for {} damage. It is dead.\n",
+                        enemy_name, weapon, damage
+                    );
+                    if !enemy.loot().is_empty() {
+                        res.push_str("It dropped:\n");
+                        for loot in enemy.loot() {
+                            res.push_str(&format!(" {},", loot.long_name()));
+                        }
+                    }
+                    CmdResult::new(Action::Active, res)
+                }
+            } else {
+                CmdResult::dont_have(weapon)
+            }
+        } else {
+            CmdResult::no_item_here(enemy_name)
+        }
+    }
+
+    pub fn harm_enemy(&mut self, damage: Option<i32>, enemy_name: &str, weapon: &str) -> CmdResult {
+        if let Some(enemy) = self
+            .enemies
+            .par_iter()
+            .position_any(|item| item.name() == enemy_name)
+        {
+            self.harm(enemy, damage, enemy_name, weapon)
+        } else if let Some(enemy) = self.find_similar_enemy(enemy_name) {
+            self.harm(enemy, damage, enemy_name, weapon)
+        } else {
+            CmdResult::no_item_here(enemy_name)
+        }
+    }
+
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.items.par_iter().find_any(|x| x.name() == name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
