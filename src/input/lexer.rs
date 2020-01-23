@@ -1,26 +1,13 @@
 use rayon::prelude::*;
 
-use serde::{Deserialize, Serialize};
-
 use crate::types::CmdTokens;
 
-#[derive(Debug, Default, Serialize, Deserialize)]
-pub struct Lexer {
-    filter_out: Vec<String>,
-}
+#[derive(Clone, Debug)]
+pub struct Lexer;
 
 impl Lexer {
-    pub fn new() -> Self {
-        Self {
-            filter_out: vec!["a", "an", "at", "my", "of", "that", "the", "through", "to"]
-                .par_iter()
-                .map(|&s| s.to_owned())
-                .collect(),
-        }
-    }
-
-    pub fn lex(&self, s: &str) -> CmdTokens {
-        let words = self.mod_words(&self.filter_parts(s));
+    pub fn lex(s: &str) -> CmdTokens {
+        let words = Lexer::mod_words(&Lexer::filter_parts(s));
 
         if words.is_empty() {
             CmdTokens::new(0, None, None, None, None)
@@ -48,16 +35,19 @@ impl Lexer {
         }
     }
 
-    fn filter_parts(&self, s: &str) -> Vec<String> {
+    fn filter_parts(s: &str) -> Vec<String> {
         let words: Vec<String> = s
             .par_split_whitespace()
             .map(str::to_lowercase)
-            .filter(|w| !(&self.filter_out).contains(&w))
+            .filter(|w| {
+                !(["a", "an", "at", "my", "of", "that", "the", "through", "to"])
+                    .contains(&w.as_str())
+            })
             .collect();
         words
     }
 
-    fn mod_words(&self, words: &[String]) -> Vec<String> {
+    fn mod_words(words: &[String]) -> Vec<String> {
         let mut modified = Vec::with_capacity(5 * words.len());
         for w in words {
             modified.push(

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::{Entity, Item};
 use crate::{dice_roll, types::Items};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Enemy {
     name: String,
     desc: String,

@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 use rand::Rng;
 
 use rayon::prelude::*;
@@ -11,7 +13,7 @@ use crate::{
     types::{Action, CmdResult, Items, Stats},
 };
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 enum CombatStatus {
     InCombat,
     Resting,
@@ -23,7 +25,7 @@ impl Default for CombatStatus {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Player {
     hp: (i32, u32),
     xp: (u32, u32),
@@ -35,8 +37,8 @@ pub struct Player {
     inventory: Inventory,
 }
 
-impl Player {
-    pub fn new() -> Self {
+impl Default for Player {
+    fn default() -> Self {
         Self {
             hp: (13, 13),
             xp: (0, 1000),
@@ -48,7 +50,9 @@ impl Player {
             inventory: Inventory::new(),
         }
     }
+}
 
+impl Player {
     fn deal_damage(&self, weapon_damage: u32) -> i32 {
         weapon_damage as i32 + self.stats.strngth_mod()
     }

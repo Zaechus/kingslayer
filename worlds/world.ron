@@ -1,4 +1,4 @@
-(
+(world: World(
 curr_room: "Brig",
 rooms: {
 "Brig": Room(
@@ -69,7 +69,7 @@ rooms: {
     desc: "You are on a deck with dirty hammocks hanging everywhere.",
     paths: [
         Pathway(
-            directions: ["hatch", "s"],
+            directions: ["hatch", "d"],
             target: "Hold 2",
             desc: "There is a hatch on the ground",
             inspect: "It looks like a metal grate.",
@@ -95,5 +95,4 @@ rooms: {
         ),
     ]
 ),
-}
-)
+}))

@@ -7,20 +7,13 @@ use crate::{
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
 // A World is a graph data structure that encapsulates a collection of Room nodes.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct World {
     curr_room: String,
     rooms: Rooms,
 }
 
 impl World {
-    pub fn new() -> Self {
-        Self {
-            curr_room: String::new(),
-            rooms: Rooms::new(),
-        }
-    }
-
     pub fn get_curr_room(&self) -> &Room {
         if let Some(room) = self.rooms.get(&self.curr_room) {
             room

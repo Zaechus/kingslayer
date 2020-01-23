@@ -1,4 +1,4 @@
-(
+(world: World(
 curr_room: "Central Room",
 rooms: {
 "Closet": Room(
@@ -99,5 +99,4 @@ rooms: {
         )),
     ]
 ),
-}
-)
+}))

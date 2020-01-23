@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::{Action, CmdResult};
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Stats {
     pub pts: u32,
     pub strngth: i32,

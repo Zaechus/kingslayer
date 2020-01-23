@@ -1,5 +1,3 @@
-use serde::{Deserialize, Serialize};
-
 use crate::{
     cli::Cli,
     entity::Entity,
@@ -8,7 +6,7 @@ use crate::{
     world::World,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Parser;
 
 impl Parser {
@@ -250,7 +248,6 @@ impl Parser {
                 "increa" => Parser::parse_increase(&words, player),
                 "open" => Parser::parse_open(verb, &words, world, player),
                 "insert" | "place" | "put" => Parser::parse_put(&words, verb, world, player),
-                "save" => Cli::save(world),
                 "wait" | "z" => Player::wait(),
                 "help" => Cli::help(),
                 _ => CmdResult::new(

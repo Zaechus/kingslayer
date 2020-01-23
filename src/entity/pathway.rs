@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use super::{Closeable, Entity, Opening};
 use crate::types::{Action, CmdResult};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Pathway {
     directions: Vec<String>,
     target: String,

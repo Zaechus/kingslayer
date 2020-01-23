@@ -8,6 +8,8 @@ use std::{
 
 use rayon::prelude::*;
 
+use serde::{Deserialize, Serialize};
+
 use crate::{
     entity::{Element, Enemy, Entity, Item},
     input::{read_line, Lexer, Parser},
@@ -17,42 +19,16 @@ use crate::{
 };
 
 /// The Cli type provides a simple way to interface into the mechanics of Kingslayer with custom worlds
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Cli {
-    lexer: Lexer,
+    #[serde(default)]
     player: RefCell<Box<Player>>,
     world: RefCell<Box<World>>,
 }
 
 impl Cli {
-    /// Construct a new Cli with an empty World
-    pub fn new() -> Self {
-        Self {
-            lexer: Lexer::new(),
-            player: RefCell::new(Box::new(Player::new())),
-            world: RefCell::new(Box::new(World::new())),
-        }
-    }
-
     /// Construct from a RON file
     pub fn from_file(path: &str) -> Self {
-        Self {
-            lexer: Lexer::new(),
-            player: RefCell::new(Box::new(Player::new())),
-            world: Cli::get_world_ron(path),
-        }
-    }
-
-    /// Construct from a string containing RON
-    pub fn from_ron_str(ron: &str) -> Self {
-        Self {
-            lexer: Lexer::new(),
-            player: RefCell::new(Box::new(Player::new())),
-            world: ron::de::from_str(ron).expect("Error creating world from string."),
-        }
-    }
-
-    fn get_world_ron(path: &str) -> RefCell<Box<World>> {
         let metadata = fs::metadata(path).expect("Error getting metadata from file");
         let world_file = File::open(path).expect("Unable to open world file");
         let mut world_file_reader = BufReader::new(world_file);
@@ -62,6 +38,11 @@ impl Cli {
             .expect("Unable to read string from world file");
 
         ron::de::from_str(&data).expect("Error creating world from RON file.")
+    }
+
+    /// Construct from a string containing RON
+    pub fn from_ron_str(ron: &str) -> Self {
+        ron::de::from_str(ron).expect("Error creating world from string.")
     }
 
     /// Prompts the user for input from stdin
@@ -128,13 +109,16 @@ Some available commands:
 
     /// Handle user input and return the results of commands and events
     pub fn ask(&self, input: &str) -> String {
-        let command = self.lexer.lex(input);
+        let command = Lexer::lex(input);
 
-        let res = Parser::parse(
-            command,
-            &mut self.world.borrow_mut(),
-            &mut self.player.borrow_mut(),
-        );
+        let res = match command.short_verb() {
+            Some("save") => Cli::save(&self),
+            _ => Parser::parse(
+                command,
+                &mut self.world.borrow_mut(),
+                &mut self.player.borrow_mut(),
+            ),
+        };
 
         if res.is_active() {
             format!("{}{}", res.output(), self.combat())
@@ -193,12 +177,10 @@ Some available commands:
         self.world.borrow_mut().spawn_enemy(room, enemy)
     }
 
-    pub fn save(world: &World) -> CmdResult {
-        let saved = ron::ser::to_string(world).expect("Error serializing world save file.");
-        let file = if Path::new("worlds/world.save.ron").is_file() {
-            File::open("worlds/save.ron")
-        } else if Path::new("worlds/").exists() {
-            File::create("worlds/save.ron")
+    fn save(&self) -> CmdResult {
+        let saved = ron::ser::to_string(&self).expect("Error serializing world save file.");
+        let file = if Path::new("worlds/").exists() {
+            File::create("worlds/world.save.ron")
         } else {
             match fs::create_dir(Path::new("worlds")) {
                 Ok(()) => File::create("worlds/world.save.ron"),
@@ -213,10 +195,10 @@ Some available commands:
                     String::from("Saved to 'worlds/world.save.ron'."),
                 )
             } else {
-                CmdResult::new(Action::Passive, String::from("Error saving world."))
+                CmdResult::new(Action::Passive, String::from("Error saving world. 1"))
             }
         } else {
-            CmdResult::new(Action::Passive, String::from("Error saving world."))
+            CmdResult::new(Action::Passive, String::from("Error saving world. 2"))
         }
     }
 }

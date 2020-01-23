@@ -10,7 +10,7 @@ use super::{
 use crate::types::{Action, Allies, CmdResult, Elements, Enemies, Items, Paths};
 
 // A section of the world connected by paths
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Room {
     name: String,
     desc: String,
@@ -332,10 +332,6 @@ impl Room {
 
     pub fn spawn_enemy(&mut self, enemy: Enemy) {
         self.enemies.push(Box::new(enemy));
-    }
-
-    pub const fn paths(&self) -> &Paths {
-        &self.paths
     }
 
     pub const fn enemies(&self) -> &Enemies {

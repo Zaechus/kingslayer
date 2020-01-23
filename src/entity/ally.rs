@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::Entity;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Ally {
     name: String,
     desc: String,
