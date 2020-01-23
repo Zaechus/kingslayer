@@ -43,15 +43,15 @@ fn main() {
 
         // Crew Deck
         cli.spawn_enemy(
-            "Crew Deck",
+            "Crew Deck 1",
             Enemy::new_pirate(false).with_item(Item::Gold(Gold::new(10))),
         );
         cli.spawn_enemy(
-            "Crew Deck",
+            "Crew Deck 1",
             Enemy::new_pirate(false)
                 .with_item(Item::Weapon(Weapon::new(
                     "cutlass",
-                    "It's thick steel cutlass.",
+                    "It has thick steel and many notches.",
                     8,
                 )))
                 .with_item(Item::Gold(Gold::new(10))),

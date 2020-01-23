@@ -64,7 +64,7 @@ rooms: {
         ),
     ]
 ),
-"Crew Deck": Room(
+"Crew Deck 1": Room(
     name: "Crew Deck",
     desc: "You are on a deck with dirty hammocks hanging everywhere.",
     paths: [
@@ -74,6 +74,30 @@ rooms: {
             desc: "There is a hatch on the ground",
             inspect: "It looks like a metal grate.",
             opening: Some(Open),
+        ),
+        Pathway(
+            directions: ["s"],
+            target: "Crew Deck 2",
+            desc: "The deck continues to the south.",
+            inspect: "There is a doorway at the south end of the deck.",
+        ),
+    ]
+),
+"Crew Deck 2": Room(
+    name: "Crew Deck",
+    desc: "You are on a deck with dirty hammocks hanging everywhere.",
+    paths: [
+        Pathway(
+            directions: ["opening", "u"],
+            target: "Hold 2",
+            desc: "There is an opening above you.",
+            inspect: "You think you might be able to see the light of day.",
+        ),
+        Pathway(
+            directions: ["n"],
+            target: "Crew Deck 1",
+            desc: "The deck continues to the north.",
+            inspect: "There is a hatch at the north end of the deck.",
         ),
         Pathway(
             directions: ["empty doorway", "s"],

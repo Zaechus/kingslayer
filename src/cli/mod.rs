@@ -63,7 +63,9 @@ impl Cli {
     pub fn help() -> CmdResult {
         CmdResult::new(
             Action::Passive,
-            "Typical format: <action> [object] [preposition] [object]
+            "Typical format (but the game is quite lenient): 
+    <action> [object] [preposition] [object]
+
     some prepositions: in, inside, from, on, with
 
 Some available commands:
