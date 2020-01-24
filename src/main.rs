@@ -29,7 +29,7 @@ fn main() {
             Item::Weapon(Weapon::new(
                 "sword",
                 "It's a basic short sword with a few knicks.",
-                7,
+                6,
             )),
         );
         cli.add_item(

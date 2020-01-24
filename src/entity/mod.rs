@@ -3,15 +3,16 @@ mod closeable;
 mod element;
 mod enemy;
 pub mod item;
+mod lockable;
 mod pathway;
 mod room;
 
 pub use ally::Ally;
-pub use closeable::Closeable;
-pub use closeable::Opening;
+pub use closeable::{Closeable, Opening};
 pub use element::Element;
 pub use enemy::Enemy;
 pub use item::Item;
+pub use lockable::{Lock, Lockable};
 pub use pathway::Pathway;
 pub use room::Room;
 

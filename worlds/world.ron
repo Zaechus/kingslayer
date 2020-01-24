@@ -89,7 +89,7 @@ rooms: {
     paths: [
         Pathway(
             directions: ["opening", "u"],
-            target: "Hold 2",
+            target: "Cannon Deck 2",
             desc: "There is an opening above you.",
             inspect: "You think you might be able to see the light of day.",
         ),
@@ -109,13 +109,81 @@ rooms: {
 ),
 "Infirmary": Room(
     name: "Infirmary",
-    desc: "You are in a room with empty beds lining one wall.",
+    desc: "You are in a room with a few empty beds against one wall.",
     paths: [
         Pathway(
             directions: ["doorway", "n"],
             target: "Crew Deck",
             desc: "The doorway leads back into the crew's quarters.",
             inspect: "The doorway flickers with lantern light.",
+        ),
+    ]
+),
+"Cannon Deck 1": Room(
+    name: "Cannon Deck",
+    desc: "This deck has cannons lining each side.",
+    paths: [
+        Pathway(
+            directions: ["s"],
+            target: "Cannon Deck 2",
+            desc: "The deck continues to the south.",
+            inspect: "This ship sure has a lot of cannons.",
+        ),
+        Pathway(
+            directions: ["hatch", "u"],
+            target: "Main Deck",
+            desc: "A hatch above you bring in bright sunlight.",
+            inspect: "The hatch is a double-hinged grate made of old rusty metal.",
+            opening: Some(Closed),
+        ),
+    ]
+),
+"Cannon Deck 2": Room(
+    name: "Cannon Deck",
+    desc: "This deck has cannons lining each side.",
+    paths: [
+        Pathway(
+            directions: ["n"],
+            target: "Cannon Deck 1",
+            desc: "The deck continues to the north.",
+            inspect: "This ship sure has a lot of cannons.",
+        ),
+        Pathway(
+            directions: ["doorway", "s"],
+            target: "Empty Room",
+            desc: "There is a doorway to the south.",
+            inspect: "The doorway is completely dark.",
+        ),
+        Pathway(
+            directions: ["opening", "d"],
+            target: "Crew Deck 2",
+            desc: "There is an opening below you.",
+            inspect: "You can see hammocks through the opening.",
+        ),
+    ]
+),
+"Empty Room": Room(
+    name: "Empty Room",
+    desc: "The room is dark and empty.",
+    paths: [
+        Pathway(
+            directions: ["doorway", "n"],
+            target: "Cannon Deck 2",
+            desc: "The doorway leads back into the cannon deck.",
+            inspect: "You see many cannons.",
+        ),
+    ]
+),
+"Main Deck": Room(
+    name: "Main Deck",
+    desc: "The vast open sea surrounds the ship you stand on.",
+    paths: [
+        Pathway(
+            directions: ["hatch", "d"],
+            target: "Cannon Deck 1",
+            desc: "There is a hatch below you.",
+            inspect: "The hatch is a double-hinged grate made of old rusty metal.",
+            opening: Some(Open),
         ),
     ]
 ),

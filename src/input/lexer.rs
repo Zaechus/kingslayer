@@ -40,8 +40,10 @@ impl Lexer {
             .par_split_whitespace()
             .map(str::to_lowercase)
             .filter(|w| {
-                !(["a", "an", "at", "my", "of", "that", "the", "through", "to"])
-                    .contains(&w.as_str())
+                !([
+                    "a", "an", "around", "at", "of", "my", "that", "the", "through", "to",
+                ])
+                .contains(&w.as_str())
             })
             .collect();
         words
