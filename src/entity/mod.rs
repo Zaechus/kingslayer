@@ -12,7 +12,7 @@ pub use closeable::{Closeable, Opening};
 pub use element::Element;
 pub use enemy::Enemy;
 pub use item::Item;
-pub use lockable::{Lock, Lockable};
+pub use lockable::{DoorLock, Lockable};
 pub use pathway::Pathway;
 pub use room::Room;
 

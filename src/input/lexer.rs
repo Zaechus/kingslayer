@@ -41,7 +41,7 @@ impl Lexer {
             .map(str::to_lowercase)
             .filter(|w| {
                 !([
-                    "a", "an", "around", "at", "of", "my", "that", "the", "through", "to",
+                    "a", "an", "around", "at", "of", "my", "that", "the", "through", "to", "'",
                 ])
                 .contains(&w.as_str())
             })

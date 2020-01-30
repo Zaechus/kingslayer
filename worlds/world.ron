@@ -42,8 +42,8 @@ rooms: {
             xp: 50,
             damage: 0,
             is_angry: false,
-        )
-    ]
+        ),
+    ],
 ),
 "Hold 2": Room(
     name: "Hold",
@@ -136,7 +136,7 @@ rooms: {
             inspect: "The hatch is a double-hinged grate made of old rusty metal.",
             opening: Some(Closed),
         ),
-    ]
+    ],
 ),
 "Cannon Deck 2": Room(
     name: "Cannon Deck",
@@ -184,6 +184,62 @@ rooms: {
             desc: "There is a hatch below you.",
             inspect: "The hatch is a double-hinged grate made of old rusty metal.",
             opening: Some(Open),
+        ),
+        Pathway(
+            directions: ["mast", "platform", "u"],
+            target: "Platform",
+            desc: "There is a platform above you on the central mast.",
+            inspect: "The platform can be reached through holds on the mast.",
+        ),
+        Pathway(
+            directions: ["door"],
+            target: "Captains Cabin",
+            desc: "There is door on the wall beneath the sterncastle of the ship.",
+            inspect: "The door is large with a small dim window in the center.",
+            opening: Some(Closed),
+        ),
+    ]
+),
+"Captains Cabin": Room(
+    name: "Captains Cabin",
+    desc: "You stand in a large cabin with the captains belongins littering the ground and hanging on the walls.",
+    paths: [
+        Pathway(
+            directions: ["door", "n"],
+            target: "Main Deck",
+            desc: "There is door at the north end of the room.",
+            inspect: "The door is large with a small dim window in the center.",
+            opening: Some(Open),
+        ),
+    ],
+),
+"Platform": Room(
+    name: "Platform",
+    desc: "You stand on a platform several feet above the main deck.",
+    paths: [
+        Pathway(
+            directions: ["d"],
+            target: "Main Deck",
+            desc: "The main deck is below you.",
+            inspect: "The main deck is several feet below.",
+        ),
+        Pathway(
+            directions: ["crows nest", "u"],
+            target: "platform",
+            desc: "There is a platform above you on the central mast.",
+            inspect: "The platform can be reached through holds on the mast.",
+        ),
+    ]
+),
+"Crows Nest": Room(
+    name: "Crows Nest",
+    desc: "You are in a crows nest overlooking the entire ship and sea.",
+    paths: [
+        Pathway(
+            directions: ["mast", "platform", "d"],
+            target: "Platform",
+            desc: "There is a platform below you on the central mast.",
+            inspect: "The platform can be reached through holds on the mast.",
         ),
     ]
 ),

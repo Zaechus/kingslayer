@@ -57,6 +57,18 @@ fn main() {
                 .with_item(Item::Gold(Gold::new(10))),
         );
 
+        // Cannon Deck
+        cli.spawn_enemy(
+            "Cannon Deck 1",
+            Enemy::new_pirate(true).with_item(Item::Gold(Gold::new(10))),
+        );
+
+        // Crows Nest
+        cli.spawn_enemy(
+            "Crows Nest",
+            Enemy::new_pirate(false).with_item(Item::Gold(Gold::new(10))),
+        );
+
         cli.start();
     }
 }

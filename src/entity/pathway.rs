@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{Closeable, Entity, Opening};
+use super::{Closeable, DoorLock, Entity, Lockable, Opening};
 use crate::types::{Action, CmdResult};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -12,6 +12,7 @@ pub struct Pathway {
     #[serde(default)]
     inspect: String,
     opening: Option<Opening>,
+    lock: Option<DoorLock>,
 }
 
 impl Pathway {
