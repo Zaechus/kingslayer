@@ -8,7 +8,263 @@ fn main() {
 
         cli.start();
     } else {
-        let cli = Cli::from_file("worlds/world.ron");
+        let cli = Cli::from_ron_str(
+            r#"
+        (world: World(
+            curr_room: "Brig",
+            rooms: {
+            "Brig": Room(
+                name: "Brig",
+                desc: "You are in a small wooden room with a wood pillar in the middle.
+                The ground slowly creaks and rocks beneath you.",
+                paths: [
+                    Pathway(
+                        directions: ["door", "n"],
+                        target: "Hold 1",
+                        desc: "There is a door on the north side.",
+                        inspect: "The door is plain and wooden.",
+                        opening: Some(Closed),
+                    ),
+                ]
+            ),
+            "Hold 1": Room(
+                name: "Hold",
+                desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.",
+                paths: [
+                    Pathway(
+                        directions: ["door", "s"],
+                        target: "Brig",
+                        desc: "There is a door at the south end of the hold.",
+                        inspect: "The door is plain and wooden.",
+                        opening: Some(Open),
+                    ),
+                    Pathway(
+                        directions: ["n"],
+                        target: "Hold 2",
+                        desc: "The hold continues to the north.",
+                        inspect: "This end of the hold is too dark to see into.",
+                    ),
+                ],
+            ),
+            "Hold 2": Room(
+                name: "Hold",
+                desc: "You are at the end of a spacious hold. Crates and barrels array the sides.",
+                paths: [
+                    Pathway(
+                        directions: ["hatch", "u"],
+                        target: "Crew Deck 1",
+                        desc: "There is a hatch above you.",
+                        inspect: "It looks like a metal grate.",
+                        opening: Some(Closed),
+                    ),
+                    Pathway(
+                        directions: ["s"],
+                        target: "Hold 1",
+                        desc: "The hold continues to the south.",
+                        inspect: "The middle of the hold is lit by a lantern.",
+                    ),
+                ]
+            ),
+            "Crew Deck 1": Room(
+                name: "Crew Deck",
+                desc: "You are on a deck with dirty hammocks hanging everywhere.",
+                paths: [
+                    Pathway(
+                        directions: ["hatch", "d"],
+                        target: "Hold 2",
+                        desc: "There is a hatch on the ground",
+                        inspect: "It looks like a metal grate.",
+                        opening: Some(Open),
+                    ),
+                    Pathway(
+                        directions: ["s"],
+                        target: "Crew Deck 2",
+                        desc: "The deck continues to the south.",
+                        inspect: "There is a doorway at the south end of the deck.",
+                    ),
+                ]
+            ),
+            "Crew Deck 2": Room(
+                name: "Crew Deck",
+                desc: "You are on a deck with dirty hammocks hanging everywhere.",
+                paths: [
+                    Pathway(
+                        directions: ["opening", "u"],
+                        target: "Cannon Deck 2",
+                        desc: "There is an opening above you.",
+                        inspect: "You think you might be able to see the light of day.",
+                    ),
+                    Pathway(
+                        directions: ["n"],
+                        target: "Crew Deck 1",
+                        desc: "The deck continues to the north.",
+                        inspect: "There is a hatch at the north end of the deck.",
+                    ),
+                    Pathway(
+                        directions: ["empty doorway", "s"],
+                        target: "Infirmary",
+                        desc: "There is an empty doorway to the south.",
+                        inspect: "The doorway flickers with lantern light.",
+                    ),
+                ]
+            ),
+            "Infirmary": Room(
+                name: "Infirmary",
+                desc: "You are in a room with a few empty beds against one wall.",
+                paths: [
+                    Pathway(
+                        directions: ["doorway", "n"],
+                        target: "Crew Deck 2",
+                        desc: "The doorway leads back into the crew's quarters.",
+                        inspect: "The doorway flickers with lantern light.",
+                    ),
+                ]
+            ),
+            "Cannon Deck 1": Room(
+                name: "Cannon Deck",
+                desc: "This deck has cannons lining each side.",
+                paths: [
+                    Pathway(
+                        directions: ["s"],
+                        target: "Cannon Deck 2",
+                        desc: "The deck continues to the south.",
+                        inspect: "This ship sure has a lot of cannons.",
+                    ),
+                    Pathway(
+                        directions: ["hatch", "u"],
+                        target: "Main Deck",
+                        desc: "A hatch above you bring in bright sunlight.",
+                        inspect: "The hatch is a double-hinged grate made of old rusty metal.",
+                        opening: Some(Closed),
+                    ),
+                ],
+            ),
+            "Cannon Deck 2": Room(
+                name: "Cannon Deck",
+                desc: "This deck has cannons lining each side.",
+                paths: [
+                    Pathway(
+                        directions: ["n"],
+                        target: "Cannon Deck 1",
+                        desc: "The deck continues to the north.",
+                        inspect: "This ship sure has a lot of cannons.",
+                    ),
+                    Pathway(
+                        directions: ["doorway", "s"],
+                        target: "Empty Room",
+                        desc: "There is a doorway to the south.",
+                        inspect: "The doorway is completely dark.",
+                    ),
+                    Pathway(
+                        directions: ["opening", "d"],
+                        target: "Crew Deck 2",
+                        desc: "There is an opening below you.",
+                        inspect: "You can see hammocks through the opening.",
+                    ),
+                ]
+            ),
+            "Empty Room": Room(
+                name: "Empty Room",
+                desc: "The room is dark and empty.",
+                paths: [
+                    Pathway(
+                        directions: ["doorway", "n"],
+                        target: "Cannon Deck 2",
+                        desc: "The doorway leads back into the cannon deck.",
+                        inspect: "You see many cannons.",
+                    ),
+                ]
+            ),
+            "Main Deck": Room(
+                name: "Main Deck",
+                desc: "The vast open sea surrounds the ship you stand on.",
+                paths: [
+                    Pathway(
+                        directions: ["hatch", "d"],
+                        target: "Cannon Deck 1",
+                        desc: "There is a hatch below you.",
+                        inspect: "The hatch is a double-hinged grate made of old rusty metal.",
+                        opening: Some(Open),
+                    ),
+                    Pathway(
+                        directions: ["mast", "platform", "u"],
+                        target: "Platform",
+                        desc: "There is a platform above you on the central mast.",
+                        inspect: "The platform can be reached through holds on the mast.",
+                    ),
+                    Pathway(
+                        directions: ["stairs", "s"],
+                        target: "Sterncastle",
+                        desc: "Stairs towards the south lead upwards onto the sterncastle.",
+                        inspect: "The stairs are old and dirty.",
+                    ),
+                    Pathway(
+                        directions: ["door"],
+                        target: "Captains Cabin",
+                        desc: "There is door on the wall beneath the sterncastle of the ship.",
+                        inspect: "The door is large with a small dim window in the center.",
+                        opening: Some(Closed),
+                    ),
+                ]
+            ),
+            "Sterncastle": Room(
+                name: "Sterncastle",
+                desc: "You are on the sterncastle of the ship. There is another mast in the center and a the ships wheel.",
+                paths: [
+                    Pathway(
+                        directions: ["stairs", "n", "d"],
+                        target: "Main Deck",
+                        desc: "The stairs lead back onto the main deck.",
+                        inspect: "The stairs are old and dirty.",
+                    ),
+                ],
+            ),
+            "Captains Cabin": Room(
+                name: "Captains Cabin",
+                desc: "You stand in a large cabin with the captains belongins littering the ground and hanging on the walls.",
+                paths: [
+                    Pathway(
+                        directions: ["door", "n"],
+                        target: "Main Deck",
+                        desc: "There is door at the north end of the room.",
+                        inspect: "The door is large with a small dim window in the center.",
+                        opening: Some(Open),
+                    ),
+                ],
+            ),
+            "Platform": Room(
+                name: "Platform",
+                desc: "You stand on a platform several feet above the main deck.",
+                paths: [
+                    Pathway(
+                        directions: ["d"],
+                        target: "Main Deck",
+                        desc: "The main deck is below you.",
+                        inspect: "The main deck is several feet below.",
+                    ),
+                    Pathway(
+                        directions: ["crows nest", "u"],
+                        target: "Crows Nest",
+                        desc: "There is a crows nest above you on the central mast.",
+                        inspect: "The crows nest can be reached through holds and rigging on the mast.",
+                    ),
+                ]
+            ),
+            "Crows Nest": Room(
+                name: "Crows Nest",
+                desc: "You are in a crows nest overlooking the entire ship and sea.",
+                paths: [
+                    Pathway(
+                        directions: ["mast", "platform", "d"],
+                        target: "Platform",
+                        desc: "There is a platform below you on the central mast.",
+                        inspect: "The platform can be reached through holds on the mast.",
+                    ),
+                ]
+            ),
+            }))
+        "#,
+        );
         cli.add_item(
             "Brig",
             Item::Weapon(Weapon::new("stick", "It's short but stout.", 4)),

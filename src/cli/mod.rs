@@ -3,7 +3,6 @@ use std::{
     convert::TryInto,
     fs::{self, File},
     io::{self, BufReader, Read, Write},
-    path::Path,
 };
 
 use rayon::prelude::*;
@@ -181,26 +180,15 @@ Some available commands:
 
     fn save(&self) -> CmdResult {
         let saved = ron::ser::to_string(&self).expect("Error serializing world save file.");
-        let file = if Path::new("worlds/").exists() {
-            File::create("worlds/world.save.ron")
-        } else {
-            match fs::create_dir(Path::new("worlds")) {
-                Ok(()) => File::create("worlds/world.save.ron"),
-                Err(err) => Result::Err(err),
-            }
-        };
 
-        if let Ok(mut file) = file {
+        if let Ok(mut file) = File::create("world.save.ron") {
             if let Ok(()) = file.write_all(saved.as_bytes()) {
-                CmdResult::new(
-                    Action::Passive,
-                    String::from("Saved to 'worlds/world.save.ron'."),
-                )
+                CmdResult::new(Action::Passive, String::from("Saved to 'world.save.ron'."))
             } else {
-                CmdResult::new(Action::Passive, String::from("Error saving world. 1"))
+                CmdResult::new(Action::Passive, String::from("Error saving world."))
             }
         } else {
-            CmdResult::new(Action::Passive, String::from("Error saving world. 2"))
+            CmdResult::new(Action::Passive, String::from("Error saving world."))
         }
     }
 }

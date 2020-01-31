@@ -16,6 +16,3 @@ c:
     cargo build
 
     cargo test
-
-docs:
-    cargo doc --document-private-items --open
