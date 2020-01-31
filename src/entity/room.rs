@@ -235,7 +235,7 @@ impl Room {
     pub fn harm(
         &mut self,
         enemy: usize,
-        damage: Option<i32>,
+        damage: Option<u32>,
         enemy_name: &str,
         weapon: &str,
     ) -> CmdResult {
@@ -271,7 +271,7 @@ impl Room {
         }
     }
 
-    pub fn harm_enemy(&mut self, damage: Option<i32>, enemy_name: &str, weapon: &str) -> CmdResult {
+    pub fn harm_enemy(&mut self, damage: Option<u32>, enemy_name: &str, weapon: &str) -> CmdResult {
         if let Some(enemy) = self
             .enemies
             .par_iter()

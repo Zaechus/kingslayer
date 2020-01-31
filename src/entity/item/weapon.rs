@@ -1,8 +1,6 @@
-use rand::Rng;
-
 use serde::{Deserialize, Serialize};
 
-use crate::entity::Entity;
+use crate::{dice_roll, entity::Entity};
 
 // An object to be interacted with by the user
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -24,7 +22,7 @@ impl Weapon {
     }
 
     pub fn damage(&self) -> u32 {
-        rand::thread_rng().gen_range(1, self.damage + 1)
+        dice_roll(1, self.damage)
     }
 }
 

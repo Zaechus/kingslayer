@@ -1,8 +1,9 @@
 use crate::{
     cli::Cli,
     entity::Entity,
+    input::CmdTokens,
     player::Player,
-    types::{Action, CmdResult, CmdTokens},
+    types::{Action, CmdResult},
     world::World,
 };
 
@@ -252,7 +253,7 @@ impl Parser {
                 "help" => Cli::help(),
                 _ => CmdResult::new(
                     Action::Passive,
-                    format!("I do not know the word \"{}\"", verb),
+                    format!("I do not know the word \"{}\"", words.verb().unwrap()),
                 ),
             }
         } else {

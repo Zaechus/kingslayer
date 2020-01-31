@@ -79,7 +79,7 @@ impl World {
     }
 
     // let an Enemy in the current Room take damage
-    pub fn harm_enemy(&mut self, damage: Option<i32>, enemy: &str, weapon: &str) -> CmdResult {
+    pub fn harm_enemy(&mut self, damage: Option<u32>, enemy: &str, weapon: &str) -> CmdResult {
         self.get_curr_room_mut().harm_enemy(damage, enemy, weapon)
     }
 

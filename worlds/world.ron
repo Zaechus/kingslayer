@@ -33,17 +33,6 @@ rooms: {
             inspect: "This end of the hold is too dark to see into.",
         ),
     ],
-    enemies: [
-        Enemy(
-            name: "sleeping pirate",
-            desc: "There is a pirate sleeping in a chair.",
-            inspect: "He seems to be intently snoring.",
-            hp: 1,
-            xp: 50,
-            damage: 0,
-            is_angry: false,
-        ),
-    ],
 ),
 "Hold 2": Room(
     name: "Hold",
@@ -51,7 +40,7 @@ rooms: {
     paths: [
         Pathway(
             directions: ["hatch", "u"],
-            target: "Crew Deck",
+            target: "Crew Deck 1",
             desc: "There is a hatch above you.",
             inspect: "It looks like a metal grate.",
             opening: Some(Closed),
@@ -113,7 +102,7 @@ rooms: {
     paths: [
         Pathway(
             directions: ["doorway", "n"],
-            target: "Crew Deck",
+            target: "Crew Deck 2",
             desc: "The doorway leads back into the crew's quarters.",
             inspect: "The doorway flickers with lantern light.",
         ),
@@ -192,6 +181,12 @@ rooms: {
             inspect: "The platform can be reached through holds on the mast.",
         ),
         Pathway(
+            directions: ["stairs", "s"],
+            target: "Sterncastle",
+            desc: "Stairs towards the south lead upwards onto the sterncastle.",
+            inspect: "The stairs are old and dirty.",
+        ),
+        Pathway(
             directions: ["door"],
             target: "Captains Cabin",
             desc: "There is door on the wall beneath the sterncastle of the ship.",
@@ -199,6 +194,18 @@ rooms: {
             opening: Some(Closed),
         ),
     ]
+),
+"Sterncastle": Room(
+    name: "Sterncastle",
+    desc: "You are on the sterncastle of the ship. There is another mast in the center and a the ships wheel.",
+    paths: [
+        Pathway(
+            directions: ["stairs", "n", "d"],
+            target: "Main Deck",
+            desc: "The stairs lead back onto the main deck.",
+            inspect: "The stairs are old and dirty.",
+        ),
+    ],
 ),
 "Captains Cabin": Room(
     name: "Captains Cabin",
@@ -225,9 +232,9 @@ rooms: {
         ),
         Pathway(
             directions: ["crows nest", "u"],
-            target: "platform",
-            desc: "There is a platform above you on the central mast.",
-            inspect: "The platform can be reached through holds on the mast.",
+            target: "Crows Nest",
+            desc: "There is a crows nest above you on the central mast.",
+            inspect: "The crows nest can be reached through holds and rigging on the mast.",
         ),
     ]
 ),

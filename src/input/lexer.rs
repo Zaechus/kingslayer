@@ -1,6 +1,6 @@
 use rayon::prelude::*;
 
-use crate::types::CmdTokens;
+use crate::input::CmdTokens;
 
 #[derive(Clone, Debug)]
 pub struct Lexer;

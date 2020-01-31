@@ -37,6 +37,9 @@ impl CmdTokens {
             None
         }
     }
+    pub fn verb(&self) -> Option<&String> {
+        self.verb.as_ref()
+    }
     pub fn obj(&self) -> Option<&String> {
         self.obj.as_ref()
     }

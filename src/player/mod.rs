@@ -1,10 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use rand::Rng;
-
 use rayon::prelude::*;
 
 use crate::{
+    dice_roll,
     entity::{
         Entity,
         Item::{self, Armor, Weapon},
@@ -53,15 +52,15 @@ impl Default for Player {
 }
 
 impl Player {
-    fn deal_damage(&self, weapon_damage: u32) -> i32 {
-        weapon_damage as i32 + self.stats.strngth_mod()
+    fn deal_damage(&self, weapon_damage: u32) -> u32 {
+        (weapon_damage as i32 + self.stats.strngth_mod()) as u32
     }
 
-    fn default_damage(&self) -> i32 {
-        rand::thread_rng().gen_range(1, 5)
+    fn default_damage(&self) -> u32 {
+        dice_roll(1, 4)
     }
 
-    pub fn attack(&mut self) -> Option<i32> {
+    pub fn attack(&mut self) -> Option<u32> {
         if let Some(weapon) = &self.main_hand {
             if let Weapon(ref weapon) = **weapon {
                 self.in_combat = CombatStatus::InCombat;
@@ -74,7 +73,7 @@ impl Player {
         }
     }
 
-    pub fn attack_with(&mut self, weapon_name: &str) -> Option<i32> {
+    pub fn attack_with(&mut self, weapon_name: &str) -> Option<u32> {
         if let Some(weapon) = self.inventory.find(weapon_name) {
             if let Weapon(ref weapon) = **weapon {
                 self.in_combat = CombatStatus::InCombat;
@@ -320,8 +319,8 @@ impl Player {
     pub fn rest(&mut self) -> CmdResult {
         if self.hp() < self.hp_cap() as i32 {
             if let CombatStatus::Resting = self.in_combat {
-                let regained_hp = rand::thread_rng().gen_range(1, 7);
-                let new_hp = self.hp() + regained_hp;
+                let regained_hp = dice_roll(1, 6);
+                let new_hp = self.hp() + regained_hp as i32;
                 if new_hp < self.hp_cap() as i32 {
                     self.hp = (new_hp, self.hp_cap());
                 } else {
@@ -360,7 +359,7 @@ impl Player {
     }
 
     pub fn take_damage(&mut self, enemy_name: &str, damage: u32) -> String {
-        if rand::thread_rng().gen_range(1, 21) > self.ac() {
+        if dice_roll(1, 20) as i32 > self.ac() {
             self.hp = (self.hp.0 - damage as i32, self.hp.1);
             format!(
                 "\nThe {} hit you for {} damage. You have {} HP left.",
@@ -369,7 +368,7 @@ impl Player {
                 self.hp()
             )
         } else {
-            match rand::thread_rng().gen_range(0, 3) {
+            match dice_roll(1, 3) {
                 0 => format!(
                     "\nThe {} swung at you, but you dodged out of the way.",
                     enemy_name

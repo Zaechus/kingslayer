@@ -1,6 +1,6 @@
 use std::env;
 
-use kingslayer::{Armor, Cli, Element, Enemy, Gold, Item, Weapon};
+use kingslayer::{Armor, Cli, Element, Enemy, Gold, Item, Thing, Weapon};
 
 fn main() {
     if let Some(path) = env::args().nth(1) {
@@ -21,6 +21,14 @@ fn main() {
         );
         cli.add_element("Hold 1", root_beer.clone());
         cli.add_element("Hold 2", root_beer);
+
+        // Hold 1
+        cli.spawn_enemy(
+            "Hold 1",
+            Enemy::new("sleeping pirate", "He seems to be intently snoring.", false)
+                .with_desc("There is a pirate sleeping in a chair.")
+                .with_xp(50),
+        );
 
         // Hold 2
         cli.spawn_enemy("Hold 2", Enemy::new_rats(true));
@@ -63,10 +71,27 @@ fn main() {
             Enemy::new_pirate(true).with_item(Item::Gold(Gold::new(10))),
         );
 
+        // Captains Cabin
+        cli.spawn_enemy(
+            "Captains Cabin",
+            Enemy::new(
+                "pirate captain",
+                "He grins, showing off multiple golden teeth.",
+                true,
+            )
+            .with_hp(50)
+            .with_xp(500)
+            .with_damage(12)
+            .with_item(Item::Thing(Thing::new(
+                "blue ring",
+                "When the ring catches the sunlight, the surface shimmers like the waves of the sea."
+            ))),
+        );
+
         // Crows Nest
         cli.spawn_enemy(
             "Crows Nest",
-            Enemy::new_pirate(false).with_item(Item::Gold(Gold::new(10))),
+            Enemy::new_pirate(false).with_item(Item::Gold(Gold::new(20))),
         );
 
         cli.start();

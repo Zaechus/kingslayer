@@ -1,5 +1,3 @@
-use rand::Rng;
-
 use serde::{Deserialize, Serialize};
 
 use super::{Entity, Item};
@@ -19,6 +17,18 @@ pub struct Enemy {
 }
 
 impl Enemy {
+    pub fn new(name: &str, inspect: &str, is_angry: bool) -> Self {
+        Self {
+            name: name.to_string(),
+            desc: format!("There is a {} here.", name),
+            inspect: inspect.to_string(),
+            hp: 1,
+            xp: 0,
+            damage: 1,
+            is_angry,
+            loot: Items::new(),
+        }
+    }
     pub fn new_rats(is_angry: bool) -> Self {
         Self {
             name: String::from("swarm rats"),
@@ -49,6 +59,18 @@ impl Enemy {
         self.desc = String::from(desc);
         self
     }
+    pub fn with_hp(mut self, hp: i32) -> Self {
+        self.hp = hp;
+        self
+    }
+    pub fn with_xp(mut self, xp: u32) -> Self {
+        self.xp = xp;
+        self
+    }
+    pub fn with_damage(mut self, damage: u32) -> Self {
+        self.damage = damage;
+        self
+    }
     pub fn with_item(mut self, item: Item) -> Self {
         self.loot.push(Box::new(item));
         self
@@ -59,7 +81,7 @@ impl Enemy {
     }
 
     pub fn damage(&self) -> u32 {
-        rand::thread_rng().gen_range(1, self.damage + 1)
+        dice_roll(1, self.damage)
     }
 
     pub const fn is_angry(&self) -> bool {
@@ -74,9 +96,9 @@ impl Enemy {
         &self.loot
     }
 
-    pub fn get_hit(&mut self, damage: i32) {
+    pub fn get_hit(&mut self, damage: u32) {
         self.make_angry();
-        self.hp -= damage;
+        self.hp -= damage as i32;
     }
 
     pub const fn is_alive(&self) -> bool {

@@ -1,7 +1,5 @@
 //! Kingslayer is a text-based dungeon crawler adventure game and game engine
 
-use rand::Rng;
-
 pub use cli::Cli;
 pub use entity::{
     item::{Armor, Container, Gold, Thing, Weapon},
@@ -28,6 +26,8 @@ mod types;
 
 /// Manages the map of Rooms
 mod world;
+
+use rand::Rng;
 
 fn dice_roll(num_rolls: u32, num_sides: u32) -> u32 {
     let mut sum = 0;

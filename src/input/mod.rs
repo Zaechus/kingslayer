@@ -8,8 +8,10 @@ pub fn read_line() -> String {
     input.trim().to_owned()
 }
 
+mod cmdtokens;
 mod lexer;
 mod parser;
 
+pub use cmdtokens::CmdTokens;
 pub use lexer::Lexer;
 pub use parser::Parser;
