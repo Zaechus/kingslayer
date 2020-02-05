@@ -10,6 +10,15 @@ pub struct CmdResult {
     output: String,
 }
 
+impl Default for CmdResult {
+    fn default() -> Self {
+        Self {
+            action: Action::Passive,
+            output: String::new(),
+        }
+    }
+}
+
 impl CmdResult {
     pub const fn new(action: Action, output: String) -> Self {
         Self { action, output }

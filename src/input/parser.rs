@@ -238,17 +238,22 @@ impl Parser {
                 }
                 "heal" | "rest" | "sleep" => player.rest(),
                 "hail" | "talk" | "hi" | "hello" | "greet" => Parser::parse_hail(&words, world),
+                "cast" | "use" => {
+                    CmdResult::new(Action::Passive, String::from("TODO: cast something"))
+                }
                 "close" => Parser::parse_close(verb, &words, world, player),
                 "don" => Parser::parse_don(verb, &words, player),
-                "draw" | "equip" | "hold" | "use" => Parser::parse_equip(verb, &words, player),
+                "draw" | "equip" | "hold" => Parser::parse_equip(verb, &words, player),
                 "drop" | "remove" | "throw" => Parser::parse_drop(verb, &words, world, player),
                 "examin" | "inspec" | "read" | "search" | "x" => {
                     Parser::parse_x(verb, &words, world, player)
                 }
                 "get" | "pick" | "take" => Parser::parse_take(verb, &words, world, player),
                 "increa" => Parser::parse_increase(&words, player),
+                "lock" => CmdResult::new(Action::Passive, String::from("TODO: lock something")),
                 "open" => Parser::parse_open(verb, &words, world, player),
                 "insert" | "place" | "put" => Parser::parse_put(&words, verb, world, player),
+                "unlock" => CmdResult::new(Action::Passive, String::from("TODO: unlock something")),
                 "wait" | "z" => Player::wait(),
                 "help" => Cli::help(),
                 _ => CmdResult::new(

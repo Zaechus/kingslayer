@@ -1,5 +1,5 @@
 use std::{
-    cell::RefCell,
+    cell::{Cell, RefCell},
     convert::TryInto,
     fs::{self, File},
     io::{self, BufReader, Read, Write},
@@ -20,6 +20,8 @@ use crate::{
 /// The Cli type provides a simple way to interface into the mechanics of Kingslayer with custom worlds
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Cli {
+    #[serde(default)]
+    running: Cell<bool>,
     #[serde(default)]
     player: RefCell<Box<Player>>,
     world: RefCell<Box<World>>,
@@ -48,6 +50,20 @@ impl Cli {
     pub fn prompt() -> String {
         loop {
             print!("\n> ");
+            io::stdout().flush().expect("Error flushing stdout");
+            let input = read_line();
+            if !input.is_empty() {
+                return input;
+            } else {
+                println!("Excuse me?");
+            }
+        }
+    }
+
+    /// Prompts the user for input from stdin
+    pub fn custom_prompt(prompt: &str) -> String {
+        loop {
+            print!("\n{} ", prompt);
             io::stdout().flush().expect("Error flushing stdout");
             let input = read_line();
             if !input.is_empty() {
@@ -98,12 +114,28 @@ Some available commands:
         )
     }
 
+    pub fn quit(&self) -> CmdResult {
+        match Cli::custom_prompt("Are you sure you want to quit? (y/n)")
+            .chars()
+            .next()
+            .unwrap()
+        {
+            'y' => {
+                self.running.set(false);
+                CmdResult::default()
+            }
+            _ => CmdResult::default(),
+        }
+    }
+
     /// Start a typical game for the command line
     pub fn start(&self) {
         println!("Type \"help\" if you are unfamiliar with text-based games.\n");
         println!("Use \"increase\" to use your initial stat points.\n");
         println!("{}", self.ask("l"));
-        while self.player.borrow().is_alive() {
+
+        self.running.set(true);
+        while self.running.get() && self.player.borrow().is_alive() {
             println!("{}", self.ask(&Cli::prompt()));
         }
     }
@@ -113,7 +145,8 @@ Some available commands:
         let command = Lexer::lex(input);
 
         let res = match command.short_verb() {
-            Some("save") => Cli::save(&self),
+            Some("save") => self.save(),
+            Some("q") | Some("quit") => self.quit(),
             _ => Parser::parse(
                 command,
                 &mut self.world.borrow_mut(),
