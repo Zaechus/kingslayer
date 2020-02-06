@@ -7,11 +7,15 @@
 
 Kingslayer is a text-based dungeon crawler written in Rust. It is a continuation of [thekinggame](https://github.com/Maxgy/thekinggame).
 
-You can find the WASM package at [github.com/Maxgy/kingslayer-wasm](https://github.com/Maxgy/kingslayer-wasm)
+### Playing the game
 
-### Running the game
+You can play the online WASM version here: [maxgy.github.io/kingslayer-web](https://maxgy.github.io/kingslayer-web/)
 
-You can play the online WASM version here: [maxgy.github.io/kingslayer-wasm](https://maxgy.github.io/kingslayer-wasm/)
+You can also install Kingslayer:
+```
+cargo install kingslayer
+kingslayer
+```
 
 or clone the project and run:
 ```
@@ -47,7 +51,7 @@ fn main() {
     }
 }
 ```
-This method allows you to manage other forms of input and output such as within a website. The content for the world can also be passed as a raw string with `Cli::from_ron_str`.
+This method allows for other forms of input and output such as within a website. The content for the world can also be passed as a raw string with `Cli::from_ron_str`.
 
 ### Dependencies
 * Rust ^1.41.0
