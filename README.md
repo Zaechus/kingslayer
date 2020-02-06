@@ -50,7 +50,7 @@ fn main() {
 This method allows you to manage other forms of input and output such as within a website. The content for the world can also be passed as a raw string with `Cli::from_ron_str`.
 
 ### Dependencies
-* Rust ^1.40.0
+* Rust ^1.41.0
 
 ### Crates
 * rand = "0.7"
