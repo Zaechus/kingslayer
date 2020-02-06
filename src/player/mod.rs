@@ -278,7 +278,12 @@ impl Player {
 
     fn remove_main_hand(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.main_hand.take() {
-            if item.name() == name || item.name().par_split_whitespace().any(|word| word == name) {
+            let similar = if cfg!(target_arch = "wasm32") {
+                item.name().split_whitespace().any(|word| word == name)
+            } else {
+                item.name().par_split_whitespace().any(|word| word == name)
+            };
+            if item.name() == name || similar {
                 Some(item)
             } else {
                 self.main_hand = Some(item);
@@ -291,7 +296,12 @@ impl Player {
 
     fn remove_armor(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.armor.take() {
-            if item.name() == name || item.name().par_split_whitespace().any(|word| word == name) {
+            let similar = if cfg!(target_arch = "wasm32") {
+                item.name().split_whitespace().any(|word| word == name)
+            } else {
+                item.name().par_split_whitespace().any(|word| word == name)
+            };
+            if item.name() == name || similar {
                 Some(item)
             } else {
                 self.armor = Some(item);

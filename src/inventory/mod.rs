@@ -25,9 +25,15 @@ impl Inventory {
     }
 
     pub fn find_similar_item(&self, name: &str) -> Option<usize> {
-        self.items
-            .par_iter()
-            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        if cfg!(target_arch = "wasm32") {
+            self.items
+                .iter()
+                .position(|item| item.name().split_whitespace().any(|word| word == name))
+        } else {
+            self.items
+                .par_iter()
+                .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        }
     }
 
     pub fn close(&mut self, item_name: &str) -> Option<CmdResult> {
@@ -54,17 +60,31 @@ impl Inventory {
 
     #[allow(clippy::borrowed_box)]
     pub fn find(&self, name: &str) -> Option<&Box<Item>> {
-        self.items.par_iter().find_any(|x| x.name() == name)
+        if cfg!(target_arch = "wasm32") {
+            self.items.iter().find(|x| x.name() == name)
+        } else {
+            self.items.par_iter().find_any(|x| x.name() == name)
+        }
     }
     #[allow(clippy::borrowed_box)]
     pub fn find_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
-        self.items.par_iter_mut().find_any(|x| x.name() == name)
+        if cfg!(target_arch = "wasm32") {
+            self.items.iter_mut().find(|x| x.name() == name)
+        } else {
+            self.items.par_iter_mut().find_any(|x| x.name() == name)
+        }
     }
     #[allow(clippy::borrowed_box)]
     pub fn find_similar_item_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
-        self.items
-            .par_iter_mut()
-            .find_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        if cfg!(target_arch = "wasm32") {
+            self.items
+                .iter_mut()
+                .find(|item| item.name().split_whitespace().any(|word| word == name))
+        } else {
+            self.items
+                .par_iter_mut()
+                .find_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        }
     }
 
     pub fn has(&self, name: &str) -> bool {
@@ -132,7 +152,11 @@ impl Inventory {
     }
 
     pub fn position(&self, name: &str) -> Option<usize> {
-        self.items.par_iter().position_any(|x| x.name() == name)
+        if cfg!(target_arch = "wasm32") {
+            self.items.iter().position(|x| x.name() == name)
+        } else {
+            self.items.par_iter().position_any(|x| x.name() == name)
+        }
     }
 
     pub fn print(&self) -> String {
@@ -185,7 +209,11 @@ impl Inventory {
             CmdResult::new(Action::Passive, "There is nothing to take.".to_owned())
         } else {
             let times = items.len();
-            self.items.par_extend(items);
+            if cfg!(target_arch = "wasm32") {
+                self.items.extend(items);
+            } else {
+                self.items.par_extend(items);
+            }
 
             let mut res = String::with_capacity(7 * times);
             for _ in 0..times {

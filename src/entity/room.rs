@@ -50,42 +50,81 @@ impl Room {
     }
 
     fn similar_item_pos(&self, name: &str) -> Option<usize> {
-        self.items
-            .par_iter()
-            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        if cfg!(target_arch = "wasm32") {
+            self.items
+                .iter()
+                .position(|item| item.name().split_whitespace().any(|word| word == name))
+        } else {
+            self.items
+                .par_iter()
+                .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        }
     }
     #[allow(clippy::borrowed_box)]
     pub fn find_similar_element(&self, name: &str) -> Option<&Box<Element>> {
-        self.elements.par_iter().find_any(|el| {
-            el.name().par_split_whitespace().any(|el_word| {
-                name.par_split_whitespace()
-                    .any(|name_word| name_word == el_word)
+        if cfg!(target_arch = "wasm32") {
+            self.elements.iter().find(|el| {
+                el.name().split_whitespace().any(|el_word| {
+                    name.split_whitespace()
+                        .any(|name_word| name_word == el_word)
+                })
             })
-        })
+        } else {
+            self.elements.par_iter().find_any(|el| {
+                el.name().par_split_whitespace().any(|el_word| {
+                    name.par_split_whitespace()
+                        .any(|name_word| name_word == el_word)
+                })
+            })
+        }
     }
     fn find_similar_enemy(&self, name: &str) -> Option<usize> {
-        self.enemies
-            .par_iter()
-            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        if cfg!(target_arch = "wasm32") {
+            self.enemies
+                .iter()
+                .position(|item| item.name().split_whitespace().any(|word| word == name))
+        } else {
+            self.enemies
+                .par_iter()
+                .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        }
     }
 
     #[allow(clippy::borrowed_box)]
     pub fn get_path(&self, direction: &str) -> Option<&Box<Pathway>> {
-        self.paths.par_iter().find_any(|path| {
-            path.directions()
-                .par_iter()
-                .position_any(|d| d == direction)
-                .is_some()
-        })
+        if cfg!(target_arch = "wasm32") {
+            self.paths.iter().find(|path| {
+                path.directions()
+                    .iter()
+                    .position(|d| d == direction)
+                    .is_some()
+            })
+        } else {
+            self.paths.par_iter().find_any(|path| {
+                path.directions()
+                    .par_iter()
+                    .position_any(|d| d == direction)
+                    .is_some()
+            })
+        }
     }
     #[allow(clippy::borrowed_box)]
     pub fn get_path_mut(&mut self, direction: &str) -> Option<&mut Box<Pathway>> {
-        self.paths.par_iter_mut().find_any(|path| {
-            path.directions()
-                .par_iter()
-                .position_any(|d| d == direction)
-                .is_some()
-        })
+        if cfg!(target_arch = "wasm32") {
+            self.paths.iter_mut().find(|path| {
+                path.directions()
+                    .iter()
+                    .position(|d| d == direction)
+                    .is_some()
+            })
+        } else {
+            self.paths.par_iter_mut().find_any(|path| {
+                path.directions()
+                    .par_iter()
+                    .position_any(|d| d == direction)
+                    .is_some()
+            })
+        }
     }
 
     pub fn drain_all(&mut self) -> Items {
@@ -93,7 +132,11 @@ impl Room {
     }
 
     pub fn extend_items(&mut self, new_items: Items) {
-        self.items.par_extend(new_items);
+        if cfg!(target_arch = "wasm32") {
+            self.items.extend(new_items);
+        } else {
+            self.items.par_extend(new_items);
+        }
     }
 
     // take an Item from a container Item in the current Room
@@ -102,11 +145,7 @@ impl Room {
         item_name: &str,
         container_name: &str,
     ) -> Result<Box<Item>, CmdResult> {
-        if let Some(container) = self
-            .items
-            .par_iter_mut()
-            .find_any(|x| x.name() == container_name)
-        {
+        if let Some(container) = self.item_find_mut(container_name) {
             if let Container(ref mut container) = **container {
                 if container.is_closed() {
                     Err(CmdResult::new(
@@ -137,11 +176,7 @@ impl Room {
         item: Option<Box<Item>>,
     ) -> (CmdResult, Option<Box<Item>>) {
         if let Some(item) = item {
-            if let Some(container) = self
-                .items
-                .par_iter_mut()
-                .find_any(|x| x.name() == container_name)
-            {
+            if let Some(container) = self.item_find_mut(container_name) {
                 if let Container(ref mut container) = **container {
                     if container.is_closed() {
                         (
@@ -173,7 +208,7 @@ impl Room {
             } else {
                 CmdResult::already_opened(name)
             }
-        } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
+        } else if let Some(item) = self.item_find_mut(name) {
             if let Container(ref mut container) = **item {
                 container.open()
             } else {
@@ -202,7 +237,7 @@ impl Room {
                 path.close();
                 CmdResult::new(Action::Active, "Closed.".to_owned())
             }
-        } else if let Some(item) = self.items.par_iter_mut().find_any(|x| x.name() == name) {
+        } else if let Some(item) = self.item_find_mut(name) {
             if let Container(ref mut item) = **item {
                 item.close()
             } else {
@@ -224,12 +259,12 @@ impl Room {
     }
 
     // interact with an Ally
-    pub fn hail(&self, ally_name: &str) -> CmdResult {
-        if let Some(_ally) = self.allies.par_iter().find_any(|x| x.name() == ally_name) {
-            CmdResult::new(Action::Passive, "Hail, friend.".to_owned())
-        } else {
-            CmdResult::no_item_here(ally_name)
-        }
+    pub fn hail(&self, _ally_name: &str) -> CmdResult {
+        // if let Some(_ally) = self.allies.iter().find(|x| x.name() == ally_name) {
+        CmdResult::new(Action::Passive, "Hail, friend.".to_owned())
+        // } else {
+        //     CmdResult::no_item_here(ally_name)
+        // }
     }
 
     pub fn harm(
@@ -272,11 +307,7 @@ impl Room {
     }
 
     pub fn harm_enemy(&mut self, damage: Option<u32>, enemy_name: &str, weapon: &str) -> CmdResult {
-        if let Some(enemy) = self
-            .enemies
-            .par_iter()
-            .position_any(|item| item.name() == enemy_name)
-        {
+        if let Some(enemy) = self.enemy_pos(enemy_name) {
             self.harm(enemy, damage, enemy_name, weapon)
         } else if let Some(enemy) = self.find_similar_enemy(enemy_name) {
             self.harm(enemy, damage, enemy_name, weapon)
@@ -286,17 +317,15 @@ impl Room {
     }
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
-        if let Some(item) = self.items.par_iter().find_any(|x| x.name() == name) {
+        if let Some(item) = self.item_find(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
-        } else if let Some(el) = self.elements.par_iter().find_any(|x| x.name() == name) {
-            Some(CmdResult::new(Action::Active, el.inspect().to_owned()))
         } else if let Some(item) = self.find_similar_element(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(pathway) = self.get_path(name) {
             Some(CmdResult::new(Action::Active, pathway.inspect().to_owned()))
-        } else if let Some(enemy) = self.enemies.par_iter().find_any(|x| x.name() == name) {
+        } else if let Some(enemy) = self.enemy_find(name) {
             Some(CmdResult::new(Action::Active, enemy.inspect().to_owned()))
-        } else if let Some(ally) = self.allies.par_iter().find_any(|x| x.name() == name) {
+        } else if let Some(ally) = self.allies.iter().find(|x| x.name() == name) {
             Some(CmdResult::new(Action::Active, ally.inspect().to_owned()))
         } else {
             None
@@ -313,7 +342,7 @@ impl Room {
     }
 
     pub fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.items.par_iter().position_any(|x| x.name() == name) {
+        if let Some(item) = self.item_pos(name) {
             Some(self.items.remove(item))
         } else if let Some(item) = self.similar_item_pos(name) {
             Some(self.items.remove(item))
@@ -339,6 +368,46 @@ impl Room {
     }
     pub fn enemies_mut(&mut self) -> &mut Enemies {
         &mut self.enemies
+    }
+
+    fn item_pos(&self, name: &str) -> Option<usize> {
+        if cfg!(target_arch = "wasm32") {
+            self.items.iter().position(|x| x.name() == name)
+        } else {
+            self.items.par_iter().position_any(|x| x.name() == name)
+        }
+    }
+    #[allow(clippy::borrowed_box)]
+    fn item_find(&self, name: &str) -> Option<&Box<Item>> {
+        if cfg!(target_arch = "wasm32") {
+            self.items.iter().find(|x| x.name() == name)
+        } else {
+            self.items.par_iter().find_any(|x| x.name() == name)
+        }
+    }
+    #[allow(clippy::borrowed_box)]
+    fn item_find_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
+        if cfg!(target_arch = "wasm32") {
+            self.items.iter_mut().find(|x| x.name() == name)
+        } else {
+            self.items.par_iter_mut().find_any(|x| x.name() == name)
+        }
+    }
+
+    fn enemy_pos(&self, name: &str) -> Option<usize> {
+        if cfg!(target_arch = "wasm32") {
+            self.enemies.iter().position(|x| x.name() == name)
+        } else {
+            self.enemies.par_iter().position_any(|x| x.name() == name)
+        }
+    }
+    #[allow(clippy::borrowed_box)]
+    fn enemy_find(&self, name: &str) -> Option<&Box<Enemy>> {
+        if cfg!(target_arch = "wasm32") {
+            self.enemies.iter().find(|x| x.name() == name)
+        } else {
+            self.enemies.par_iter().find_any(|x| x.name() == name)
+        }
     }
 }
 

@@ -184,7 +184,11 @@ Some available commands:
                 events_str.push_str(&format!("\nYou gained {} XP.\n", enemy.xp()));
                 self.player.borrow_mut().disengage_combat();
                 self.player.borrow_mut().gain_xp(enemy.xp());
-                loot.par_extend(enemy.drop_loot());
+                if cfg!(target_arch = "wasm32") {
+                    loot.extend(enemy.drop_loot());
+                } else {
+                    loot.par_extend(enemy.drop_loot());
+                }
             }
         }
         self.world.borrow_mut().extend_items(loot);

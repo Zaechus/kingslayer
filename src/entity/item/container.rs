@@ -44,13 +44,23 @@ impl Container {
     }
 
     pub fn find_similar_item(&self, name: &str) -> Option<usize> {
-        self.contents
-            .par_iter()
-            .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        if cfg!(target_arch = "wasm32") {
+            self.contents
+                .iter()
+                .position(|item| item.name().split_whitespace().any(|word| word == name))
+        } else {
+            self.contents
+                .par_iter()
+                .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        }
     }
 
     pub fn position(&self, name: &str) -> Option<usize> {
-        self.contents.par_iter().position_any(|x| x.name() == name)
+        if cfg!(target_arch = "wasm32") {
+            self.contents.iter().position(|x| x.name() == name)
+        } else {
+            self.contents.par_iter().position_any(|x| x.name() == name)
+        }
     }
 
     pub fn push(&mut self, item: Box<Item>) {
