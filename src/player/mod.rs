@@ -9,20 +9,8 @@ use crate::{
         Item::{self, Armor, Weapon},
     },
     inventory::Inventory,
-    types::{Action, CmdResult, Items, Stats},
+    types::{Action, CmdResult, CombatStatus, Items, Stats},
 };
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-enum CombatStatus {
-    InCombat,
-    Resting,
-}
-
-impl Default for CombatStatus {
-    fn default() -> Self {
-        CombatStatus::Resting
-    }
-}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Player {
@@ -63,7 +51,6 @@ impl Player {
     pub fn attack(&mut self) -> Option<u32> {
         if let Some(weapon) = &self.main_hand {
             if let Weapon(ref weapon) = **weapon {
-                self.in_combat = CombatStatus::InCombat;
                 Some(self.deal_damage(weapon.damage()))
             } else {
                 Some(self.default_damage())
@@ -76,7 +63,6 @@ impl Player {
     pub fn attack_with(&mut self, weapon_name: &str) -> Option<u32> {
         if let Some(weapon) = self.inventory.find(weapon_name) {
             if let Weapon(ref weapon) = **weapon {
-                self.in_combat = CombatStatus::InCombat;
                 Some(self.deal_damage(weapon.damage()))
             } else {
                 Some(self.default_damage())
@@ -84,7 +70,6 @@ impl Player {
         } else if let Some(weapon) = &self.main_hand {
             if weapon_name == weapon.name() {
                 if let Weapon(ref weapon) = **weapon {
-                    self.in_combat = CombatStatus::InCombat;
                     Some(self.deal_damage(weapon.damage()))
                 } else {
                     Some(self.default_damage())

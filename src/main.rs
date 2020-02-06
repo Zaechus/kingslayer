@@ -16,7 +16,7 @@ fn main() {
             "Brig": Room(
                 name: "Brig",
                 desc: "You are in a small wooden room with a wood pillar in the middle.
-                The ground slowly creaks and rocks beneath you.",
+    The ground slowly creaks and rocks beneath you.",
                 paths: [
                     Pathway(
                         directions: ["door", "n"],

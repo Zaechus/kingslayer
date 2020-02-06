@@ -78,7 +78,7 @@ impl Room {
             })
         }
     }
-    fn find_similar_enemy(&self, name: &str) -> Option<usize> {
+    fn similar_enemy_pos(&self, name: &str) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
             self.enemies
                 .iter()
@@ -309,7 +309,7 @@ impl Room {
     pub fn harm_enemy(&mut self, damage: Option<u32>, enemy_name: &str, weapon: &str) -> CmdResult {
         if let Some(enemy) = self.enemy_pos(enemy_name) {
             self.harm(enemy, damage, enemy_name, weapon)
-        } else if let Some(enemy) = self.find_similar_enemy(enemy_name) {
+        } else if let Some(enemy) = self.similar_enemy_pos(enemy_name) {
             self.harm(enemy, damage, enemy_name, weapon)
         } else {
             CmdResult::no_item_here(enemy_name)

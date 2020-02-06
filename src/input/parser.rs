@@ -21,7 +21,11 @@ impl Parser {
             if let Some(prep) = words.prep() {
                 if prep == "with" {
                     if let Some(obj_prep) = words.obj_prep() {
-                        world.harm_enemy(player.attack_with(&obj_prep), &obj, &obj_prep)
+                        let res = world.harm_enemy(player.attack_with(&obj_prep), &obj, &obj_prep);
+                        if res.is_active() {
+                            player.engage_combat()
+                        }
+                        res
                     } else {
                         CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
                     }
@@ -32,7 +36,11 @@ impl Parser {
                 let damage = player.attack();
 
                 if let Some(main_hand) = player.main_hand() {
-                    world.harm_enemy(damage, obj, &main_hand.name())
+                    let res = world.harm_enemy(damage, obj, &main_hand.name());
+                    if res.is_active() {
+                        player.engage_combat()
+                    }
+                    res
                 } else {
                     CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
                 }
