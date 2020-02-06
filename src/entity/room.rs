@@ -93,12 +93,9 @@ impl Room {
     #[allow(clippy::borrowed_box)]
     pub fn get_path(&self, direction: &str) -> Option<&Box<Pathway>> {
         if cfg!(target_arch = "wasm32") {
-            self.paths.iter().find(|path| {
-                path.directions()
-                    .iter()
-                    .position(|d| d == direction)
-                    .is_some()
-            })
+            self.paths
+                .iter()
+                .find(|path| path.directions().iter().any(|d| d == direction))
         } else {
             self.paths.par_iter().find_any(|path| {
                 path.directions()
@@ -111,12 +108,9 @@ impl Room {
     #[allow(clippy::borrowed_box)]
     pub fn get_path_mut(&mut self, direction: &str) -> Option<&mut Box<Pathway>> {
         if cfg!(target_arch = "wasm32") {
-            self.paths.iter_mut().find(|path| {
-                path.directions()
-                    .iter()
-                    .position(|d| d == direction)
-                    .is_some()
-            })
+            self.paths
+                .iter_mut()
+                .find(|path| path.directions().iter().any(|d| d == direction))
         } else {
             self.paths.par_iter_mut().find_any(|path| {
                 path.directions()

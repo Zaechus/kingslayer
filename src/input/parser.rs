@@ -250,7 +250,7 @@ impl Parser {
                     CmdResult::new(Action::Passive, String::from("TODO: cast something"))
                 }
                 "close" => Parser::parse_close(verb, &words, world, player),
-                "don" => Parser::parse_don(verb, &words, player),
+                "don" | "wear" => Parser::parse_don(verb, &words, player),
                 "draw" | "equip" | "hold" => Parser::parse_equip(verb, &words, player),
                 "drop" | "remove" | "throw" => Parser::parse_drop(verb, &words, world, player),
                 "examin" | "inspec" | "read" | "search" | "x" => {
