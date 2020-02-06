@@ -47,23 +47,9 @@ impl Cli {
     }
 
     /// Prompts the user for input from stdin
-    pub fn prompt() -> String {
+    pub fn prompt(prompt: &str) -> String {
         loop {
-            print!("\n> ");
-            io::stdout().flush().expect("Error flushing stdout");
-            let input = read_line();
-            if !input.is_empty() {
-                return input;
-            } else {
-                println!("Excuse me?");
-            }
-        }
-    }
-
-    /// Prompts the user for input from stdin
-    pub fn custom_prompt(prompt: &str) -> String {
-        loop {
-            print!("\n{} ", prompt);
+            print!("\n{}> ", prompt);
             io::stdout().flush().expect("Error flushing stdout");
             let input = read_line();
             if !input.is_empty() {
@@ -115,7 +101,7 @@ Some available commands:
     }
 
     pub fn quit(&self) -> CmdResult {
-        match Cli::custom_prompt("Are you sure you want to quit? (y/n)")
+        match Cli::prompt("Are you sure you want to quit? (y/n)")
             .chars()
             .next()
             .unwrap()
@@ -136,7 +122,7 @@ Some available commands:
 
         self.running.set(true);
         while self.running.get() && self.player.borrow().is_alive() {
-            println!("{}", self.ask(&Cli::prompt()));
+            println!("{}", self.ask(&Cli::prompt("")));
         }
     }
 
