@@ -208,7 +208,7 @@ rooms: {
 ),
 "Captains Cabin": Room(
     name: "Captains Cabin",
-    desc: "You stand in a large cabin with the captains belongins littering the ground and hanging on the walls.",
+    desc: "You stand in a large cabin with the captains belongings littering the ground and hanging on the walls.",
     paths: [
         Pathway(
             directions: ["door", "n"],

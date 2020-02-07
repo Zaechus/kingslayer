@@ -340,7 +340,8 @@ rooms: {
             .with_item(Item::Thing(Thing::new(
                 "blue ring",
                 "When the ring catches the sunlight, the surface shimmers like the waves of the sea."
-            ))),
+            )))
+            .with_item(Item::Gold(Gold::new(50))),
         );
 
         // Crows Nest
