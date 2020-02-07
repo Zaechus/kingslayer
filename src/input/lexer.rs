@@ -25,7 +25,15 @@ impl Lexer {
             };
 
             if let Some(pos) = prep_pos {
-                if words[pos + 1..].is_empty() {
+                if pos == 0 {
+                    CmdTokens::new(
+                        words.len(),
+                        Some(words[0].to_owned()),
+                        Some(words[1..].join(" ")),
+                        None,
+                        None,
+                    )
+                } else if words[pos + 1..].is_empty() {
                     CmdTokens::new(
                         words.len(),
                         Some(words[0].to_owned()),
