@@ -1,13 +1,18 @@
-#[derive(Debug, PartialEq)]
+use serde::{Deserialize, Serialize};
+
+use crate::input::CmdTokens;
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 pub enum Action {
     Active,
     Passive,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CmdResult {
     action: Action,
     output: String,
+    request_input: Option<CmdTokens>,
 }
 
 impl Default for CmdResult {
@@ -15,13 +20,27 @@ impl Default for CmdResult {
         Self {
             action: Action::Passive,
             output: String::new(),
+            request_input: None,
         }
     }
 }
 
 impl CmdResult {
     pub const fn new(action: Action, output: String) -> Self {
-        Self { action, output }
+        Self {
+            action,
+            output,
+            request_input: None,
+        }
+    }
+
+    pub fn with_request_input(mut self, cmd: CmdTokens) -> Self {
+        self.request_input = Some(cmd);
+        self
+    }
+
+    pub fn request_input(&self) -> Option<CmdTokens> {
+        self.request_input.clone()
     }
 
     pub fn is_active(&self) -> bool {
@@ -42,6 +61,7 @@ impl CmdResult {
 
     pub fn do_what(word: &str) -> CmdResult {
         CmdResult::new(Action::Passive, format!("What do you want to {}?", word))
+            .with_request_input(CmdTokens::new(1, Some(word.to_owned()), None, None, None))
     }
 
     pub fn dont_have(name: &str) -> CmdResult {

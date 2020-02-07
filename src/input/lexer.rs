@@ -25,13 +25,23 @@ impl Lexer {
             };
 
             if let Some(pos) = prep_pos {
-                CmdTokens::new(
-                    words.len(),
-                    Some(words[0].to_owned()),
-                    Some(words[1..pos].join(" ")),
-                    Some(words[pos].to_owned()),
-                    Some(words[pos + 1..].join(" ")),
-                )
+                if words[pos + 1..].is_empty() {
+                    CmdTokens::new(
+                        words.len(),
+                        Some(words[0].to_owned()),
+                        Some(words[1..pos].join(" ")),
+                        Some(words[pos].to_owned()),
+                        None,
+                    )
+                } else {
+                    CmdTokens::new(
+                        words.len(),
+                        Some(words[0].to_owned()),
+                        Some(words[1..pos].join(" ")),
+                        Some(words[pos].to_owned()),
+                        Some(words[pos + 1..].join(" ")),
+                    )
+                }
             } else {
                 CmdTokens::new(
                     words.len(),

@@ -27,7 +27,14 @@ impl Parser {
                         }
                         res
                     } else {
-                        CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
+                        CmdResult::do_what(&format!("{} the {} with", verb, obj))
+                            .with_request_input(CmdTokens::new(
+                                3,
+                                Some(verb.to_owned()),
+                                Some(obj.to_owned()),
+                                Some("with".to_owned()),
+                                None,
+                            ))
                     }
                 } else {
                     CmdResult::no_comprendo()
@@ -42,7 +49,15 @@ impl Parser {
                     }
                     res
                 } else {
-                    CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
+                    CmdResult::do_what(&format!("{} the {} with", verb, obj)).with_request_input(
+                        CmdTokens::new(
+                            3,
+                            Some(verb.to_owned()),
+                            Some(obj.to_owned()),
+                            Some("with".to_owned()),
+                            None,
+                        ),
+                    )
                 }
             }
         } else {
@@ -100,7 +115,7 @@ impl Parser {
         if let Some(obj) = words.obj() {
             world.hail(&obj)
         } else {
-            CmdResult::new(Action::Passive, "Who do you want to talk to?".to_owned())
+            CmdResult::new(Action::Passive, "Hello, sailor!".to_owned())
         }
     }
 
@@ -120,6 +135,7 @@ impl Parser {
             world.move_room(&obj)
         } else {
             CmdResult::new(Action::Passive, format!("Where do you want to {}?", verb))
+                .with_request_input(CmdTokens::new(1, Some(verb.to_owned()), None, None, None))
         }
     }
 
@@ -164,7 +180,15 @@ impl Parser {
                                 }
                             }
                         } else {
-                            CmdResult::do_what(&format!("place in the {}?", words.after_verb()))
+                            CmdResult::do_what(&format!("place in the {}", obj)).with_request_input(
+                                CmdTokens::new(
+                                    3,
+                                    Some("place".to_owned()),
+                                    Some(obj.to_owned()),
+                                    Some("in".to_owned()),
+                                    None,
+                                ),
+                            )
                         }
                     } else {
                         CmdResult::do_what(verb)
@@ -180,7 +204,7 @@ impl Parser {
                 _ => CmdResult::no_comprendo(),
             }
         } else {
-            CmdResult::do_what(&format!("{} the {} in", verb, words.after_verb()))
+            CmdResult::do_what(verb)
         }
     }
 
@@ -200,10 +224,17 @@ impl Parser {
                             player.take_item_from(world.give_from(obj, obj_prep))
                         }
                     } else {
-                        CmdResult::no_comprendo()
+                        CmdResult::do_what(&format!("{} the {} from", verb, obj))
+                            .with_request_input(CmdTokens::new(
+                                3,
+                                Some("take".to_owned()),
+                                Some(obj.to_owned()),
+                                Some("from".to_owned()),
+                                None,
+                            ))
                     }
                 } else {
-                    CmdResult::do_what(&format!("{} the {} with?", verb, words.after_verb()))
+                    CmdResult::no_comprendo()
                 }
             } else if obj.starts_with("all") || obj.len() >= 4 && obj.starts_with("all ") {
                 player.take_all(world.give_all())
@@ -232,8 +263,8 @@ impl Parser {
     }
 
     pub fn parse(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
-        if let Some(verb) = words.short_verb() {
-            match verb {
+        if let (Some(verb), Some(short_verb)) = words.short_verb() {
+            match short_verb {
                 "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
                     world.move_room(verb)
                 }

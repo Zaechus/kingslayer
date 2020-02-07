@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct CmdTokens {
     num_words: usize,
     verb: Option<String>,
@@ -26,19 +26,36 @@ impl CmdTokens {
         }
     }
 
-    pub fn short_verb(&self) -> Option<&str> {
+    pub fn with_obj(mut self, obj: Option<String>) -> Self {
+        self.obj = obj;
+        self
+    }
+
+    pub fn with_obj_prep(mut self, obj: Option<String>) -> Self {
+        self.obj_prep = obj;
+        self
+    }
+
+    pub fn short_verb(&self) -> (Option<&str>, Option<&str>) {
         if let Some(verb) = &self.verb {
             if verb.len() >= 6 {
-                Some(&verb[0..6])
+                (Some(&verb), Some(&verb[0..6]))
             } else {
-                Some(&verb)
+                (Some(&verb), Some(&verb))
             }
+        } else {
+            (None, None)
+        }
+    }
+    pub fn verb(&self) -> Option<&str> {
+        if let Some(verb) = &self.verb {
+            Some(&verb)
         } else {
             None
         }
     }
-    pub fn verb(&self) -> Option<&String> {
-        self.verb.as_ref()
+    pub fn verb_clone(&self) -> Option<String> {
+        self.verb.clone()
     }
     pub fn obj(&self) -> Option<&String> {
         self.obj.as_ref()
@@ -48,14 +65,5 @@ impl CmdTokens {
     }
     pub fn obj_prep(&self) -> Option<&String> {
         self.obj_prep.as_ref()
-    }
-
-    pub fn after_verb(&self) -> String {
-        format!(
-            "{}{}{}",
-            self.obj.as_ref().unwrap_or(&String::new()),
-            self.prep.as_ref().unwrap_or(&String::new()),
-            self.obj_prep.as_ref().unwrap_or(&String::new())
-        )
     }
 }

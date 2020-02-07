@@ -19,9 +19,9 @@ pub struct Enemy {
 impl Enemy {
     pub fn new(name: &str, inspect: &str, is_angry: bool) -> Self {
         Self {
-            name: name.to_string(),
+            name: name.to_owned(),
             desc: format!("There is a {} here.", name),
-            inspect: inspect.to_string(),
+            inspect: inspect.to_owned(),
             hp: 1,
             xp: 0,
             damage: 1,

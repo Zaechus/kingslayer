@@ -23,6 +23,8 @@ pub struct Cli {
     #[serde(default)]
     running: Cell<bool>,
     #[serde(default)]
+    last_cmd: RefCell<CmdResult>,
+    #[serde(default)]
     player: RefCell<Box<Player>>,
     world: RefCell<Box<World>>,
 }
@@ -100,20 +102,6 @@ Some available commands:
         )
     }
 
-    pub fn quit(&self) -> CmdResult {
-        match Cli::prompt("Are you sure you want to quit? (y/n)")
-            .chars()
-            .next()
-            .unwrap()
-        {
-            'y' => {
-                self.running.set(false);
-                CmdResult::default()
-            }
-            _ => CmdResult::default(),
-        }
-    }
-
     /// Start a typical game for the command line
     pub fn start(&self) {
         println!("Type \"help\" if you are unfamiliar with text-based games.\n");
@@ -130,15 +118,29 @@ Some available commands:
     pub fn ask(&self, input: &str) -> String {
         let command = Lexer::lex(input);
 
-        let res = match command.short_verb() {
-            Some("save") => self.save(),
-            Some("q") | Some("quit") => self.quit(),
-            _ => Parser::parse(
-                command,
+        let res = if let Some(last_cmd) = self.last_cmd.borrow().request_input() {
+            let last_cmd = if last_cmd.obj().is_some() {
+                last_cmd.with_obj_prep(command.verb_clone())
+            } else {
+                last_cmd.with_obj(command.verb_clone())
+            };
+            Parser::parse(
+                last_cmd,
                 &mut self.world.borrow_mut(),
                 &mut self.player.borrow_mut(),
-            ),
+            )
+        } else {
+            match command.verb() {
+                Some("save") => self.save(),
+                _ => Parser::parse(
+                    command,
+                    &mut self.world.borrow_mut(),
+                    &mut self.player.borrow_mut(),
+                ),
+            }
         };
+
+        self.last_cmd.replace(res.clone());
 
         if res.is_active() {
             format!("{}{}", res.output(), self.combat())
