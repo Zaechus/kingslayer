@@ -5,15 +5,13 @@ use std::{
     io::{self, BufReader, Read, Write},
 };
 
-use rayon::prelude::*;
-
 use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::{Element, Enemy, Entity, Item},
     input::{read_line, Lexer, Parser},
     player::Player,
-    types::{Action, CmdResult, Items},
+    types::{Action, CmdResult},
     world::World,
 };
 
@@ -153,7 +151,6 @@ Some available commands:
     fn combat(&self) -> String {
         let mut events_str =
             String::with_capacity(50 * self.world.borrow().get_curr_room().enemies().len());
-        let mut loot = Items::new();
 
         for enemy in self.world.borrow_mut().get_curr_room_mut().enemies_mut() {
             if enemy.is_angry() && enemy.is_alive() {
@@ -172,14 +169,8 @@ Some available commands:
                 events_str.push_str(&format!("\nYou gained {} XP.\n", enemy.xp()));
                 self.player.borrow_mut().disengage_combat();
                 self.player.borrow_mut().gain_xp(enemy.xp());
-                if cfg!(target_arch = "wasm32") {
-                    loot.extend(enemy.drop_loot());
-                } else {
-                    loot.par_extend(enemy.drop_loot());
-                }
             }
         }
-        self.world.borrow_mut().extend_items(loot);
         self.world.borrow_mut().clear_dead_enemies();
 
         if !self.player.borrow().is_alive() {

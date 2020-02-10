@@ -1,6 +1,6 @@
 use std::env;
 
-use kingslayer::{Armor, Cli, Element, Enemy, Gold, Item, Thing, Weapon};
+use kingslayer::{Armor, Cli, Element, Enemy, EnemyStatus, Gold, Item, Thing, Weapon};
 
 fn main() {
     if let Some(path) = env::args().nth(1) {
@@ -280,13 +280,17 @@ rooms: {
         // Hold 1
         cli.spawn_enemy(
             "Hold 1",
-            Enemy::new("sleeping pirate", "He seems to be intently snoring.", false)
-                .with_desc("There is a pirate sleeping in a chair.")
-                .with_xp(50),
+            Enemy::new(
+                "sleeping pirate",
+                "He seems to be intently snoring.",
+                EnemyStatus::Asleep,
+            )
+            .with_desc("There is a pirate sleeping in a chair.")
+            .with_xp(50),
         );
 
         // Hold 2
-        cli.spawn_enemy("Hold 2", Enemy::new_rats(true));
+        cli.spawn_enemy("Hold 2", Enemy::new_rats(EnemyStatus::Angry));
         cli.add_item(
             "Hold 2",
             Item::Weapon(Weapon::new(
@@ -307,11 +311,11 @@ rooms: {
         // Crew Deck
         cli.spawn_enemy(
             "Crew Deck 1",
-            Enemy::new_pirate(false).with_item(Item::Gold(Gold::new(10))),
+            Enemy::new_pirate(EnemyStatus::Asleep).with_item(Item::Gold(Gold::new(10))),
         );
         cli.spawn_enemy(
             "Crew Deck 1",
-            Enemy::new_pirate(false)
+            Enemy::new_pirate(EnemyStatus::Asleep)
                 .with_item(Item::Weapon(Weapon::new(
                     "cutlass",
                     "It has thick steel and many notches.",
@@ -323,7 +327,7 @@ rooms: {
         // Cannon Deck
         cli.spawn_enemy(
             "Cannon Deck 1",
-            Enemy::new_pirate(true).with_item(Item::Gold(Gold::new(10))),
+            Enemy::new_pirate(EnemyStatus::Angry).with_item(Item::Gold(Gold::new(10))),
         );
 
         // Captains Cabin
@@ -332,10 +336,11 @@ rooms: {
             Enemy::new(
                 "pirate captain",
                 "He grins, showing off multiple golden teeth.",
-                true,
+                EnemyStatus::Angry,
             )
             .with_hp(50)
-            .with_xp(500)
+            .with_ac(12)
+            .with_xp(600)
             .with_damage(12)
             .with_item(Item::Thing(Thing::new(
                 "blue ring",
@@ -347,7 +352,7 @@ rooms: {
         // Crows Nest
         cli.spawn_enemy(
             "Crows Nest",
-            Enemy::new_pirate(false).with_item(Item::Gold(Gold::new(20))),
+            Enemy::new_pirate(EnemyStatus::Asleep).with_item(Item::Gold(Gold::new(20))),
         );
 
         cli.start();

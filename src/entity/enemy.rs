@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use super::{Entity, Item};
-use crate::{dice_roll, types::Items};
+use crate::{
+    dice_roll,
+    types::{Action, CmdResult, EnemyStatus, Items},
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Enemy {
@@ -9,48 +12,52 @@ pub struct Enemy {
     desc: String,
     inspect: String,
     hp: i32,
+    ac: i32,
     xp: u32,
     damage: u32,
-    is_angry: bool,
+    status: EnemyStatus,
     #[serde(default)]
     loot: Items,
 }
 
 impl Enemy {
-    pub fn new(name: &str, inspect: &str, is_angry: bool) -> Self {
+    pub fn new(name: &str, inspect: &str, status: EnemyStatus) -> Self {
         Self {
             name: name.to_owned(),
             desc: format!("There is a {} here.", name),
             inspect: inspect.to_owned(),
             hp: 1,
+            ac: 0,
             xp: 0,
             damage: 1,
-            is_angry,
+            status,
             loot: Items::new(),
         }
     }
-    pub fn new_rats(is_angry: bool) -> Self {
+    pub fn new_rats(status: EnemyStatus) -> Self {
         Self {
             name: String::from("swarm rats"),
             desc: String::from("A swarm of rats raves along the floor."),
             inspect: String::from("The creatures chatter and scrape viciously."),
             hp: 24,
+            ac: 0,
             xp: 50,
             damage: 3,
-            is_angry,
+            status,
             loot: Items::new(),
         }
     }
 
-    pub fn new_pirate(is_angry: bool) -> Self {
+    pub fn new_pirate(status: EnemyStatus) -> Self {
         Self {
             name: String::from("pirate"),
             desc: String::from("There is a pirate here."),
             inspect: String::from("The pirate is armed and smells vile."),
-            hp: dice_roll(3, 8) as i32 + 8,
-            xp: 50,
+            hp: dice_roll(2, 8) as i32 + 8,
+            ac: 9,
+            xp: 75,
             damage: 10,
-            is_angry,
+            status,
             loot: Items::new(),
         }
     }
@@ -61,6 +68,10 @@ impl Enemy {
     }
     pub fn with_hp(mut self, hp: i32) -> Self {
         self.hp = hp;
+        self
+    }
+    pub fn with_ac(mut self, ac: i32) -> Self {
+        self.ac = ac;
         self
     }
     pub fn with_xp(mut self, xp: u32) -> Self {
@@ -84,21 +95,50 @@ impl Enemy {
         dice_roll(1, self.damage)
     }
 
-    pub const fn is_angry(&self) -> bool {
-        self.is_angry
+    pub fn is_angry(&self) -> bool {
+        self.status == EnemyStatus::Angry
+    }
+
+    pub const fn status(&self) -> EnemyStatus {
+        self.status
     }
 
     pub fn make_angry(&mut self) {
-        self.is_angry = true;
+        self.status = EnemyStatus::Angry;
     }
 
     pub const fn loot(&self) -> &Items {
         &self.loot
     }
 
-    pub fn get_hit(&mut self, damage: u32) {
+    pub fn get_hit(&mut self, damage: u32) -> Option<CmdResult> {
         self.make_angry();
-        self.hp -= damage as i32;
+
+        if dice_roll(1, 20) as i32 > self.ac {
+            self.hp -= damage as i32;
+            None
+        } else {
+            match dice_roll(1, 3) {
+                0 => Some(CmdResult::new(
+                    Action::Active,
+                    format!(
+                        "\nYou swung at the {}, but it dodged out of the way.",
+                        self.name
+                    ),
+                )),
+                1 => Some(CmdResult::new(
+                    Action::Active,
+                    format!(
+                        "\nYou hit the {}, but its armor absorbed the blow.",
+                        self.name
+                    ),
+                )),
+                _ => Some(CmdResult::new(
+                    Action::Active,
+                    format!("\nThe {} deftly blocked your attack.", self.name),
+                )),
+            }
+        }
     }
 
     pub const fn is_alive(&self) -> bool {

@@ -118,10 +118,6 @@ impl World {
             .insert_into(item_name, container_name, item)
     }
 
-    pub fn extend_items(&mut self, items: Items) {
-        self.get_curr_room_mut().extend_items(items);
-    }
-
     // interact with an Ally
     pub fn hail(&self, ally_name: &str) -> CmdResult {
         self.get_curr_room().hail(ally_name)
