@@ -8,7 +8,7 @@ mod tests {
 
         cli.ask("take leaf");
         cli.ask("drop the leaf");
-        cli.ask("pick up leaf");
+        cli.ask("take leaf");
         cli.ask("s");
         assert!(
             cli.ask("i").contains("leaf")
