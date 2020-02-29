@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::{
     Closeable, Element, Enemy, Entity,
     Item::{self, Container},
-    Pathway,
+    Lockable, Pathway,
 };
 use crate::types::{Action, Allies, CmdResult, Elements, Enemies, Items, Paths};
 
@@ -187,9 +187,23 @@ impl Room {
         }
     }
 
+    pub fn unlock(&mut self, name: &str) -> CmdResult {
+        if let Some(path) = self.get_path_mut(name) {
+            if path.is_locked() {
+                path.unlock()
+            } else {
+                CmdResult::already_unlocked(name)
+            }
+        } else {
+            CmdResult::no_item_here(name)
+        }
+    }
+
     pub fn open(&mut self, name: &str) -> CmdResult {
         if let Some(path) = self.get_path_mut(name) {
-            if path.is_closed() {
+            if path.is_locked() {
+                CmdResult::new(Action::Active, "The way is locked.".to_owned())
+            } else if path.is_closed() {
                 path.open()
             } else {
                 CmdResult::already_opened(name)

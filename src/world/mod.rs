@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    entity::{Closeable, Element, Enemy, Entity, Item, Room},
+    entity::{Closeable, Element, Enemy, Entity, Item, Lockable, Room},
     types::{Action, CmdResult, Items, Rooms},
 };
 
@@ -50,6 +50,8 @@ impl World {
         if let Some(path) = self.get_curr_room().get_path(direction) {
             if path.is_closed() {
                 CmdResult::new(Action::Active, "The way is shut.".to_owned())
+            } else if path.is_locked() {
+                CmdResult::new(Action::Active, "The way is locked.".to_owned())
             } else {
                 for enemy in self.get_curr_room().enemies() {
                     if enemy.is_angry() {
@@ -62,6 +64,10 @@ impl World {
         } else {
             CmdResult::new(Action::Passive, "You cannot go that way.".to_owned())
         }
+    }
+
+    pub fn unlock(&mut self, name: &str) -> CmdResult {
+        self.get_curr_room_mut().unlock(name)
     }
 
     pub fn open(&mut self, name: &str) -> CmdResult {

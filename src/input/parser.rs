@@ -139,6 +139,14 @@ impl Parser {
         }
     }
 
+    fn parse_unlock(verb: &str, words: &CmdTokens, world: &mut World) -> CmdResult {
+        if let Some(obj) = words.obj() {
+            world.unlock(obj)
+        } else {
+            CmdResult::do_what(verb)
+        }
+    }
+
     fn parse_open(
         verb: &str,
         words: &CmdTokens,
@@ -238,8 +246,6 @@ impl Parser {
                 }
             } else if obj.starts_with("all") || obj.len() >= 4 && obj.starts_with("all ") {
                 player.take_all(world.give_all())
-            } else if obj.starts_with("u ") {
-                player.take(&obj[2..], world.give(&obj[2..]))
             } else {
                 player.take(obj, world.give(obj))
             }
@@ -287,12 +293,12 @@ impl Parser {
                 "examin" | "inspec" | "read" | "search" | "x" => {
                     Parser::parse_x(verb, &words, world, player)
                 }
-                "get" | "pick" | "take" => Parser::parse_take(verb, &words, world, player),
+                "get" | "take" => Parser::parse_take(verb, &words, world, player),
                 "increa" => Parser::parse_increase(&words, player),
                 "lock" => CmdResult::new(Action::Passive, String::from("TODO: lock something")),
                 "open" => Parser::parse_open(verb, &words, world, player),
                 "insert" | "place" | "put" => Parser::parse_put(&words, verb, world, player),
-                "unlock" => CmdResult::new(Action::Passive, String::from("TODO: unlock something")),
+                "unlock" | "pick" => Parser::parse_unlock(verb, &words, world),
                 "wait" | "z" => Player::wait(),
                 "help" => Cli::help(),
                 _ => CmdResult::new(

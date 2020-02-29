@@ -23,6 +23,7 @@ rooms: {
             desc: "There is a door on the north side.",
             inspect: "The door is plain and wooden.",
             opening: Some(Closed),
+            lock: Some(Locked),
         ),
     ]
 ),

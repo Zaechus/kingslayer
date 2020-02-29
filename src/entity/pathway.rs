@@ -81,3 +81,36 @@ impl Closeable for Pathway {
         }
     }
 }
+
+impl Lockable for Pathway {
+    fn unlock(&mut self) -> CmdResult {
+        if let Some(lock) = self.lock {
+            if lock.is_locked() {
+                self.lock = Some(DoorLock::Unlocked);
+                CmdResult::new(Action::Active, "Unlocked.".to_owned())
+            } else {
+                CmdResult::new(
+                    Action::Passive,
+                    String::from("The way is already unlocked."),
+                )
+            }
+        } else {
+            CmdResult::new(
+                Action::Passive,
+                String::from("The way is already unlocked."),
+            )
+        }
+    }
+
+    fn lock(&mut self) -> CmdResult {
+        CmdResult::new(Action::Passive, "TODO: lock it".to_string())
+    }
+
+    fn is_locked(&self) -> bool {
+        if let Some(lock) = self.lock {
+            lock.is_locked()
+        } else {
+            false
+        }
+    }
+}

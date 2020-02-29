@@ -51,6 +51,13 @@ impl CmdResult {
         &self.output
     }
 
+    pub fn already_unlocked(name: &str) -> CmdResult {
+        CmdResult::new(
+            Action::Passive,
+            format!("The {} is already unlocked.", name),
+        )
+    }
+
     pub fn already_closed(name: &str) -> CmdResult {
         CmdResult::new(Action::Passive, format!("The {} is already closed.", name))
     }
