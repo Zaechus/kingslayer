@@ -66,6 +66,10 @@ impl Enemy {
         self.desc = String::from(desc);
         self
     }
+    pub fn with_inspect(mut self, inspect: &str) -> Self {
+        self.inspect = String::from(inspect);
+        self
+    }
     pub fn with_hp(mut self, hp: i32) -> Self {
         self.hp = hp;
         self
@@ -85,6 +89,13 @@ impl Enemy {
     pub fn with_item(mut self, item: Item) -> Self {
         self.loot.push(Box::new(item));
         self
+    }
+
+    pub fn long_desc(&self) -> String {
+        match self.status {
+            EnemyStatus::Asleep => format!("{} It is asleep.", self.desc),
+            _ => self.desc.to_owned(),
+        }
     }
 
     pub const fn xp(&self) -> u32 {

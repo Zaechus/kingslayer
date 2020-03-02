@@ -44,7 +44,7 @@ impl Room {
             desc.push_str(&format!("\n{}", ally.desc()));
         }
         for enemy in self.enemies.iter() {
-            desc.push_str(&format!("\n{}", enemy.desc()));
+            desc.push_str(&format!("\n{}", enemy.long_desc()));
         }
         desc
     }

@@ -281,13 +281,11 @@ rooms: {
         // Hold 1
         cli.spawn_enemy(
             "Hold 1",
-            Enemy::new(
-                "sleeping pirate",
-                "He seems to be intently snoring.",
-                EnemyStatus::Asleep,
-            )
-            .with_desc("There is a pirate sleeping in a chair.")
-            .with_xp(50),
+            Enemy::new_pirate(EnemyStatus::Asleep)
+                .with_hp(1)
+                .with_ac(0)
+                .with_desc("There is a pirate lying in a chair.")
+                .with_inspect("He seems to be intently snoring."),
         );
 
         // Hold 2
