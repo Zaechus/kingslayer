@@ -47,9 +47,13 @@ impl Cli {
     }
 
     /// Prompts the user for input from stdin
-    pub fn prompt(prompt: &str) -> String {
+    pub fn prompt(&self, prompt: &str) -> String {
         loop {
-            print!("\n{}> ", prompt);
+            if self.last_cmd.borrow().has_request() {
+                print!("\n{}: ", prompt);
+            } else {
+                print!("\n{}> ", prompt);
+            }
             io::stdout().flush().expect("Error flushing stdout");
             let input = read_line();
             if !input.is_empty() {
@@ -108,7 +112,7 @@ Some available commands:
 
         self.running.set(true);
         while self.running.get() && self.player.borrow().is_alive() {
-            println!("{}", self.ask(&Cli::prompt("")));
+            println!("{}", self.ask(&self.prompt("")));
         }
     }
 

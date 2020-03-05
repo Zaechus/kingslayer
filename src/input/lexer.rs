@@ -91,16 +91,16 @@ impl Lexer {
         for w in words {
             modified.push(
                 match w.as_str() {
-                    "north" => "n",
-                    "south" => "s",
-                    "east" => "e",
-                    "west" => "w",
-                    "northeast" => "ne",
-                    "northwest" => "nw",
-                    "southeast" => "se",
-                    "southwest" => "sw",
-                    "up" => "u",
-                    "down" => "d",
+                    "n" => "north",
+                    "s" => "south",
+                    "e" => "east",
+                    "w" => "west",
+                    "ne" => "northeast",
+                    "nw" => "northwest",
+                    "se" => "southeast",
+                    "sw" => "southwest",
+                    "u" => "up",
+                    "d" => "down",
                     _ => w,
                 }
                 .to_owned(),

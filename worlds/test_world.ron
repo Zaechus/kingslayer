@@ -19,7 +19,7 @@ rooms: {
     desc: "You are in the central room.",
     paths: [
         Pathway(
-            directions: ["n"],
+            directions: ["north"],
             target: "Small Cave",
             desc: "There is a mouth of a cave to the north.",
             inspect: "The cave opening glows with a soft flickering light."
@@ -32,7 +32,7 @@ rooms: {
             opening: Some(Closed)
         ),
         Pathway(
-            directions: ["s"],
+            directions: ["south"],
             target: "Bedroom",
             desc: "There is a doorway to the south.",
             inspect: "The doorway is plain and wooden.",
@@ -51,7 +51,7 @@ rooms: {
     desc: "You are in a small cave.",
     paths: [
         Pathway(
-            directions: ["s"],
+            directions: ["south"],
             target: "Central Room",
             desc: "The cave opening leads south.",
             inspect: "The cave opening glows with a soft flickering light."
@@ -77,7 +77,7 @@ rooms: {
     desc: "You are in a small bedroom.",
     paths: [
         Pathway(
-            directions: ["n"],
+            directions: ["north"],
             target: "Central Room",
             desc: "There is a doorway to the north.",
             inspect: "The doorway is plain and wooden."

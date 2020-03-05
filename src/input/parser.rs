@@ -271,9 +271,8 @@ impl Parser {
     pub fn parse(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
         if let (Some(verb), Some(short_verb)) = words.short_verb() {
             match short_verb {
-                "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => {
-                    world.move_room(verb)
-                }
+                "north" | "south" | "east" | "west" | "northeast" | "northwest" | "southeast"
+                | "southwest" | "up" | "down" => world.move_room(verb),
                 "enter" | "go" | "move" => Parser::parse_move(verb, &words, world),
                 "c" | "stat" | "stats" => player.info(),
                 "i" | "invent" => player.print_inventory(),

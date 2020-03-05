@@ -6,7 +6,7 @@ rooms: {
     desc: "You are in a small wooden room with a wood pillar in the middle.\n\tThe ground slowly creaks and rocks beneath you.",
     paths: [
         Pathway(
-            directions: ["door", "n"],
+            directions: ["door", "north"],
             target: "Hold 1",
             desc: "There is a door on the north side.",
             inspect: "The door is plain and wooden.",
@@ -20,14 +20,14 @@ rooms: {
     desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.",
     paths: [
         Pathway(
-            directions: ["door", "s"],
+            directions: ["door", "south"],
             target: "Brig",
             desc: "There is a door at the south end of the hold.",
             inspect: "The door is plain and wooden.",
             opening: Some(Open),
         ),
         Pathway(
-            directions: ["n"],
+            directions: ["north"],
             target: "Hold 2",
             desc: "The hold continues to the north.",
             inspect: "This end of the hold is too dark to see into.",
@@ -39,14 +39,14 @@ rooms: {
     desc: "You are at the end of a spacious hold. Crates and barrels array the sides.",
     paths: [
         Pathway(
-            directions: ["hatch", "u"],
+            directions: ["hatch", "up"],
             target: "Crew Deck 1",
             desc: "There is a hatch above you.",
             inspect: "It looks like a metal grate.",
             opening: Some(Closed),
         ),
         Pathway(
-            directions: ["s"],
+            directions: ["south"],
             target: "Hold 1",
             desc: "The hold continues to the south.",
             inspect: "The middle of the hold is lit by a lantern.",
@@ -58,14 +58,14 @@ rooms: {
     desc: "You are on a deck with dirty hammocks hanging everywhere.",
     paths: [
         Pathway(
-            directions: ["hatch", "d"],
+            directions: ["hatch", "down"],
             target: "Hold 2",
             desc: "There is a hatch on the ground",
             inspect: "It looks like a metal grate.",
             opening: Some(Open),
         ),
         Pathway(
-            directions: ["s"],
+            directions: ["south"],
             target: "Crew Deck 2",
             desc: "The deck continues to the south.",
             inspect: "There is a doorway at the south end of the deck.",
@@ -77,19 +77,19 @@ rooms: {
     desc: "You are on a deck with dirty hammocks hanging everywhere.",
     paths: [
         Pathway(
-            directions: ["opening", "u"],
+            directions: ["opening", "up"],
             target: "Cannon Deck 2",
             desc: "There is an opening above you.",
             inspect: "You think you might be able to see the light of day.",
         ),
         Pathway(
-            directions: ["n"],
+            directions: ["north"],
             target: "Crew Deck 1",
             desc: "The deck continues to the north.",
             inspect: "There is a hatch at the north end of the deck.",
         ),
         Pathway(
-            directions: ["empty doorway", "s"],
+            directions: ["empty doorway", "south"],
             target: "Infirmary",
             desc: "There is an empty doorway to the south.",
             inspect: "The doorway flickers with lantern light.",
@@ -101,7 +101,7 @@ rooms: {
     desc: "You are in a room with a few empty beds against one wall.",
     paths: [
         Pathway(
-            directions: ["doorway", "n"],
+            directions: ["doorway", "north"],
             target: "Crew Deck 2",
             desc: "The doorway leads back into the crew's quarters.",
             inspect: "The doorway flickers with lantern light.",
@@ -113,13 +113,13 @@ rooms: {
     desc: "This deck has cannons lining each side.",
     paths: [
         Pathway(
-            directions: ["s"],
+            directions: ["south"],
             target: "Cannon Deck 2",
             desc: "The deck continues to the south.",
             inspect: "This ship sure has a lot of cannons.",
         ),
         Pathway(
-            directions: ["hatch", "u"],
+            directions: ["hatch", "up"],
             target: "Main Deck",
             desc: "A hatch above you bring in bright sunlight.",
             inspect: "The hatch is a double-hinged grate made of old rusty metal.",
@@ -132,19 +132,19 @@ rooms: {
     desc: "This deck has cannons lining each side.",
     paths: [
         Pathway(
-            directions: ["n"],
+            directions: ["north"],
             target: "Cannon Deck 1",
             desc: "The deck continues to the north.",
             inspect: "This ship sure has a lot of cannons.",
         ),
         Pathway(
-            directions: ["doorway", "s"],
+            directions: ["doorway", "south"],
             target: "Empty Room",
             desc: "There is a doorway to the south.",
             inspect: "The doorway is completely dark.",
         ),
         Pathway(
-            directions: ["opening", "d"],
+            directions: ["opening", "down"],
             target: "Crew Deck 2",
             desc: "There is an opening below you.",
             inspect: "You can see hammocks through the opening.",
@@ -156,7 +156,7 @@ rooms: {
     desc: "The room is dark and empty.",
     paths: [
         Pathway(
-            directions: ["doorway", "n"],
+            directions: ["doorway", "north"],
             target: "Cannon Deck 2",
             desc: "The doorway leads back into the cannon deck.",
             inspect: "You see many cannons.",
@@ -168,20 +168,20 @@ rooms: {
     desc: "The vast open sea surrounds the ship you stand on.",
     paths: [
         Pathway(
-            directions: ["hatch", "d"],
+            directions: ["hatch", "down"],
             target: "Cannon Deck 1",
             desc: "There is a hatch below you.",
             inspect: "The hatch is a double-hinged grate made of old rusty metal.",
             opening: Some(Open),
         ),
         Pathway(
-            directions: ["mast", "platform", "u"],
+            directions: ["mast", "platform", "up"],
             target: "Platform",
             desc: "There is a platform above you on the central mast.",
             inspect: "The platform can be reached through holds on the mast.",
         ),
         Pathway(
-            directions: ["stairs", "s"],
+            directions: ["stairs", "south"],
             target: "Sterncastle",
             desc: "Stairs towards the south lead upwards onto the sterncastle.",
             inspect: "The stairs are old and dirty.",
@@ -200,7 +200,7 @@ rooms: {
     desc: "You are on the sterncastle of the ship. There is another mast in the center and a the ships wheel.",
     paths: [
         Pathway(
-            directions: ["stairs", "n", "d"],
+            directions: ["stairs", "north", "down"],
             target: "Main Deck",
             desc: "The stairs lead back onto the main deck.",
             inspect: "The stairs are old and dirty.",
@@ -212,7 +212,7 @@ rooms: {
     desc: "You stand in a large cabin with the captains belongings littering the ground and hanging on the walls.",
     paths: [
         Pathway(
-            directions: ["door", "n"],
+            directions: ["door", "north"],
             target: "Main Deck",
             desc: "There is door at the north end of the room.",
             inspect: "The door is large with a small dim window in the center.",
@@ -225,13 +225,13 @@ rooms: {
     desc: "You stand on a platform several feet above the main deck.",
     paths: [
         Pathway(
-            directions: ["d"],
+            directions: ["down"],
             target: "Main Deck",
             desc: "The main deck is below you.",
             inspect: "The main deck is several feet below.",
         ),
         Pathway(
-            directions: ["crows nest", "u"],
+            directions: ["crows nest", "up"],
             target: "Crows Nest",
             desc: "There is a crows nest above you on the central mast.",
             inspect: "The crows nest can be reached through holds and rigging on the mast.",
@@ -243,7 +243,7 @@ rooms: {
     desc: "You are in a crows nest overlooking the entire ship and sea.",
     paths: [
         Pathway(
-            directions: ["mast", "platform", "d"],
+            directions: ["mast", "platform", "down"],
             target: "Platform",
             desc: "There is a platform below you on the central mast.",
             inspect: "The platform can be reached through holds on the mast.",

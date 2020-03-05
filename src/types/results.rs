@@ -39,6 +39,10 @@ impl CmdResult {
         self
     }
 
+    pub fn has_request(&self) -> bool {
+        self.request_input.is_some()
+    }
+
     pub fn request_input(&self) -> Option<CmdTokens> {
         self.request_input.clone()
     }
