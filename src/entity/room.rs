@@ -278,33 +278,31 @@ impl Room {
             if let Some(damage) = damage {
                 if let Some(res) = enemy.get_hit(damage) {
                     res
+                } else if enemy.is_alive() {
+                    CmdResult::new(
+                        Action::Active,
+                        format!(
+                            "You hit the {} with your {} for {} damage.",
+                            enemy_name, weapon, damage,
+                        ),
+                    )
                 } else {
-                    if enemy.is_alive() {
-                        CmdResult::new(
-                            Action::Active,
-                            format!(
-                                "You hit the {} with your {} for {} damage.",
-                                enemy_name, weapon, damage,
-                            ),
-                        )
-                    } else {
-                        let mut res = format!(
-                            "You hit the {} with your {} for {} damage. It is dead.\n",
-                            enemy_name, weapon, damage
-                        );
-                        if !enemy.loot().is_empty() {
-                            res.push_str("It dropped:\n");
-                            for loot in enemy.loot() {
-                                res.push_str(&format!(" {},", loot.long_name()));
-                            }
+                    let mut res = format!(
+                        "You hit the {} with your {} for {} damage. It is dead.\n",
+                        enemy_name, weapon, damage
+                    );
+                    if !enemy.loot().is_empty() {
+                        res.push_str("It dropped:\n");
+                        for loot in enemy.loot() {
+                            res.push_str(&format!(" {},", loot.long_name()));
                         }
-                        if cfg!(target_arch = "wasm32") {
-                            self.items.extend(enemy.drop_loot());
-                        } else {
-                            self.items.par_extend(enemy.drop_loot());
-                        }
-                        CmdResult::new(Action::Active, res)
                     }
+                    if cfg!(target_arch = "wasm32") {
+                        self.items.extend(enemy.drop_loot());
+                    } else {
+                        self.items.par_extend(enemy.drop_loot());
+                    }
+                    CmdResult::new(Action::Active, res)
                 }
             } else {
                 CmdResult::dont_have(weapon)
