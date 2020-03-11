@@ -56,7 +56,7 @@ impl Enemy {
             hp: dice_roll(2, 8) as i32 + 8,
             ac: 9,
             xp: 75,
-            damage: 10,
+            damage: 8,
             status,
             loot: Items::new(),
         }

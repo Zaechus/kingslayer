@@ -354,7 +354,7 @@ impl Player {
     }
 
     pub fn take_damage(&mut self, enemy_name: &str, damage: u32) -> String {
-        if dice_roll(1, 20) as i32 > self.ac() {
+        if dice_roll(1, 20) as i32 >= self.ac() {
             self.hp = (self.hp.0 - damage as i32, self.hp.1);
             format!(
                 "\nThe {} hit you for {} damage. You have {} HP left.",
