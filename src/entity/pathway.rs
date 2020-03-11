@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use super::{Closeable, DoorLock, Entity, Lockable, Opening};
-use crate::types::{Action, CmdResult};
+use crate::{
+    dice_roll,
+    types::{Action, CmdResult},
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Pathway {
@@ -86,8 +89,15 @@ impl Lockable for Pathway {
     fn unlock(&mut self) -> CmdResult {
         if let Some(lock) = self.lock {
             if lock.is_locked() {
-                self.lock = Some(DoorLock::Unlocked);
-                CmdResult::new(Action::Active, "Unlocked.".to_owned())
+                if dice_roll(1, 20) > 10 {
+                    self.lock = Some(DoorLock::Unlocked);
+                    CmdResult::new(Action::Active, "Unlocked.".to_owned())
+                } else {
+                    CmdResult::new(
+                        Action::Active,
+                        "You failed to pick the lock. This is harder than it looks.".to_owned(),
+                    )
+                }
             } else {
                 CmdResult::new(
                     Action::Passive,

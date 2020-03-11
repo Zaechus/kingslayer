@@ -51,7 +51,7 @@ impl World {
             if path.is_closed() {
                 CmdResult::new(Action::Active, "The way is shut.".to_owned())
             } else if path.is_locked() {
-                CmdResult::new(Action::Active, "The way is locked.".to_owned())
+                CmdResult::is_locked(direction)
             } else {
                 for enemy in self.get_curr_room().enemies() {
                     if enemy.is_angry() {

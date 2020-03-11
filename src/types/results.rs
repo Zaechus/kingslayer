@@ -62,6 +62,13 @@ impl CmdResult {
         )
     }
 
+    pub fn is_locked(name: &str) -> CmdResult {
+        CmdResult::new(
+            Action::Passive,
+            format!("The {} is locked. I wonder if I can pick it...", name),
+        )
+    }
+
     pub fn already_closed(name: &str) -> CmdResult {
         CmdResult::new(Action::Passive, format!("The {} is already closed.", name))
     }

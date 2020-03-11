@@ -125,7 +125,7 @@ impl Enemy {
     pub fn get_hit(&mut self, damage: u32) -> Option<CmdResult> {
         self.make_angry();
 
-        if dice_roll(1, 20) as i32 > self.ac {
+        if dice_roll(1, 20) as i32 >= self.ac {
             self.hp -= damage as i32;
             None
         } else {

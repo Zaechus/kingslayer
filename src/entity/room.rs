@@ -202,7 +202,7 @@ impl Room {
     pub fn open(&mut self, name: &str) -> CmdResult {
         if let Some(path) = self.get_path_mut(name) {
             if path.is_locked() {
-                CmdResult::new(Action::Active, "The way is locked.".to_owned())
+                CmdResult::is_locked(name)
             } else if path.is_closed() {
                 path.open()
             } else {
