@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::{Element, Enemy, Entity, Item},
-    input::{read_line, Lexer, Parser},
+    input::{read_line, CmdTokens, Lexer, Parser},
     player::Player,
     types::{Action, CmdResult},
     world::World,
@@ -21,7 +21,9 @@ pub struct Cli {
     #[serde(default)]
     running: Cell<bool>,
     #[serde(default)]
-    last_cmd: RefCell<CmdResult>,
+    last_cmd_res: RefCell<CmdResult>,
+    #[serde(default)]
+    last_cmd: RefCell<CmdTokens>,
     #[serde(default)]
     player: RefCell<Box<Player>>,
     world: RefCell<Box<World>>,
@@ -49,7 +51,7 @@ impl Cli {
     /// Prompts the user for input from stdin
     pub fn prompt(&self, prompt: &str) -> String {
         loop {
-            if self.last_cmd.borrow().has_request() {
+            if self.last_cmd_res.borrow().has_request() {
                 print!("\n{}: ", prompt);
             } else {
                 print!("\n{}> ", prompt);
@@ -84,6 +86,7 @@ Some available commands:
                northeast, northwest, southeast, southwest,
                up, down, (any other listed entrance)
         
+        r               repeat last command
         l, look         look around the room
         open | close    open/close an item or pathway
 
@@ -120,29 +123,35 @@ Some available commands:
     pub fn ask(&self, input: &str) -> String {
         let command = Lexer::lex(input);
 
-        let res = if let Some(last_cmd) = self.last_cmd.borrow().request_input() {
-            let last_cmd = if last_cmd.obj().is_some() {
-                last_cmd.with_obj_prep(command.verb_clone())
+        let res = if let Some(last_cmd_res) = self.last_cmd_res.borrow().request_input() {
+            let last_cmd_res = if last_cmd_res.obj().is_some() {
+                last_cmd_res.with_obj_prep(command.verb_clone())
             } else {
-                last_cmd.with_obj(command.verb_clone())
+                last_cmd_res.with_obj(command.verb_clone())
             };
             Parser::parse(
-                last_cmd,
+                last_cmd_res,
                 &mut self.world.borrow_mut(),
                 &mut self.player.borrow_mut(),
             )
         } else {
             match command.verb() {
                 Some("save") => self.save(),
+                Some("r") => Parser::parse(
+                    self.last_cmd.borrow().clone(),
+                    &mut self.world.borrow_mut(),
+                    &mut self.player.borrow_mut(),
+                ),
                 _ => Parser::parse(
-                    command,
+                    command.clone(),
                     &mut self.world.borrow_mut(),
                     &mut self.player.borrow_mut(),
                 ),
             }
         };
 
-        self.last_cmd.replace(res.clone());
+        self.last_cmd_res.replace(res.clone());
+        self.last_cmd.replace(command);
 
         if res.is_active() {
             format!("{}{}", res.output(), self.combat())
