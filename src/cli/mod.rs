@@ -142,16 +142,18 @@ Some available commands:
                     &mut self.world.borrow_mut(),
                     &mut self.player.borrow_mut(),
                 ),
-                _ => Parser::parse(
-                    command.clone(),
-                    &mut self.world.borrow_mut(),
-                    &mut self.player.borrow_mut(),
-                ),
+                _ => {
+                    self.last_cmd.replace(command.clone());
+                    Parser::parse(
+                        command,
+                        &mut self.world.borrow_mut(),
+                        &mut self.player.borrow_mut(),
+                    )
+                }
             }
         };
 
         self.last_cmd_res.replace(res.clone());
-        self.last_cmd.replace(command);
 
         if res.is_active() {
             format!("{}{}", res.output(), self.combat())
