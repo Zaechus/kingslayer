@@ -9,15 +9,17 @@ use crate::{
         Item::{self, Armor, Weapon},
     },
     inventory::Inventory,
-    types::{Action, CmdResult, CombatStatus, Items, Stats},
+    types::{Action, Class, CmdResult, CombatStatus, Items, Race, Stats},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Player {
+    lvl: u32,
+    race: Race,
+    class: Class,
     hp: (i32, u32),
     xp: (u32, u32),
     in_combat: CombatStatus,
-    lvl: u32,
     stats: Stats,
     main_hand: Option<Box<Item>>,
     armor: Option<Box<Item>>,
@@ -27,10 +29,12 @@ pub struct Player {
 impl Default for Player {
     fn default() -> Self {
         Self {
+            lvl: 1,
+            race: Race::Human,
+            class: Class::Fighter,
             hp: (13, 13),
             xp: (0, 1000),
             in_combat: CombatStatus::Resting,
-            lvl: 1,
             stats: Stats::new(),
             main_hand: None,
             armor: None,
@@ -40,6 +44,14 @@ impl Default for Player {
 }
 
 impl Player {
+    pub fn set_race(&mut self, race: Race) {
+        self.race = race;
+    }
+
+    pub fn set_class(&mut self, class: Class) {
+        self.class = class;
+    }
+
     fn deal_damage(&self, weapon_damage: u32) -> u32 {
         (weapon_damage as i32 + self.stats.strngth_mod()) as u32
     }
@@ -192,12 +204,14 @@ impl Player {
         CmdResult::new(
             Action::Passive,
             format!(
-                "Level: {}\
+                "Level {} {} {}\
                  \nHP: ({} / {})\
                  \nAC: {}\
                  \nXP: ({} / {})\
                  \n{}",
                 self.lvl,
+                self.race.to_string(),
+                self.class.to_string(),
                 self.hp(),
                 self.hp_cap(),
                 self.ac(),

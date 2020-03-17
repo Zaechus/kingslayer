@@ -11,7 +11,7 @@ use crate::{
     entity::{Element, Enemy, Entity, Item},
     input::{read_line, CmdTokens, Lexer, Parser},
     player::Player,
-    types::{Action, CmdResult},
+    types::{Action, Class, CmdResult, Race},
     world::World,
 };
 
@@ -109,14 +109,37 @@ Some available commands:
 
     /// Start a typical game for the command line
     pub fn start(&self) {
+        if !self.running.get() {
+            self.create_character();
+        }
+
         println!("Type \"help\" if you are unfamiliar with text-based games.\n");
-        println!("Use \"increase\" to use your initial stat points.\n");
         println!("{}", self.ask("l"));
 
         self.running.set(true);
         while self.running.get() && self.player.borrow().is_alive() {
             println!("{}", self.ask(&self.prompt("")));
         }
+    }
+
+    pub fn create_character(&self) {
+        self.player
+            .borrow_mut()
+            .set_race(Race::select_race(&self.prompt(
+                "Choose a race:\n  \
+                            1) Human (default)\n  \
+                            2) Dwarf\n  \
+                            3) Elf\n\n",
+            )));
+
+        self.player
+            .borrow_mut()
+            .set_class(Class::select_class(&self.prompt(
+                "Choose a class:\n  \
+                            1) Fighter (default)\n  \
+                            2) Rogue\n  \
+                            3) Wizard\n\n",
+            )));
     }
 
     /// Handle user input and return the results of commands and events
