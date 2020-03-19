@@ -210,8 +210,8 @@ impl Player {
                  \nXP: ({} / {})\
                  \n{}",
                 self.lvl,
-                self.race.to_string(),
-                self.class.to_string(),
+                self.race,
+                self.class,
                 self.hp(),
                 self.hp_cap(),
                 self.ac(),

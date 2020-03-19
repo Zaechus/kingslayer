@@ -1,3 +1,5 @@
+use std::fmt;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -8,19 +10,22 @@ pub enum Race {
 }
 
 impl Race {
-    pub fn to_string(&self) -> String {
-        match self {
-            Self::Human => "Human".to_string(),
-            Self::Dwarf => "Dwarf".to_string(),
-            Self::Elf => "Elf".to_string(),
-        }
-    }
-
     pub fn select_race(input: &str) -> Self {
         match input.chars().next() {
             Some('2') => Race::Dwarf,
             Some('3') => Race::Elf,
             _ => Race::Human,
         }
+    }
+}
+
+impl fmt::Display for Race {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            Self::Human => "Human",
+            Self::Dwarf => "Dwarf",
+            Self::Elf => "Elf",
+        };
+        write!(f, "{}", s.to_owned())
     }
 }

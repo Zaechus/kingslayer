@@ -5,6 +5,7 @@ pub use entity::{
     item::{Armor, Container, Gold, Thing, Weapon},
     Element, Enemy, Item,
 };
+pub use input::{CmdTokens, Lexer};
 pub use types::EnemyStatus;
 
 /// A command line interface for controlling interactions between objects in a game

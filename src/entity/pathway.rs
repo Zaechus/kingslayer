@@ -113,7 +113,7 @@ impl Lockable for Pathway {
     }
 
     fn lock(&mut self) -> CmdResult {
-        CmdResult::new(Action::Passive, "TODO: lock it".to_string())
+        CmdResult::new(Action::Passive, "TODO: lock it".to_owned())
     }
 
     fn is_locked(&self) -> bool {
