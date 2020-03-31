@@ -211,20 +211,18 @@ impl Parser {
                 }
                 _ => CmdResult::no_comprendo(),
             }
+        } else if let Some(obj) = words.obj() {
+            CmdResult::do_what(&format!("{} the {} in", verb, obj)).with_request_input(
+                CmdTokens::new(
+                    3,
+                    Some("put".to_owned()),
+                    Some(obj.to_owned()),
+                    Some("in".to_owned()),
+                    None,
+                ),
+            )
         } else {
-            if let Some(obj) = words.obj() {
-                CmdResult::do_what(&format!("{} the {} in", verb, obj)).with_request_input(
-                    CmdTokens::new(
-                        3,
-                        Some("put".to_owned()),
-                        Some(obj.to_owned()),
-                        Some("in".to_owned()),
-                        None,
-                    ),
-                )
-            } else {
-                CmdResult::do_what(verb)
-            }
+            CmdResult::do_what(verb)
         }
     }
 
