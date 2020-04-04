@@ -1,6 +1,8 @@
 # 👑 Kingslayer ⚔️
 
-[![Rust](https://github.com/Maxgy/kingslayer/workflows/Rust/badge.svg)](https://github.com/Maxgy/kingslayer/actions)
+![Linux](https://github.com/Maxgy/kingslayer/workflows/Linux/badge.svg)
+![Windows](https://github.com/Maxgy/kingslayer/workflows/Windows/badge.svg)
+![Mac](https://github.com/Maxgy/kingslayer/workflows/Mac/badge.svg)
 [![Crates.io](https://img.shields.io/crates/v/kingslayer)](https://crates.io/crates/kingslayer)
 [![Kingslayer documentation](https://docs.rs/kingslayer/badge.svg)](https://docs.rs/kingslayer)
 
