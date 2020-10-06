@@ -125,21 +125,11 @@ Some available commands:
     pub fn create_character(&self) {
         self.player
             .borrow_mut()
-            .set_race(Race::select_race(&self.prompt(
-                "Choose a race:\n  \
-                            1) Human (default)\n  \
-                            2) Dwarf\n  \
-                            3) Elf\n\n",
-            )));
+            .set_race(Race::select_race(&self.prompt(&Race::race_prompt())));
 
         self.player
             .borrow_mut()
-            .set_class(Class::select_class(&self.prompt(
-                "Choose a class:\n  \
-                            1) Fighter (default)\n  \
-                            2) Rogue\n  \
-                            3) Wizard\n\n",
-            )));
+            .set_class(Class::select_class(&self.prompt(&Class::class_prompt())));
     }
 
     /// Handle user input and return the results of commands and events

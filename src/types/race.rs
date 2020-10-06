@@ -17,6 +17,14 @@ impl Race {
             _ => Race::Human,
         }
     }
+
+    pub fn race_prompt() -> String {
+        "Choose a race:\n  \
+            1) Human\n  \
+            2) Dwarf\n  \
+            3) Elf\n\n"
+            .to_owned()
+    }
 }
 
 impl fmt::Display for Race {

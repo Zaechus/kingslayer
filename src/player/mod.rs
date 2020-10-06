@@ -31,7 +31,7 @@ impl Default for Player {
         Self {
             lvl: 1,
             race: Race::Human,
-            class: Class::Fighter,
+            class: Class::Warrior,
             hp: (13, 13),
             xp: (0, 1000),
             in_combat: CombatStatus::Resting,
