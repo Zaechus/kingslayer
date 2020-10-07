@@ -1,6 +1,6 @@
 [package]
 name = "kingslayer"
-version = "0.5.2"
+version = "0.5.3"
 authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -12,9 +12,9 @@ categories = ["games", "game-engines"]
 
 [dependencies]
 rand = { version = "0.7", features = ["wasm-bindgen"] }
-rayon = "1.3"
+rayon = "1.4"
 serde = { version = "1.0", features = ["derive"] }
-ron = "0.5"
+ron = "0.6"
 
 [lib]
 crate-type = ["rlib"]

@@ -337,10 +337,10 @@ fn main() {
                 "He grins, showing off multiple golden teeth.",
                 EnemyStatus::Angry,
             )
-            .with_hp(50)
+            .with_hp(24)
             .with_ac(12)
-            .with_xp(600)
-            .with_damage(12)
+            .with_xp(750)
+            .with_damage(9)
             .with_item(Item::Thing(Thing::new(
                 "blue ring",
                 "When the ring catches the sunlight, the surface shimmers like the waves of the sea."

@@ -245,7 +245,7 @@ impl Player {
     pub fn level_up(&mut self) -> String {
         if self.xp.0 >= self.xp.1 {
             self.xp.0 -= self.xp.1;
-            self.xp.1 = 1800 * (self.lvl - 2).pow(2) + 1000;
+            self.xp.1 = (1800 * (self.lvl as i32 - 2).pow(2) + 1000) as u32;
             self.lvl += 1;
             self.stats.pts += self.lvl + 3;
             format!("You advanced to level {}!", self.lvl)
