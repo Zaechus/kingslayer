@@ -5,6 +5,7 @@
 ![Mac](https://github.com/Maxgy/kingslayer/workflows/Mac/badge.svg)
 [![Crates.io](https://img.shields.io/crates/v/kingslayer)](https://crates.io/crates/kingslayer)
 [![Kingslayer documentation](https://docs.rs/kingslayer/badge.svg)](https://docs.rs/kingslayer)
+[![Run on Repl.it](https://repl.it/badge/github/Maxgy/kingslayer)](https://repl.it/github/Maxgy/kingslayer)
 
 Kingslayer is a text-based dungeon crawler written in Rust. It is a continuation of [thekinggame](https://github.com/Maxgy/thekinggame).
 
