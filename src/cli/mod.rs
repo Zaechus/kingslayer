@@ -57,8 +57,9 @@ impl Cli {
                 print!("\n{}> ", prompt);
             }
             io::stdout().flush().expect("Error flushing stdout");
+            
             let input = read_line();
-            if !input.is_empty() {
+            if !input.is_empty() && input.len() < 100 {
                 return input;
             } else {
                 println!("Excuse me?");

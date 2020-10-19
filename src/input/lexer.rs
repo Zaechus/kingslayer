@@ -10,7 +10,7 @@ impl Lexer {
         let words = Lexer::mod_words(&Lexer::filter_parts(s));
 
         if words.is_empty() {
-            CmdTokens::new(0, None, None, None, None)
+            CmdTokens::default()
         } else if words.len() < 2 {
             CmdTokens::new(1, Some(words[0].to_owned()), None, None, None)
         } else {
