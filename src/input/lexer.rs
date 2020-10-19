@@ -7,7 +7,7 @@ pub struct Lexer;
 
 impl Lexer {
     pub fn lex(s: &str) -> CmdTokens {
-        let words = Lexer::mod_words(&Lexer::filter_parts(s));
+        let words = Lexer::mod_words(Lexer::filter_parts(s));
 
         if words.is_empty() {
             CmdTokens::default()
@@ -86,27 +86,22 @@ impl Lexer {
         }
     }
 
-    fn mod_words(words: &[String]) -> Vec<String> {
-        let mut modified = Vec::with_capacity(5 * words.len());
-        for w in words {
-            modified.push(
-                match w.as_str() {
-                    "n" => "north",
-                    "s" => "south",
-                    "e" => "east",
-                    "w" => "west",
-                    "ne" => "northeast",
-                    "nw" => "northwest",
-                    "se" => "southeast",
-                    "sw" => "southwest",
-                    "u" => "up",
-                    "d" => "down",
-                    _ => w,
-                }
-                .to_owned(),
-            );
+    fn mod_words(mut words: Vec<String>) -> Vec<String> {
+        for w in words.iter_mut() {
+            match w.as_str() {
+                "n" => *w = String::from("north"),
+                "s" => *w = String::from("south"),
+                "e" => *w = String::from("east"),
+                "w" => *w = String::from("west"),
+                "ne" => *w = String::from("northeast"),
+                "nw" => *w = String::from("northwest"),
+                "se" => *w = String::from("southeast"),
+                "sw" => *w = String::from("southwest"),
+                "u" => *w = String::from("up"),
+                "d" => *w = String::from("down"),
+                _ => (),
+            }
         }
-        modified.shrink_to_fit();
-        modified
+        words
     }
 }

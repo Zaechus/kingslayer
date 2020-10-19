@@ -312,7 +312,7 @@ impl Parser {
                 "help" => Cli::help(),
                 _ => CmdResult::new(
                     Action::Passive,
-                    format!("I do not know the word \"{}\"", words.verb().unwrap()),
+                    format!("I do not know the word \"{}\".", verb),
                 ),
             }
         } else {
