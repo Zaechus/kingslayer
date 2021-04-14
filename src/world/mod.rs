@@ -18,10 +18,10 @@ impl World {
         if let Some(room) = self.rooms.get(&self.curr_room) {
             room
         } else {
-            panic!(format!(
+            panic!(
                 "ERROR: {} is not a valid room (The world should be fixed).",
                 self.curr_room
-            ))
+            )
         }
     }
 
@@ -29,10 +29,10 @@ impl World {
         if let Some(room) = self.rooms.get_mut(&self.curr_room) {
             room
         } else {
-            panic!(format!(
+            panic!(
                 "ERROR: {} is not a valid room (The world should be fixed).",
                 self.curr_room
-            ))
+            )
         }
     }
 
@@ -133,10 +133,10 @@ impl World {
         if let Some(room) = self.rooms.get_mut(room) {
             room.add_element(el);
         } else {
-            panic!(format!(
+            panic!(
                 "ERROR: {} is not a valid room (The world should be fixed).",
                 self.curr_room
-            ))
+            )
         }
     }
 
@@ -144,10 +144,10 @@ impl World {
         if let Some(room) = self.rooms.get_mut(room) {
             room.add_item(item);
         } else {
-            panic!(format!(
+            panic!(
                 "ERROR: {} is not a valid room (The world should be fixed).",
                 self.curr_room
-            ))
+            )
         }
     }
 
@@ -155,10 +155,10 @@ impl World {
         if let Some(room) = self.rooms.get_mut(room) {
             room.spawn_enemy(enemy);
         } else {
-            panic!(format!(
+            panic!(
                 "ERROR: {} is not a valid room (The world should be fixed).",
                 self.curr_room
-            ))
+            )
         }
     }
 }
