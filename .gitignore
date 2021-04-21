@@ -5,6 +5,7 @@
 
 # IDE
 .vscode
+*.vim
 
 # WASM
 wapm_packages
