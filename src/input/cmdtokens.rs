@@ -48,11 +48,7 @@ impl CmdTokens {
         }
     }
     pub fn verb(&self) -> Option<&str> {
-        if let Some(verb) = &self.verb {
-            Some(&verb)
-        } else {
-            None
-        }
+        self.verb.as_deref()
     }
     pub fn verb_clone(&self) -> Option<String> {
         self.verb.clone()

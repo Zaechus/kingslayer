@@ -331,10 +331,11 @@ impl Room {
             Some(CmdResult::new(Action::Active, pathway.inspect().to_owned()))
         } else if let Some(enemy) = self.enemy_find(name) {
             Some(CmdResult::new(Action::Active, enemy.inspect().to_owned()))
-        } else if let Some(ally) = self.allies.iter().find(|x| x.name() == name) {
-            Some(CmdResult::new(Action::Active, ally.inspect().to_owned()))
         } else {
-            None
+            self.allies
+                .iter()
+                .find(|x| x.name() == name)
+                .map(|ally| CmdResult::new(Action::Active, ally.inspect().to_owned()))
         }
     }
 

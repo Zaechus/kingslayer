@@ -238,10 +238,10 @@ impl Inventory {
             if let Container(ref mut container) = **container {
                 if let Some(item) = container.position(item_name) {
                     Some(container.remove(item))
-                } else if let Some(item) = container.find_similar_item(item_name) {
-                    Some(container.remove(item))
                 } else {
-                    None
+                    container
+                        .find_similar_item(item_name)
+                        .map(|item| container.remove(item))
                 }
             } else {
                 None
@@ -250,10 +250,10 @@ impl Inventory {
             if let Container(ref mut container) = **container {
                 if let Some(item) = container.position(item_name) {
                     Some(container.remove(item))
-                } else if let Some(item) = container.find_similar_item(item_name) {
-                    Some(container.remove(item))
                 } else {
-                    None
+                    container
+                        .find_similar_item(item_name)
+                        .map(|item| container.remove(item))
                 }
             } else {
                 None

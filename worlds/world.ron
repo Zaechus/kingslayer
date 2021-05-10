@@ -197,7 +197,7 @@ rooms: {
 ),
 "Sterncastle": Room(
     name: "Sterncastle",
-    desc: "You are on the sterncastle of the ship. There is another mast in the center and a the ships wheel.",
+    desc: "You are on the sterncastle of the ship. There is another mast in the center and the ships wheel.",
     paths: [
         Pathway(
             directions: ["stairs", "north", "down"],

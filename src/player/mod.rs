@@ -317,10 +317,8 @@ impl Player {
             Some(item)
         } else if let Some(item) = self.remove_main_hand(name) {
             Some(item)
-        } else if let Some(item) = self.remove_armor(name) {
-            Some(item)
         } else {
-            None
+            self.remove_armor(name)
         }
     }
 
