@@ -56,10 +56,10 @@ fn main() {
 This method allows for other forms of input and output such as within a website. The content for the world can also be passed as a raw string with `Cli::from_ron_str`.
 
 ### Dependencies
-* Rust ^1.47.0
+* Rust ^1.52.0
 
 ### Crates
-* rand = "0.7"
-* rayon = "1.4"
+* rand = "0.8"
+* rayon = "1.5"
 * serde = "1.0"
 * ron = "0.6"

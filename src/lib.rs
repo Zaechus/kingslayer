@@ -34,7 +34,7 @@ use rand::Rng;
 fn dice_roll(num_rolls: u32, num_sides: u32) -> u32 {
     let mut sum = 0;
     for _ in 0..num_rolls {
-        sum += rand::thread_rng().gen_range(0, num_sides) + 1;
+        sum += rand::thread_rng().gen_range(1..=num_sides);
     }
     sum
 }
