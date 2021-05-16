@@ -25,6 +25,8 @@ pub struct Cli {
     #[serde(default)]
     last_cmd: RefCell<CmdTokens>,
     #[serde(default)]
+    last_successful_cmd: RefCell<CmdTokens>,
+    #[serde(default)]
     player: RefCell<Box<Player>>,
     world: RefCell<Box<World>>,
 }
@@ -152,14 +154,14 @@ Some available commands:
             match command.verb() {
                 Some("save") => self.save(),
                 Some("r") => Parser::parse(
-                    self.last_cmd.borrow().clone(),
+                    self.last_successful_cmd.borrow().clone(),
                     &mut self.world.borrow_mut(),
                     &mut self.player.borrow_mut(),
                 ),
                 _ => {
                     self.last_cmd.replace(command.clone());
                     Parser::parse(
-                        command,
+                        command.clone(),
                         &mut self.world.borrow_mut(),
                         &mut self.player.borrow_mut(),
                     )
@@ -168,6 +170,10 @@ Some available commands:
         };
 
         self.last_cmd_res.replace(res.clone());
+
+        if res.succeeded() && command.verb() != Some("r") {
+            self.last_successful_cmd.replace(command);
+        }
 
         if res.is_active() {
             format!("{}{}", res.output(), self.combat())

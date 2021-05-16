@@ -311,7 +311,7 @@ impl Parser {
                 "wait" | "z" => Player::wait(),
                 "help" => Cli::help(),
                 _ => CmdResult::new(
-                    Action::Passive,
+                    Action::Failed,
                     format!("I do not know the word \"{}\".", verb),
                 ),
             }

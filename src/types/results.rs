@@ -6,6 +6,7 @@ use crate::input::CmdTokens;
 pub enum Action {
     Active,
     Passive,
+    Failed,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -51,6 +52,10 @@ impl CmdResult {
         self.action == Action::Active
     }
 
+    pub fn succeeded(&self) -> bool {
+        self.action != Action::Failed
+    }
+
     pub fn output(&self) -> &str {
         &self.output
     }
@@ -83,24 +88,21 @@ impl CmdResult {
     }
 
     pub fn dont_have(name: &str) -> CmdResult {
-        CmdResult::new(
-            Action::Passive,
-            format!("You do not have the \"{}\".", name),
-        )
+        CmdResult::new(Action::Failed, format!("You do not have the \"{}\".", name))
     }
 
     pub fn no_comprendo() -> CmdResult {
         CmdResult::new(
-            Action::Passive,
+            Action::Failed,
             "I do not understand that phrase.".to_owned(),
         )
     }
 
     pub fn no_item_here(name: &str) -> CmdResult {
-        CmdResult::new(Action::Passive, format!("There is no \"{}\" here.", name))
+        CmdResult::new(Action::Failed, format!("There is no \"{}\" here.", name))
     }
 
     pub fn not_container(name: &str) -> CmdResult {
-        CmdResult::new(Action::Passive, format!("The {} is not a container.", name))
+        CmdResult::new(Action::Failed, format!("The {} is not a container.", name))
     }
 }
