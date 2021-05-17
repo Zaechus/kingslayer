@@ -9,7 +9,7 @@ use crate::{
         Item::{self, Armor, Weapon},
     },
     inventory::Inventory,
-    types::{Action, Class, CmdResult, CombatStatus, Items, Race, Stats},
+    types::{Action, Attack, Class, CmdResult, CombatStatus, Items, Race, Stats},
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -60,37 +60,46 @@ impl Player {
         dice_roll(1, 4)
     }
 
-    pub fn attack(&mut self) -> Option<u32> {
+    pub fn attack_main(&mut self) -> Attack {
         if let Some(weapon) = &self.main_hand {
             if let Weapon(ref weapon) = **weapon {
-                Some(self.deal_damage(weapon.damage()))
+                Attack::new(
+                    weapon.name().to_owned(),
+                    Some(self.deal_damage(weapon.damage())),
+                )
             } else {
-                Some(self.default_damage())
+                Attack::new(weapon.name().to_owned(), Some(self.default_damage()))
             }
         } else {
-            None
+            Attack::default()
         }
     }
 
-    pub fn attack_with(&mut self, weapon_name: &str) -> Option<u32> {
+    pub fn attack_with(&mut self, weapon_name: &str) -> Attack {
         if let Some(weapon) = self.inventory.find(weapon_name) {
             if let Weapon(ref weapon) = **weapon {
-                Some(self.deal_damage(weapon.damage()))
+                Attack::new(
+                    weapon_name.to_owned(),
+                    Some(self.deal_damage(weapon.damage())),
+                )
             } else {
-                Some(self.default_damage())
+                Attack::new(weapon_name.to_owned(), Some(self.default_damage()))
             }
         } else if let Some(weapon) = &self.main_hand {
             if weapon_name == weapon.name() {
                 if let Weapon(ref weapon) = **weapon {
-                    Some(self.deal_damage(weapon.damage()))
+                    Attack::new(
+                        weapon_name.to_owned(),
+                        Some(self.deal_damage(weapon.damage())),
+                    )
                 } else {
-                    Some(self.default_damage())
+                    Attack::new(weapon_name.to_owned(), Some(self.default_damage()))
                 }
             } else {
-                None
+                Attack::new(weapon_name.to_owned(), None)
             }
         } else {
-            None
+            Attack::new(weapon_name.to_owned(), None)
         }
     }
 
@@ -126,7 +135,7 @@ impl Player {
         if let Some(item) = self.inventory.position(armor_name) {
             let item = self.inventory.remove(item);
             self.set_armor(armor_name, item)
-        } else if let Some(item) = self.inventory.find_similar_item(armor_name) {
+        } else if let Some(item) = self.inventory.find_similar_item_pos(armor_name) {
             let item = self.inventory.remove(item);
             self.set_armor(&armor_name, item)
         } else {
@@ -168,7 +177,7 @@ impl Player {
         if let Some(item) = self.inventory.position(weapon_name) {
             let item = self.inventory.remove(item);
             self.set_equipped(weapon_name, item)
-        } else if let Some(item) = self.inventory.find_similar_item(weapon_name) {
+        } else if let Some(item) = self.inventory.find_similar_item_pos(weapon_name) {
             let item = self.inventory.remove(item);
             self.set_equipped(weapon_name, item)
         } else {
@@ -226,6 +235,8 @@ impl Player {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.info())
         } else if let Some(item) = self.inventory.find(name) {
+            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
+        } else if let Some(item) = self.inventory.find_similar_item(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(item) = &self.main_hand {
             if item.name() == name {

@@ -24,7 +24,7 @@ impl Inventory {
         }
     }
 
-    pub fn find_similar_item(&self, name: &str) -> Option<usize> {
+    pub fn find_similar_item_pos(&self, name: &str) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
             self.items
                 .iter()
@@ -43,7 +43,7 @@ impl Inventory {
             } else {
                 Some(CmdResult::not_container(item_name))
             }
-        } else if let Some(item) = self.find_similar_item(item_name) {
+        } else if let Some(item) = self.find_similar_item_pos(item_name) {
             if let Some(item) = self.items.get_mut(item) {
                 if let Container(ref mut item) = **item {
                     Some(item.close())
@@ -75,6 +75,18 @@ impl Inventory {
         }
     }
     #[allow(clippy::borrowed_box)]
+    pub fn find_similar_item(&self, name: &str) -> Option<&Box<Item>> {
+        if cfg!(target_arch = "wasm32") {
+            self.items
+                .iter()
+                .find(|item| item.name().split_whitespace().any(|word| word == name))
+        } else {
+            self.items
+                .par_iter()
+                .find_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+        }
+    }
+    #[allow(clippy::borrowed_box)]
     pub fn find_similar_item_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
         if cfg!(target_arch = "wasm32") {
             self.items
@@ -91,7 +103,7 @@ impl Inventory {
         if self.find(name).is_some() {
             true
         } else {
-            self.find_similar_item(name).is_some()
+            self.find_similar_item_pos(name).is_some()
         }
     }
 
@@ -136,15 +148,11 @@ impl Inventory {
             } else {
                 Some(CmdResult::not_container(item_name))
             }
-        } else if let Some(item) = self.find_similar_item(item_name) {
-            if let Some(item) = self.items.get_mut(item) {
-                if let Container(ref mut item) = **item {
-                    Some(item.open())
-                } else {
-                    Some(CmdResult::not_container(item_name))
-                }
+        } else if let Some(item) = self.find_similar_item_mut(item_name) {
+            if let Container(ref mut item) = **item {
+                Some(item.open())
             } else {
-                None
+                Some(CmdResult::not_container(item_name))
             }
         } else {
             None
@@ -184,7 +192,7 @@ impl Inventory {
     pub fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
         if let Some(item) = self.position(name) {
             Some(self.items.remove(item))
-        } else if let Some(item) = self.find_similar_item(name) {
+        } else if let Some(item) = self.find_similar_item_pos(name) {
             Some(self.items.remove(item))
         } else {
             None

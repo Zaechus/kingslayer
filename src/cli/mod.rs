@@ -57,7 +57,7 @@ impl Cli {
                 read_line(&format!("\n{}> ", prompt))
             };
 
-            if !input.is_empty() && input.len() < 100 {
+            if !input.is_empty() && input.len() < 64 {
                 return input;
             } else {
                 println!("Excuse me?");
@@ -139,14 +139,14 @@ Some available commands:
     pub fn ask(&self, input: &str) -> String {
         let command = Lexer::lex(input);
 
-        let res = if let Some(last_cmd_res) = self.last_cmd_res.borrow().request_input() {
-            let last_cmd_res = if last_cmd_res.obj().is_some() {
-                last_cmd_res.with_obj_prep(command.verb_clone())
+        let res = if let Some(last_cmd) = self.last_cmd_res.borrow().request_input() {
+            let last_cmd = if last_cmd.obj().is_some() {
+                last_cmd.with_obj_prep(command.verb_clone())
             } else {
-                last_cmd_res.with_obj(command.verb_clone())
+                last_cmd.with_obj(command.verb_clone())
             };
             Parser::parse(
-                last_cmd_res,
+                last_cmd,
                 &mut self.world.borrow_mut(),
                 &mut self.player.borrow_mut(),
             )

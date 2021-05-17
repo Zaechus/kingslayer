@@ -7,7 +7,7 @@ use super::{
     Item::{self, Container},
     Lockable, Pathway,
 };
-use crate::types::{Action, Allies, CmdResult, Elements, Enemies, Items, Paths};
+use crate::types::{Action, Allies, Attack, CmdResult, Elements, Enemies, Items, Paths};
 
 // A section of the world connected by paths
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -267,15 +267,9 @@ impl Room {
         // }
     }
 
-    pub fn harm(
-        &mut self,
-        enemy: usize,
-        damage: Option<u32>,
-        enemy_name: &str,
-        weapon: &str,
-    ) -> CmdResult {
+    fn harm(&mut self, enemy: usize, enemy_name: &str, attack: Attack) -> CmdResult {
         if let Some(enemy) = self.enemies.get_mut(enemy) {
-            if let Some(damage) = damage {
+            if let Some(damage) = attack.damage() {
                 if let Some(res) = enemy.get_hit(damage) {
                     res
                 } else if enemy.is_alive() {
@@ -283,13 +277,17 @@ impl Room {
                         Action::Active,
                         format!(
                             "You hit the {} with your {} for {} damage.",
-                            enemy_name, weapon, damage,
+                            enemy_name,
+                            attack.weapon_name(),
+                            damage,
                         ),
                     )
                 } else {
                     let mut res = format!(
                         "You hit the {} with your {} for {} damage. It is dead.\n",
-                        enemy_name, weapon, damage
+                        enemy_name,
+                        attack.weapon_name(),
+                        damage
                     );
                     if !enemy.loot().is_empty() {
                         res.push_str("It dropped:\n");
@@ -305,18 +303,18 @@ impl Room {
                     CmdResult::new(Action::Active, res)
                 }
             } else {
-                CmdResult::dont_have(weapon)
+                CmdResult::dont_have(&attack.weapon_name())
             }
         } else {
             CmdResult::no_item_here(enemy_name)
         }
     }
 
-    pub fn harm_enemy(&mut self, damage: Option<u32>, enemy_name: &str, weapon: &str) -> CmdResult {
+    pub fn harm_enemy(&mut self, enemy_name: &str, attack: Attack) -> CmdResult {
         if let Some(enemy) = self.enemy_pos(enemy_name) {
-            self.harm(enemy, damage, enemy_name, weapon)
+            self.harm(enemy, enemy_name, attack)
         } else if let Some(enemy) = self.similar_enemy_pos(enemy_name) {
-            self.harm(enemy, damage, enemy_name, weapon)
+            self.harm(enemy, enemy_name, attack)
         } else {
             CmdResult::no_item_here(enemy_name)
         }

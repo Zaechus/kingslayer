@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     entity::{Closeable, Element, Enemy, Entity, Item, Lockable, Room},
-    types::{Action, CmdResult, Items, Rooms},
+    types::{Action, Attack, CmdResult, Items, Rooms},
 };
 
 // Represents a world for the player to explore that consists of a grid of Rooms.
@@ -32,6 +32,17 @@ impl World {
             panic!(
                 "ERROR: {} is not a valid room (The world should be fixed).",
                 self.curr_room
+            )
+        }
+    }
+
+    pub fn get_room_mut(&mut self, room_name: &str) -> &mut Room {
+        if let Some(room) = self.rooms.get_mut(room_name) {
+            room
+        } else {
+            panic!(
+                "ERROR: {} is not a valid room (The world should be fixed).",
+                room_name
             )
         }
     }
@@ -84,9 +95,9 @@ impl World {
             .retain(|e| e.is_alive());
     }
 
-    // let an Enemy in the current Room take damage
-    pub fn harm_enemy(&mut self, damage: Option<u32>, enemy: &str, weapon: &str) -> CmdResult {
-        self.get_curr_room_mut().harm_enemy(damage, enemy, weapon)
+    // have an Enemy in the current Room take damage
+    pub fn harm_enemy(&mut self, enemy_name: &str, attack: Attack) -> CmdResult {
+        self.get_curr_room_mut().harm_enemy(enemy_name, attack)
     }
 
     // move an Item out of the current Room
@@ -130,35 +141,14 @@ impl World {
     }
 
     pub fn add_element(&mut self, room: &str, el: Element) {
-        if let Some(room) = self.rooms.get_mut(room) {
-            room.add_element(el);
-        } else {
-            panic!(
-                "ERROR: {} is not a valid room (The world should be fixed).",
-                self.curr_room
-            )
-        }
+        self.get_room_mut(room).add_element(el);
     }
 
     pub fn add_item(&mut self, room: &str, item: Item) {
-        if let Some(room) = self.rooms.get_mut(room) {
-            room.add_item(item);
-        } else {
-            panic!(
-                "ERROR: {} is not a valid room (The world should be fixed).",
-                self.curr_room
-            )
-        }
+        self.get_room_mut(room).add_item(item);
     }
 
     pub fn spawn_enemy(&mut self, room: &str, enemy: Enemy) {
-        if let Some(room) = self.rooms.get_mut(room) {
-            room.spawn_enemy(enemy);
-        } else {
-            panic!(
-                "ERROR: {} is not a valid room (The world should be fixed).",
-                self.curr_room
-            )
-        }
+        self.get_room_mut(room).spawn_enemy(enemy);
     }
 }

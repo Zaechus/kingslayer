@@ -61,10 +61,7 @@ impl CmdResult {
     }
 
     pub fn already_unlocked(name: &str) -> CmdResult {
-        CmdResult::new(
-            Action::Passive,
-            format!("The {} is already unlocked.", name),
-        )
+        CmdResult::new(Action::Failed, format!("The {} is already unlocked.", name))
     }
 
     pub fn is_locked(name: &str) -> CmdResult {
@@ -75,11 +72,11 @@ impl CmdResult {
     }
 
     pub fn already_closed(name: &str) -> CmdResult {
-        CmdResult::new(Action::Passive, format!("The {} is already closed.", name))
+        CmdResult::new(Action::Failed, format!("The {} is already closed.", name))
     }
 
     pub fn already_opened(name: &str) -> CmdResult {
-        CmdResult::new(Action::Passive, format!("The {} is already opened.", name))
+        CmdResult::new(Action::Failed, format!("The {} is already opened.", name))
     }
 
     pub fn do_what(verb: &str) -> CmdResult {
