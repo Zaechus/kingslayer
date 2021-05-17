@@ -11,7 +11,7 @@ Kingslayer is a text-based dungeon crawler written in Rust. It is a continuation
 
 ### Playing the game
 
-You can play the online WASM version here: [maxgy.github.io/kingslayer-web](https://maxgy.github.io/kingslayer-web/)
+You can play the online WASM version here: [zaechus.github.io/kingslayer-web](https://zaechus.github.io/kingslayer-web/)
 
 You can also install Kingslayer:
 ```
