@@ -12,7 +12,7 @@ impl Lexer {
         if words.is_empty() {
             CmdTokens::default()
         } else if words.len() < 2 {
-            CmdTokens::new(1, Some(words[0].to_owned()), None, None, None)
+            CmdTokens::new(Some(words[0].to_owned()), None, None, None)
         } else {
             let prep_pos = if cfg!(target_arch = "wasm32") {
                 words
@@ -27,32 +27,35 @@ impl Lexer {
             if let Some(pos) = prep_pos {
                 if pos == 0 {
                     CmdTokens::new(
-                        words.len(),
                         Some(words[0].to_owned()),
                         Some(words[1..].join(" ")),
                         None,
                         None,
                     )
-                } else if words[pos + 1..].is_empty() {
-                    CmdTokens::new(
-                        words.len(),
-                        Some(words[0].to_owned()),
-                        Some(words[1..pos].join(" ")),
-                        Some(words[pos].to_owned()),
-                        None,
-                    )
                 } else {
+                    let (obj, obj_prep) = if words[1..pos].is_empty() && words[pos + 1..].is_empty()
+                    {
+                        (None, None)
+                    } else if words[1..pos].is_empty() {
+                        (None, Some(words[pos + 1..].join(" ")))
+                    } else if words[pos + 1..].is_empty() {
+                        (Some(words[1..pos].join(" ")), None)
+                    } else {
+                        (
+                            Some(words[1..pos].join(" ")),
+                            Some(words[pos + 1..].join(" ")),
+                        )
+                    };
+
                     CmdTokens::new(
-                        words.len(),
                         Some(words[0].to_owned()),
-                        Some(words[1..pos].join(" ")),
+                        obj,
                         Some(words[pos].to_owned()),
-                        Some(words[pos + 1..].join(" ")),
+                        obj_prep,
                     )
                 }
             } else {
                 CmdTokens::new(
-                    words.len(),
                     Some(words[0].to_owned()),
                     Some(words[1..].join(" ")),
                     None,

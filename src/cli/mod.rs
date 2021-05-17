@@ -23,8 +23,6 @@ pub struct Cli {
     #[serde(default)]
     last_cmd_res: RefCell<CmdResult>,
     #[serde(default)]
-    last_cmd: RefCell<CmdTokens>,
-    #[serde(default)]
     last_successful_cmd: RefCell<CmdTokens>,
     #[serde(default)]
     player: RefCell<Box<Player>>,
@@ -158,22 +156,22 @@ Some available commands:
                     &mut self.world.borrow_mut(),
                     &mut self.player.borrow_mut(),
                 ),
-                _ => {
-                    self.last_cmd.replace(command.clone());
-                    Parser::parse(
-                        command.clone(),
-                        &mut self.world.borrow_mut(),
-                        &mut self.player.borrow_mut(),
-                    )
-                }
+                _ => Parser::parse(
+                    command.clone(),
+                    &mut self.world.borrow_mut(),
+                    &mut self.player.borrow_mut(),
+                ),
             }
         };
 
-        self.last_cmd_res.replace(res.clone());
-
-        if res.succeeded() && command.verb() != Some("r") {
+        if res.succeeded()
+            && !self.last_cmd_res.borrow().has_request()
+            && command.verb() != Some("r")
+        {
             self.last_successful_cmd.replace(command);
         }
+
+        self.last_cmd_res.replace(res.clone());
 
         if res.is_active() {
             format!("{}{}", res.output(), self.combat())

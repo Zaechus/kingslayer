@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct CmdTokens {
-    num_words: usize,
     verb: Option<String>,
     obj: Option<String>,
     prep: Option<String>,
@@ -11,14 +10,12 @@ pub struct CmdTokens {
 
 impl CmdTokens {
     pub const fn new(
-        num_words: usize,
         verb: Option<String>,
         obj: Option<String>,
         prep: Option<String>,
         obj_prep: Option<String>,
     ) -> Self {
         Self {
-            num_words,
             verb,
             obj,
             prep,

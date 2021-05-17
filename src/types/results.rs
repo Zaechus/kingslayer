@@ -82,9 +82,26 @@ impl CmdResult {
         CmdResult::new(Action::Passive, format!("The {} is already opened.", name))
     }
 
-    pub fn do_what(word: &str) -> CmdResult {
-        CmdResult::new(Action::Passive, format!("What do you want to {}?", word))
-            .with_request_input(CmdTokens::new(1, Some(word.to_owned()), None, None, None))
+    pub fn do_what(verb: &str) -> CmdResult {
+        CmdResult::new(Action::Passive, format!("What do you want to {}?", verb))
+            .with_request_input(CmdTokens::new(Some(verb.to_owned()), None, None, None))
+    }
+
+    pub fn do_what_prep(verb: &str, prep: Option<&String>, obj_prep: Option<&String>) -> CmdResult {
+        if let (Some(prep), Some(obj_prep)) = (prep, obj_prep) {
+            CmdResult::new(
+                Action::Passive,
+                format!("What do you want to {} {} the {}?", verb, prep, obj_prep),
+            )
+            .with_request_input(CmdTokens::new(
+                Some(verb.to_owned()),
+                None,
+                Some(prep.to_owned()),
+                Some(obj_prep.to_owned()),
+            ))
+        } else {
+            CmdResult::do_what(verb)
+        }
     }
 
     pub fn dont_have(name: &str) -> CmdResult {

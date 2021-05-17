@@ -29,7 +29,6 @@ impl Parser {
                     } else {
                         CmdResult::do_what(&format!("{} the {} with", verb, obj))
                             .with_request_input(CmdTokens::new(
-                                3,
                                 Some(verb.to_owned()),
                                 Some(obj.to_owned()),
                                 Some("with".to_owned()),
@@ -51,7 +50,6 @@ impl Parser {
                 } else {
                     CmdResult::do_what(&format!("{} the {} with", verb, obj)).with_request_input(
                         CmdTokens::new(
-                            3,
                             Some(verb.to_owned()),
                             Some(obj.to_owned()),
                             Some("with".to_owned()),
@@ -61,7 +59,7 @@ impl Parser {
                 }
             }
         } else {
-            CmdResult::do_what(verb)
+            CmdResult::do_what_prep(verb, words.prep(), words.obj_prep())
         }
     }
 
@@ -135,7 +133,7 @@ impl Parser {
             world.move_room(&obj)
         } else {
             CmdResult::new(Action::Passive, format!("Where do you want to {}?", verb))
-                .with_request_input(CmdTokens::new(1, Some(verb.to_owned()), None, None, None))
+                .with_request_input(CmdTokens::new(Some(verb.to_owned()), None, None, None))
         }
     }
 
@@ -190,7 +188,6 @@ impl Parser {
                         } else {
                             CmdResult::do_what(&format!("place in the {}", obj)).with_request_input(
                                 CmdTokens::new(
-                                    3,
                                     Some("place".to_owned()),
                                     Some(obj.to_owned()),
                                     Some("in".to_owned()),
@@ -214,7 +211,6 @@ impl Parser {
         } else if let Some(obj) = words.obj() {
             CmdResult::do_what(&format!("{} the {} in", verb, obj)).with_request_input(
                 CmdTokens::new(
-                    3,
                     Some("put".to_owned()),
                     Some(obj.to_owned()),
                     Some("in".to_owned()),
@@ -222,7 +218,7 @@ impl Parser {
                 ),
             )
         } else {
-            CmdResult::do_what(verb)
+            CmdResult::do_what_prep(verb, words.prep(), words.obj_prep())
         }
     }
 
@@ -244,7 +240,6 @@ impl Parser {
                     } else {
                         CmdResult::do_what(&format!("{} the {} from", verb, obj))
                             .with_request_input(CmdTokens::new(
-                                3,
                                 Some("take".to_owned()),
                                 Some(obj.to_owned()),
                                 Some("from".to_owned()),
@@ -254,13 +249,13 @@ impl Parser {
                 } else {
                     CmdResult::no_comprendo()
                 }
-            } else if obj.starts_with("all") || obj.len() >= 4 && obj.starts_with("all ") {
+            } else if obj == "all" || obj.len() >= 4 && obj.starts_with("all ") {
                 player.take_all(world.give_all())
             } else {
                 player.take(obj, world.give(obj))
             }
         } else {
-            CmdResult::do_what(verb)
+            CmdResult::do_what_prep(verb, words.prep(), words.obj_prep())
         }
     }
 
