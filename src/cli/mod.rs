@@ -2,7 +2,7 @@ use std::{
     cell::{Cell, RefCell},
     convert::TryInto,
     fs::{self, File},
-    io::{self, BufReader, Read, Write},
+    io::{BufReader, Read, Write},
 };
 
 use serde::{Deserialize, Serialize};
@@ -51,14 +51,12 @@ impl Cli {
     /// Prompts the user for input from stdin
     pub fn prompt(&self, prompt: &str) -> String {
         loop {
-            if self.last_cmd_res.borrow().has_request() {
-                print!("\n{}: ", prompt);
+            let input = if self.last_cmd_res.borrow().has_request() {
+                read_line(&format!("\n{}: ", prompt))
             } else {
-                print!("\n{}> ", prompt);
-            }
-            io::stdout().flush().expect("Error flushing stdout");
+                read_line(&format!("\n{}> ", prompt))
+            };
 
-            let input = read_line();
             if !input.is_empty() && input.len() < 100 {
                 return input;
             } else {
@@ -77,6 +75,10 @@ impl Cli {
     some prepositions: in, inside, from, on, with
 
 Some available commands:
+
+    Game commands
+        quit            quit the game
+        save            save the game state to [object].save.ron or world.save.ron
 
     Explore around the world
         go, enter       move in a direction or through a listed entrance
@@ -150,7 +152,8 @@ Some available commands:
             )
         } else {
             match command.verb() {
-                Some("save") => self.save(),
+                Some("quit") => self.quit(),
+                Some("save") => self.save(command.obj()),
                 Some("r") => Parser::parse(
                     self.last_successful_cmd.borrow().clone(),
                     &mut self.world.borrow_mut(),
@@ -227,17 +230,32 @@ Some available commands:
         self.world.borrow_mut().spawn_enemy(room, enemy)
     }
 
-    fn save(&self) -> CmdResult {
+    fn quit(&self) -> CmdResult {
+        if read_line("Are you sure you want to quit? (y/N): ") == "y" {
+            self.running.set(false);
+            CmdResult::new(Action::Passive, String::from("\nFarewell.\n"))
+        } else {
+            CmdResult::default()
+        }
+    }
+
+    fn save(&self, name: Option<&String>) -> CmdResult {
         let saved = ron::ser::to_string(&self).expect("Error serializing world save file.");
 
-        if let Ok(mut file) = File::create("world.save.ron") {
+        let filename = if let Some(name) = name {
+            format!("{}.save.ron", name)
+        } else {
+            String::from("world.save.ron")
+        };
+
+        if let Ok(mut file) = File::create(&filename) {
             if let Ok(()) = file.write_all(saved.as_bytes()) {
-                CmdResult::new(Action::Passive, String::from("Saved to 'world.save.ron'."))
+                CmdResult::new(Action::Passive, format!("Saved to '{}'.", filename))
             } else {
-                CmdResult::new(Action::Passive, String::from("Error saving world."))
+                CmdResult::new(Action::Failed, String::from("Error saving world."))
             }
         } else {
-            CmdResult::new(Action::Passive, String::from("Error saving world."))
+            CmdResult::new(Action::Failed, String::from("Error saving world."))
         }
     }
 }

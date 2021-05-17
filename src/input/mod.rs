@@ -1,6 +1,9 @@
-use std::io;
+use std::io::{self, Write};
 
-pub fn read_line() -> String {
+pub fn read_line(prompt: &str) -> String {
+    print!("{}", prompt);
+    io::stdout().flush().expect("Error flushing stdout");
+
     let mut input = String::new();
     io::stdin()
         .read_line(&mut input)
