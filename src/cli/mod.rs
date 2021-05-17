@@ -231,12 +231,8 @@ Some available commands:
     }
 
     fn quit(&self) -> CmdResult {
-        if read_line("Are you sure you want to quit? (y/N): ") == "y" {
-            self.running.set(false);
-            CmdResult::new(Action::Passive, String::from("\nFarewell.\n"))
-        } else {
-            CmdResult::default()
-        }
+        self.running.set(false);
+        CmdResult::new(Action::Passive, String::from("\nFarewell.\n"))
     }
 
     fn save(&self, name: Option<&String>) -> CmdResult {
