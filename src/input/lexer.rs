@@ -102,6 +102,7 @@ impl Lexer {
                 "sw" => *w = String::from("southwest"),
                 "u" => *w = String::from("up"),
                 "d" => *w = String::from("down"),
+                "r" => *w = String::from("again"),
                 _ => (),
             }
         }

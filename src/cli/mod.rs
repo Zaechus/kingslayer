@@ -21,6 +21,8 @@ pub struct Cli {
     #[serde(default)]
     running: Cell<bool>,
     #[serde(default)]
+    num_moves: Cell<u32>,
+    #[serde(default)]
     last_cmd_res: RefCell<CmdResult>,
     #[serde(default)]
     last_successful_cmd: RefCell<CmdTokens>,
@@ -89,7 +91,7 @@ Some available commands:
                northeast, northwest, southeast, southwest,
                up, down, (any other listed entrance)
         
-        r               repeat last command
+        r, again        repeat last command
         l, look         look around the room
         open | close    open/close an item or pathway
 
@@ -154,7 +156,7 @@ Some available commands:
             match command.verb() {
                 Some("quit") => self.quit(),
                 Some("save") => self.save(command.obj()),
-                Some("r") => Parser::parse(
+                Some("again") => Parser::parse(
                     self.last_successful_cmd.borrow().clone(),
                     &mut self.world.borrow_mut(),
                     &mut self.player.borrow_mut(),
@@ -169,7 +171,7 @@ Some available commands:
 
         if res.succeeded()
             && !self.last_cmd_res.borrow().has_request()
-            && command.verb() != Some("r")
+            && command.verb() != Some("again")
         {
             self.last_successful_cmd.replace(command);
         }
@@ -177,6 +179,8 @@ Some available commands:
         self.last_cmd_res.replace(res.clone());
 
         if res.is_active() {
+            self.num_moves.set(self.num_moves.get() + 1);
+
             format!("{}{}", res.output(), self.combat())
         } else {
             res.output().to_owned()
@@ -246,7 +250,10 @@ Some available commands:
 
         if let Ok(mut file) = File::create(&filename) {
             if let Ok(()) = file.write_all(saved.as_bytes()) {
-                CmdResult::new(Action::Passive, format!("Saved to '{}'.", filename))
+                CmdResult::new(
+                    Action::Passive,
+                    format!("Moves: {}\nSaved to '{}'.", self.num_moves.get(), filename),
+                )
             } else {
                 CmdResult::new(Action::Failed, String::from("Error saving world."))
             }
