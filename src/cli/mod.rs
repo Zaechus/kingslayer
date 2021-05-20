@@ -261,4 +261,8 @@ Some available commands:
             CmdResult::new(Action::Failed, String::from("Error saving world."))
         }
     }
+
+    pub fn last_output(&self) -> String {
+        self.last_cmd_res.borrow().output().to_owned()
+    }
 }
