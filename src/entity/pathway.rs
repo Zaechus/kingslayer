@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use serde::{Deserialize, Serialize};
 
 use super::{Closeable, DoorLock, Entity, Lockable, Opening};
@@ -30,8 +32,22 @@ impl Pathway {
         }
     }
 
-    pub fn directions(&self) -> &Vec<String> {
-        &self.directions
+    pub fn any_direction(&self, dir_name: Vec<&str>) -> bool {
+        if cfg!(target_arch = "wasm32") {
+            self.directions
+                .iter()
+                .map(|direction| direction.split_whitespace().collect())
+                .any(|direction: Vec<&str>| {
+                    dir_name.iter().all(|ref word| direction.contains(word))
+                })
+        } else {
+            self.directions
+                .par_iter()
+                .map(|direction| direction.par_split_whitespace().collect())
+                .any(|direction: Vec<&str>| {
+                    dir_name.par_iter().all(|ref word| direction.contains(word))
+                })
+        }
     }
 }
 

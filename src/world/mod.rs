@@ -56,6 +56,15 @@ impl World {
         self.get_curr_room().inspect(name)
     }
 
+    pub fn any_angry_enemies(&self) -> bool {
+        for enemy in self.get_curr_room().enemies() {
+            if enemy.is_angry() {
+                return true;
+            }
+        }
+        false
+    }
+
     // changes the current Room to the target of the current Room's chosen path
     pub fn move_room(&mut self, direction: &str) -> CmdResult {
         if let Some(path) = self.get_curr_room().get_path(direction) {
@@ -63,12 +72,9 @@ impl World {
                 CmdResult::new(Action::Active, "The way is shut.".to_owned())
             } else if path.is_locked() {
                 CmdResult::is_locked(direction)
+            } else if self.any_angry_enemies() {
+                CmdResult::new(Action::Passive, "Enemies bar your way.".to_owned())
             } else {
-                for enemy in self.get_curr_room().enemies() {
-                    if enemy.is_angry() {
-                        return CmdResult::new(Action::Passive, "Enemies bar your way.".to_owned());
-                    }
-                }
                 self.curr_room = path.name().to_owned();
                 self.look()
             }

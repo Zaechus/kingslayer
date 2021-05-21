@@ -6,7 +6,7 @@ rooms: {
     desc: "This isn't a very large or clean closet.",
     paths: [
         Pathway(
-            directions: ["door"],
+            directions: ["small wooden door"],
             target: "Central Room",
             desc: "The door leads back into the room.",
             inspect: "The door is plain and wooden.",
@@ -25,9 +25,9 @@ rooms: {
             inspect: "The cave opening glows with a soft flickering light."
         ),
         Pathway(
-            directions: ["door"],
+            directions: ["small wooden door"],
             target: "Closet",
-            desc: "There is a door off to the side.",
+            desc: "There is a small wooden door off to the side.",
             inspect: "The door is plain and wooden.",
             opening: Some(Closed)
         ),

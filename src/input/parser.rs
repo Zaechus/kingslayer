@@ -263,7 +263,7 @@ impl Parser {
             match short_verb {
                 "north" | "south" | "east" | "west" | "northeast" | "northwest" | "southeast"
                 | "southwest" | "up" | "down" => world.move_room(verb),
-                "enter" | "go" | "move" => Parser::parse_move(verb, &words, world),
+                "enter" | "go" | "move" | "exit" => Parser::parse_move(verb, &words, world),
                 "c" | "stat" | "stats" => player.info(),
                 "i" | "invent" => player.print_inventory(),
                 "l" | "look" => world.look(),

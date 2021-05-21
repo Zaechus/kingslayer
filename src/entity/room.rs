@@ -90,34 +90,31 @@ impl Room {
         }
     }
 
-    #[allow(clippy::borrowed_box)]
-    pub fn get_path(&self, direction: &str) -> Option<&Box<Pathway>> {
+    fn path_pos(&self, dir_name: &str) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
             self.paths
                 .iter()
-                .find(|path| path.directions().iter().any(|d| d == direction))
+                .position(|pathway| pathway.any_direction(dir_name.split_whitespace().collect()))
         } else {
-            self.paths.par_iter().find_any(|path| {
-                path.directions()
-                    .par_iter()
-                    .position_any(|d| d == direction)
-                    .is_some()
+            self.paths.par_iter().position_any(|pathway| {
+                pathway.any_direction(dir_name.par_split_whitespace().collect())
             })
         }
     }
     #[allow(clippy::borrowed_box)]
-    pub fn get_path_mut(&mut self, direction: &str) -> Option<&mut Box<Pathway>> {
-        if cfg!(target_arch = "wasm32") {
-            self.paths
-                .iter_mut()
-                .find(|path| path.directions().iter().any(|d| d == direction))
+    pub fn get_path(&self, direction: &str) -> Option<&Box<Pathway>> {
+        if let Some(pos) = self.path_pos(direction) {
+            self.paths.get(pos)
         } else {
-            self.paths.par_iter_mut().find_any(|path| {
-                path.directions()
-                    .par_iter()
-                    .position_any(|d| d == direction)
-                    .is_some()
-            })
+            None
+        }
+    }
+    #[allow(clippy::borrowed_box)]
+    pub fn get_path_mut(&mut self, direction: &str) -> Option<&mut Box<Pathway>> {
+        if let Some(pos) = self.path_pos(direction) {
+            self.paths.get_mut(pos)
+        } else {
+            None
         }
     }
 
