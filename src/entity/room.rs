@@ -102,7 +102,7 @@ impl Room {
         }
     }
     #[allow(clippy::borrowed_box)]
-    pub fn get_path(&self, direction: &str) -> Option<&Box<Pathway>> {
+    pub fn find_path(&self, direction: &str) -> Option<&Box<Pathway>> {
         if let Some(pos) = self.path_pos(direction) {
             self.paths.get(pos)
         } else {
@@ -110,7 +110,7 @@ impl Room {
         }
     }
     #[allow(clippy::borrowed_box)]
-    pub fn get_path_mut(&mut self, direction: &str) -> Option<&mut Box<Pathway>> {
+    pub fn find_path_mut(&mut self, direction: &str) -> Option<&mut Box<Pathway>> {
         if let Some(pos) = self.path_pos(direction) {
             self.paths.get_mut(pos)
         } else {
@@ -173,7 +173,7 @@ impl Room {
     }
 
     pub fn unlock(&mut self, name: &str) -> CmdResult {
-        if let Some(path) = self.get_path_mut(name) {
+        if let Some(path) = self.find_path_mut(name) {
             if path.is_locked() {
                 path.unlock()
             } else {
@@ -185,7 +185,7 @@ impl Room {
     }
 
     pub fn open(&mut self, name: &str) -> CmdResult {
-        if let Some(path) = self.get_path_mut(name) {
+        if let Some(path) = self.find_path_mut(name) {
             if path.is_locked() {
                 CmdResult::is_locked(name)
             } else if path.is_closed() {
@@ -215,7 +215,7 @@ impl Room {
     }
 
     pub fn close(&mut self, name: &str) -> CmdResult {
-        if let Some(path) = self.get_path_mut(name) {
+        if let Some(path) = self.find_path_mut(name) {
             if path.is_closed() {
                 CmdResult::already_closed(name)
             } else {
@@ -255,7 +255,7 @@ impl Room {
     fn harm(&mut self, enemy: usize, enemy_name: &str, attack: Attack) -> CmdResult {
         if let Some(enemy) = self.enemies.get_mut(enemy) {
             if let Some(damage) = attack.damage() {
-                if let Some(res) = enemy.get_hit(damage) {
+                if let Some(res) = enemy.take_damage(damage) {
                     res
                 } else if enemy.is_alive() {
                     CmdResult::new(
@@ -310,7 +310,7 @@ impl Room {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(item) = self.find_similar_element(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
-        } else if let Some(pathway) = self.get_path(name) {
+        } else if let Some(pathway) = self.find_path(name) {
             Some(CmdResult::new(Action::Active, pathway.inspect().to_owned()))
         } else if let Some(enemy) = self.enemy_find(name) {
             Some(CmdResult::new(Action::Active, enemy.inspect().to_owned()))

@@ -36,7 +36,7 @@ impl World {
         }
     }
 
-    pub fn get_room_mut(&mut self, room_name: &str) -> &mut Room {
+    fn get_room_mut(&mut self, room_name: &str) -> &mut Room {
         if let Some(room) = self.rooms.get_mut(room_name) {
             room
         } else {
@@ -67,7 +67,7 @@ impl World {
 
     // changes the current Room to the target of the current Room's chosen path
     pub fn move_room(&mut self, direction: &str) -> CmdResult {
-        if let Some(path) = self.get_curr_room().get_path(direction) {
+        if let Some(path) = self.get_curr_room().find_path(direction) {
             if path.is_closed() {
                 CmdResult::new(Action::Active, "The way is shut.".to_owned())
             } else if path.is_locked() {
