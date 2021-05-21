@@ -130,19 +130,7 @@ impl Room {
     ) -> Result<Box<Item>, CmdResult> {
         if let Some(container) = self.item_find_mut(container_name) {
             if let Container(ref mut container) = **container {
-                if container.is_closed() {
-                    Err(CmdResult::new(
-                        Action::Active,
-                        format!("The {} is closed.", container_name),
-                    ))
-                } else if let Some(item) = container.position(item_name) {
-                    Ok(container.remove(item))
-                } else {
-                    Err(CmdResult::new(
-                        Action::Passive,
-                        format!("There is no \"{}\" in the {}.", item_name, container_name),
-                    ))
-                }
+                container.give_item(item_name)
             } else {
                 Err(CmdResult::not_container(container_name))
             }
@@ -170,7 +158,7 @@ impl Room {
                             Some(item),
                         )
                     } else {
-                        container.push(item);
+                        container.push_item(item);
                         (CmdResult::new(Action::Active, "Placed.".to_owned()), None)
                     }
                 } else {

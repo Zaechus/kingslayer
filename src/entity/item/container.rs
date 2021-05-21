@@ -43,31 +43,48 @@ impl Container {
         }
     }
 
-    pub fn find_similar_item(&self, name: &str) -> Option<usize> {
+    fn item_pos(&self, item_name: Vec<&str>) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
             self.contents
                 .iter()
-                .position(|item| item.name().split_whitespace().any(|word| word == name))
+                .map(|item| item.name().split_whitespace().collect())
+                .position(|direction: Vec<&str>| {
+                    item_name.iter().all(|ref word| direction.contains(word))
+                })
         } else {
             self.contents
                 .par_iter()
-                .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
+                .map(|item| item.name().par_split_whitespace().collect())
+                .position_any(|direction: Vec<&str>| {
+                    item_name
+                        .par_iter()
+                        .all(|ref word| direction.contains(word))
+                })
         }
     }
 
-    pub fn position(&self, name: &str) -> Option<usize> {
-        if cfg!(target_arch = "wasm32") {
-            self.contents.iter().position(|x| x.name() == name)
-        } else {
-            self.contents.par_iter().position_any(|x| x.name() == name)
-        }
-    }
-
-    pub fn push(&mut self, item: Box<Item>) {
+    pub fn push_item(&mut self, item: Box<Item>) {
         self.contents.push(item);
     }
-    pub fn remove(&mut self, item: usize) -> Box<Item> {
-        self.contents.remove(item)
+
+    pub fn give_item(&mut self, item_name: &str) -> Result<Box<Item>, CmdResult> {
+        if self.is_closed() {
+            Err(CmdResult::new(
+                Action::Active,
+                format!("The {} is closed.", self.name),
+            ))
+        } else if let Some(pos) = self.item_pos(if cfg!(target_arch = "wasm32") {
+            item_name.split_whitespace().collect()
+        } else {
+            item_name.par_split_whitespace().collect()
+        }) {
+            Ok(self.contents.remove(pos))
+        } else {
+            Err(CmdResult::new(
+                Action::Passive,
+                format!("There is no \"{}\" in the {}.", item_name, self.name),
+            ))
+        }
     }
 }
 

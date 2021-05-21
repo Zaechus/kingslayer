@@ -76,7 +76,7 @@ impl Player {
     }
 
     pub fn attack_with(&mut self, weapon_name: &str) -> Attack {
-        if let Some(weapon) = self.inventory.find(weapon_name) {
+        if let Some(weapon) = self.inventory.find_item(weapon_name) {
             if let Weapon(ref weapon) = **weapon {
                 Attack::new(
                     weapon_name.to_owned(),
@@ -132,11 +132,7 @@ impl Player {
     }
 
     pub fn don_armor(&mut self, armor_name: &str) -> CmdResult {
-        if let Some(item) = self.inventory.position(armor_name) {
-            let item = self.inventory.remove(item);
-            self.set_armor(armor_name, item)
-        } else if let Some(item) = self.inventory.find_similar_item_pos(armor_name) {
-            let item = self.inventory.remove(item);
+        if let Some(item) = self.inventory.remove_item(armor_name) {
             self.set_armor(&armor_name, item)
         } else {
             CmdResult::dont_have(armor_name)
@@ -174,11 +170,7 @@ impl Player {
 
     // equip an Item into main_hand to simplify fighting
     pub fn equip(&mut self, weapon_name: &str) -> CmdResult {
-        if let Some(item) = self.inventory.position(weapon_name) {
-            let item = self.inventory.remove(item);
-            self.set_equipped(weapon_name, item)
-        } else if let Some(item) = self.inventory.find_similar_item_pos(weapon_name) {
-            let item = self.inventory.remove(item);
+        if let Some(item) = self.inventory.remove_item(weapon_name) {
             self.set_equipped(weapon_name, item)
         } else {
             CmdResult::dont_have(weapon_name)
@@ -234,9 +226,7 @@ impl Player {
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.info())
-        } else if let Some(item) = self.inventory.find(name) {
-            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
-        } else if let Some(item) = self.inventory.find_similar_item(name) {
+        } else if let Some(item) = self.inventory.find_item(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(item) = &self.main_hand {
             if item.name() == name {
