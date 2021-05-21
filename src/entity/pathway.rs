@@ -32,20 +32,24 @@ impl Pathway {
         }
     }
 
-    pub fn any_direction(&self, dir_name: Vec<&str>) -> bool {
+    pub fn any_direction(&self, dir_name: &str) -> bool {
         if cfg!(target_arch = "wasm32") {
             self.directions
                 .iter()
                 .map(|direction| direction.split_whitespace().collect())
                 .any(|direction: Vec<&str>| {
-                    dir_name.iter().all(|ref word| direction.contains(word))
+                    dir_name
+                        .par_split_whitespace()
+                        .all(|ref word| direction.contains(word))
                 })
         } else {
             self.directions
                 .par_iter()
                 .map(|direction| direction.par_split_whitespace().collect())
                 .any(|direction: Vec<&str>| {
-                    dir_name.par_iter().all(|ref word| direction.contains(word))
+                    dir_name
+                        .par_split_whitespace()
+                        .all(|ref word| direction.contains(word))
                 })
         }
     }

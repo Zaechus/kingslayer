@@ -68,28 +68,10 @@ impl Room {
         }
     }
 
-    fn similar_enemy_pos(&self, name: &str) -> Option<usize> {
-        if cfg!(target_arch = "wasm32") {
-            self.enemies
-                .iter()
-                .position(|item| item.name().split_whitespace().any(|word| word == name))
-        } else {
-            self.enemies
-                .par_iter()
-                .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
-        }
-    }
-
     fn path_pos(&self, dir_name: &str) -> Option<usize> {
-        if cfg!(target_arch = "wasm32") {
-            self.paths
-                .iter()
-                .position(|pathway| pathway.any_direction(dir_name.split_whitespace().collect()))
-        } else {
-            self.paths.par_iter().position_any(|pathway| {
-                pathway.any_direction(dir_name.par_split_whitespace().collect())
-            })
-        }
+        self.paths
+            .par_iter()
+            .position_any(|pathway| pathway.any_direction(dir_name))
     }
     #[allow(clippy::borrowed_box)]
     pub fn find_path(&self, direction: &str) -> Option<&Box<Pathway>> {
@@ -215,11 +197,7 @@ impl Room {
 
     // interact with an Ally
     pub fn hail(&self, _ally_name: &str) -> CmdResult {
-        // if let Some(_ally) = self.allies.iter().find(|x| x.name() == ally_name) {
         CmdResult::new(Action::Passive, "Hail, friend.".to_owned())
-        // } else {
-        //     CmdResult::no_item_here(ally_name)
-        // }
     }
 
     fn harm(&mut self, enemy: usize, enemy_name: &str, attack: Attack) -> CmdResult {
@@ -268,8 +246,6 @@ impl Room {
     pub fn harm_enemy(&mut self, enemy_name: &str, attack: Attack) -> CmdResult {
         if let Some(enemy) = self.enemy_pos(enemy_name) {
             self.harm(enemy, enemy_name, attack)
-        } else if let Some(enemy) = self.similar_enemy_pos(enemy_name) {
-            self.harm(enemy, enemy_name, attack)
         } else {
             CmdResult::no_item_here(enemy_name)
         }
@@ -302,11 +278,7 @@ impl Room {
     }
 
     pub fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.item_pos(if cfg!(target_arch = "wasm32") {
-            name.split_whitespace().collect()
-        } else {
-            name.par_split_whitespace().collect()
-        }) {
+        if let Some(item) = self.item_pos(name) {
             Some(self.items.remove(item))
         } else {
             None
@@ -332,59 +304,71 @@ impl Room {
         &mut self.enemies
     }
 
-    fn item_pos(&self, item_name: Vec<&str>) -> Option<usize> {
+    fn item_pos(&self, item_name: &str) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
             self.items
                 .iter()
                 .map(|item| item.name().split_whitespace().collect())
-                .position(|item: Vec<&str>| item_name.iter().all(|ref word| item.contains(word)))
+                .position(|item: Vec<&str>| {
+                    item_name
+                        .split_whitespace()
+                        .all(|ref word| item.contains(word))
+                })
         } else {
             self.items
                 .par_iter()
                 .map(|item| item.name().par_split_whitespace().collect())
                 .position_any(|item: Vec<&str>| {
-                    item_name.par_iter().all(|ref word| item.contains(word))
+                    item_name
+                        .par_split_whitespace()
+                        .all(|ref word| item.contains(word))
                 })
         }
     }
     #[allow(clippy::borrowed_box)]
-    fn find_item(&self, name: &str) -> Option<&Box<Item>> {
-        if let Some(pos) = self.item_pos(if cfg!(target_arch = "wasm32") {
-            name.split_whitespace().collect()
-        } else {
-            name.par_split_whitespace().collect()
-        }) {
+    fn find_item(&self, item_name: &str) -> Option<&Box<Item>> {
+        if let Some(pos) = self.item_pos(item_name) {
             self.items.get(pos)
         } else {
             None
         }
     }
     #[allow(clippy::borrowed_box)]
-    fn find_item_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
-        if let Some(pos) = self.item_pos(if cfg!(target_arch = "wasm32") {
-            name.split_whitespace().collect()
-        } else {
-            name.par_split_whitespace().collect()
-        }) {
+    fn find_item_mut(&mut self, item_name: &str) -> Option<&mut Box<Item>> {
+        if let Some(pos) = self.item_pos(item_name) {
             self.items.get_mut(pos)
         } else {
             None
         }
     }
 
-    fn enemy_pos(&self, name: &str) -> Option<usize> {
+    fn enemy_pos(&self, enemy_name: &str) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
-            self.enemies.iter().position(|x| x.name() == name)
+            self.enemies
+                .iter()
+                .map(|enemy| enemy.name().split_whitespace().collect())
+                .position(|enemy: Vec<&str>| {
+                    enemy_name
+                        .split_whitespace()
+                        .all(|ref word| enemy.contains(word))
+                })
         } else {
-            self.enemies.par_iter().position_any(|x| x.name() == name)
+            self.enemies
+                .par_iter()
+                .map(|enemy| enemy.name().par_split_whitespace().collect())
+                .position_any(|enemy: Vec<&str>| {
+                    enemy_name
+                        .par_split_whitespace()
+                        .all(|ref word| enemy.contains(word))
+                })
         }
     }
     #[allow(clippy::borrowed_box)]
-    fn find_enemy(&self, name: &str) -> Option<&Box<Enemy>> {
-        if cfg!(target_arch = "wasm32") {
-            self.enemies.iter().find(|x| x.name() == name)
+    fn find_enemy(&self, enemy_name: &str) -> Option<&Box<Enemy>> {
+        if let Some(pos) = self.enemy_pos(enemy_name) {
+            self.enemies.get(pos)
         } else {
-            self.enemies.par_iter().find_any(|x| x.name() == name)
+            None
         }
     }
 }

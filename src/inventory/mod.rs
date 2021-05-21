@@ -36,29 +36,31 @@ impl Inventory {
         }
     }
 
-    pub fn item_pos(&self, item_name: Vec<&str>) -> Option<usize> {
+    pub fn item_pos(&self, item_name: &str) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
             self.items
                 .iter()
                 .map(|item| item.name().split_whitespace().collect())
-                .position(|item: Vec<&str>| item_name.iter().all(|ref word| item.contains(word)))
+                .position(|item: Vec<&str>| {
+                    item_name
+                        .split_whitespace()
+                        .all(|ref word| item.contains(word))
+                })
         } else {
             self.items
                 .par_iter()
                 .map(|item| item.name().par_split_whitespace().collect())
                 .position_any(|item: Vec<&str>| {
-                    item_name.par_iter().all(|ref word| item.contains(word))
+                    item_name
+                        .par_split_whitespace()
+                        .all(|ref word| item.contains(word))
                 })
         }
     }
 
     #[allow(clippy::borrowed_box)]
     pub fn find_item(&self, item_name: &str) -> Option<&Box<Item>> {
-        if let Some(pos) = self.item_pos(if cfg!(target_arch = "wasm32") {
-            item_name.split_whitespace().collect()
-        } else {
-            item_name.par_split_whitespace().collect()
-        }) {
+        if let Some(pos) = self.item_pos(item_name) {
             self.items.get(pos)
         } else {
             None
@@ -66,11 +68,7 @@ impl Inventory {
     }
     #[allow(clippy::borrowed_box)]
     pub fn find_item_mut(&mut self, item_name: &str) -> Option<&mut Box<Item>> {
-        if let Some(pos) = self.item_pos(if cfg!(target_arch = "wasm32") {
-            item_name.split_whitespace().collect()
-        } else {
-            item_name.par_split_whitespace().collect()
-        }) {
+        if let Some(pos) = self.item_pos(item_name) {
             self.items.get_mut(pos)
         } else {
             None
@@ -138,12 +136,8 @@ impl Inventory {
         self.items.push(item);
     }
 
-    pub fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.item_pos(if cfg!(target_arch = "wasm32") {
-            name.split_whitespace().collect()
-        } else {
-            name.par_split_whitespace().collect()
-        }) {
+    pub fn remove_item(&mut self, item_name: &str) -> Option<Box<Item>> {
+        if let Some(item) = self.item_pos(item_name) {
             Some(self.items.remove(item))
         } else {
             None

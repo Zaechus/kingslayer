@@ -85,8 +85,8 @@ impl Player {
             } else {
                 Attack::new(weapon_name.to_owned(), Some(self.default_damage()))
             }
-        } else if let Some(weapon) = &self.main_hand {
-            if weapon_name == weapon.name() {
+        } else if self.is_main_hand(weapon_name) {
+            if let Some(weapon) = &self.main_hand {
                 if let Weapon(ref weapon) = **weapon {
                     Attack::new(
                         weapon_name.to_owned(),
@@ -276,50 +276,55 @@ impl Player {
         CmdResult::new(Action::Active, items_carried)
     }
 
+    fn is_main_hand(&self, name: &str) -> bool {
+        if let Some(main_hand) = &self.main_hand {
+            let main_hand = main_hand
+                .name()
+                .par_split_whitespace()
+                .collect::<Vec<&str>>();
+
+            name.par_split_whitespace()
+                .all(|ref word| main_hand.contains(word))
+        } else {
+            false
+        }
+    }
+
     fn remove_main_hand(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.main_hand.take() {
-            let similar = if cfg!(target_arch = "wasm32") {
-                item.name().split_whitespace().any(|word| word == name)
-            } else {
-                item.name().par_split_whitespace().any(|word| word == name)
-            };
-            if item.name() == name || similar {
-                Some(item)
-            } else {
-                self.main_hand = Some(item);
-                None
-            }
+        if self.is_main_hand(name) {
+            self.main_hand.take()
         } else {
             None
         }
     }
 
+    fn is_armor(&self, name: &str) -> bool {
+        if let Some(armor) = &self.armor {
+            let armor = armor.name().par_split_whitespace().collect::<Vec<&str>>();
+
+            name.par_split_whitespace()
+                .all(|ref word| armor.contains(word))
+        } else {
+            false
+        }
+    }
+
     fn remove_armor(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.armor.take() {
-            let similar = if cfg!(target_arch = "wasm32") {
-                item.name().split_whitespace().any(|word| word == name)
-            } else {
-                item.name().par_split_whitespace().any(|word| word == name)
-            };
-            if item.name() == name || similar {
-                Some(item)
-            } else {
-                self.armor = Some(item);
-                None
-            }
+        if self.is_armor(name) {
+            self.armor.take()
         } else {
             None
         }
     }
 
     // remove an item from inventory and into the current Room
-    pub fn remove(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.inventory.remove_item(name) {
+    pub fn remove(&mut self, item_name: &str) -> Option<Box<Item>> {
+        if let Some(item) = self.inventory.remove_item(item_name) {
             Some(item)
-        } else if let Some(item) = self.remove_main_hand(name) {
+        } else if let Some(item) = self.remove_main_hand(item_name) {
             Some(item)
         } else {
-            self.remove_armor(name)
+            self.remove_armor(item_name)
         }
     }
 

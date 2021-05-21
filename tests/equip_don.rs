@@ -14,6 +14,12 @@ mod tests {
             cli.ask("i").contains("Main hand: iron sword")
                 && !cli.ask("i").contains("  iron sword")
         );
+        assert!(cli.ask("drop sword").contains("Dropped."));
+        assert!(
+            !cli.ask("i").contains("Main hand")
+                && !cli.ask("i").contains("iron sword")
+                && cli.ask("l").contains("iron sword")
+        );
     }
 
     #[test]

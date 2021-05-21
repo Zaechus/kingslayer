@@ -43,13 +43,15 @@ impl Container {
         }
     }
 
-    fn item_pos(&self, item_name: Vec<&str>) -> Option<usize> {
+    fn item_pos(&self, item_name: &str) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
             self.contents
                 .iter()
                 .map(|item| item.name().split_whitespace().collect())
                 .position(|direction: Vec<&str>| {
-                    item_name.iter().all(|ref word| direction.contains(word))
+                    item_name
+                        .split_whitespace()
+                        .all(|ref word| direction.contains(word))
                 })
         } else {
             self.contents
@@ -57,7 +59,7 @@ impl Container {
                 .map(|item| item.name().par_split_whitespace().collect())
                 .position_any(|direction: Vec<&str>| {
                     item_name
-                        .par_iter()
+                        .par_split_whitespace()
                         .all(|ref word| direction.contains(word))
                 })
         }
@@ -73,11 +75,7 @@ impl Container {
                 Action::Active,
                 format!("The {} is closed.", self.name),
             ))
-        } else if let Some(pos) = self.item_pos(if cfg!(target_arch = "wasm32") {
-            item_name.split_whitespace().collect()
-        } else {
-            item_name.par_split_whitespace().collect()
-        }) {
+        } else if let Some(pos) = self.item_pos(item_name) {
             Ok(self.contents.remove(pos))
         } else {
             Err(CmdResult::new(
