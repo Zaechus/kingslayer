@@ -49,18 +49,6 @@ impl Room {
         desc
     }
 
-    fn similar_item_pos(&self, name: &str) -> Option<usize> {
-        if cfg!(target_arch = "wasm32") {
-            self.items
-                .iter()
-                .position(|item| item.name().split_whitespace().any(|word| word == name))
-        } else {
-            self.items
-                .par_iter()
-                .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
-        }
-    }
-
     #[allow(clippy::borrowed_box)]
     fn find_element(&self, name: &str) -> Option<&Box<Element>> {
         if cfg!(target_arch = "wasm32") {
@@ -130,7 +118,7 @@ impl Room {
         item_name: &str,
         container_name: &str,
     ) -> Result<Box<Item>, CmdResult> {
-        if let Some(container) = self.item_find_mut(container_name) {
+        if let Some(container) = self.find_item_mut(container_name) {
             if let Container(ref mut container) = **container {
                 container.give_item(item_name)
             } else {
@@ -149,7 +137,7 @@ impl Room {
         item: Option<Box<Item>>,
     ) -> (CmdResult, Option<Box<Item>>) {
         if let Some(item) = item {
-            if let Some(container) = self.item_find_mut(container_name) {
+            if let Some(container) = self.find_item_mut(container_name) {
                 if let Container(ref mut container) = **container {
                     if container.is_closed() {
                         (
@@ -195,21 +183,11 @@ impl Room {
             } else {
                 CmdResult::already_opened(name)
             }
-        } else if let Some(item) = self.item_find_mut(name) {
+        } else if let Some(item) = self.find_item_mut(name) {
             if let Container(ref mut container) = **item {
                 container.open()
             } else {
                 CmdResult::not_container(name)
-            }
-        } else if let Some(item) = self.similar_item_pos(name) {
-            if let Some(item) = self.items.get_mut(item) {
-                if let Container(ref mut item) = **item {
-                    item.open()
-                } else {
-                    CmdResult::not_container(name)
-                }
-            } else {
-                CmdResult::no_item_here(name)
             }
         } else {
             CmdResult::no_item_here(name)
@@ -224,21 +202,11 @@ impl Room {
                 path.close();
                 CmdResult::new(Action::Active, "Closed.".to_owned())
             }
-        } else if let Some(item) = self.item_find_mut(name) {
+        } else if let Some(item) = self.find_item_mut(name) {
             if let Container(ref mut item) = **item {
                 item.close()
             } else {
                 CmdResult::not_container(name)
-            }
-        } else if let Some(item) = self.similar_item_pos(name) {
-            if let Some(item) = self.items.get_mut(item) {
-                if let Container(ref mut item) = **item {
-                    item.close()
-                } else {
-                    CmdResult::not_container(name)
-                }
-            } else {
-                CmdResult::no_item_here(name)
             }
         } else {
             CmdResult::no_item_here(name)
@@ -308,7 +276,7 @@ impl Room {
     }
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
-        if let Some(item) = self.item_find(name) {
+        if let Some(item) = self.find_item(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(item) = self.find_element(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
@@ -334,9 +302,11 @@ impl Room {
     }
 
     pub fn remove_item(&mut self, name: &str) -> Option<Box<Item>> {
-        if let Some(item) = self.item_pos(name) {
-            Some(self.items.remove(item))
-        } else if let Some(item) = self.similar_item_pos(name) {
+        if let Some(item) = self.item_pos(if cfg!(target_arch = "wasm32") {
+            name.split_whitespace().collect()
+        } else {
+            name.par_split_whitespace().collect()
+        }) {
             Some(self.items.remove(item))
         } else {
             None
@@ -362,27 +332,43 @@ impl Room {
         &mut self.enemies
     }
 
-    fn item_pos(&self, name: &str) -> Option<usize> {
+    fn item_pos(&self, item_name: Vec<&str>) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
-            self.items.iter().position(|x| x.name() == name)
+            self.items
+                .iter()
+                .map(|item| item.name().split_whitespace().collect())
+                .position(|item: Vec<&str>| item_name.iter().all(|ref word| item.contains(word)))
         } else {
-            self.items.par_iter().position_any(|x| x.name() == name)
+            self.items
+                .par_iter()
+                .map(|item| item.name().par_split_whitespace().collect())
+                .position_any(|item: Vec<&str>| {
+                    item_name.par_iter().all(|ref word| item.contains(word))
+                })
         }
     }
     #[allow(clippy::borrowed_box)]
-    fn item_find(&self, name: &str) -> Option<&Box<Item>> {
-        if cfg!(target_arch = "wasm32") {
-            self.items.iter().find(|x| x.name() == name)
+    fn find_item(&self, name: &str) -> Option<&Box<Item>> {
+        if let Some(pos) = self.item_pos(if cfg!(target_arch = "wasm32") {
+            name.split_whitespace().collect()
         } else {
-            self.items.par_iter().find_any(|x| x.name() == name)
+            name.par_split_whitespace().collect()
+        }) {
+            self.items.get(pos)
+        } else {
+            None
         }
     }
     #[allow(clippy::borrowed_box)]
-    fn item_find_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
-        if cfg!(target_arch = "wasm32") {
-            self.items.iter_mut().find(|x| x.name() == name)
+    fn find_item_mut(&mut self, name: &str) -> Option<&mut Box<Item>> {
+        if let Some(pos) = self.item_pos(if cfg!(target_arch = "wasm32") {
+            name.split_whitespace().collect()
         } else {
-            self.items.par_iter_mut().find_any(|x| x.name() == name)
+            name.par_split_whitespace().collect()
+        }) {
+            self.items.get_mut(pos)
+        } else {
+            None
         }
     }
 
