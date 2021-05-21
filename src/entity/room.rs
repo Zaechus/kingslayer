@@ -60,8 +60,9 @@ impl Room {
                 .position_any(|item| item.name().par_split_whitespace().any(|word| word == name))
         }
     }
+
     #[allow(clippy::borrowed_box)]
-    pub fn find_similar_element(&self, name: &str) -> Option<&Box<Element>> {
+    fn find_element(&self, name: &str) -> Option<&Box<Element>> {
         if cfg!(target_arch = "wasm32") {
             self.elements.iter().find(|el| {
                 el.name().split_whitespace().any(|el_word| {
@@ -78,6 +79,7 @@ impl Room {
             })
         }
     }
+
     fn similar_enemy_pos(&self, name: &str) -> Option<usize> {
         if cfg!(target_arch = "wasm32") {
             self.enemies
@@ -308,11 +310,11 @@ impl Room {
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.item_find(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
-        } else if let Some(item) = self.find_similar_element(name) {
+        } else if let Some(item) = self.find_element(name) {
             Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
         } else if let Some(pathway) = self.find_path(name) {
             Some(CmdResult::new(Action::Active, pathway.inspect().to_owned()))
-        } else if let Some(enemy) = self.enemy_find(name) {
+        } else if let Some(enemy) = self.find_enemy(name) {
             Some(CmdResult::new(Action::Active, enemy.inspect().to_owned()))
         } else {
             self.allies
@@ -392,7 +394,7 @@ impl Room {
         }
     }
     #[allow(clippy::borrowed_box)]
-    fn enemy_find(&self, name: &str) -> Option<&Box<Enemy>> {
+    fn find_enemy(&self, name: &str) -> Option<&Box<Enemy>> {
         if cfg!(target_arch = "wasm32") {
             self.enemies.iter().find(|x| x.name() == name)
         } else {
