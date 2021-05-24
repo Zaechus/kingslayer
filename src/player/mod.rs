@@ -249,7 +249,7 @@ impl Player {
             self.xp.1 = (1800 * (self.lvl as i32 - 2).pow(2) + 1000) as u32;
             self.lvl += 1;
             self.stats.pts += self.lvl + 3;
-            format!("You advanced to level {}!", self.lvl)
+            format!("\n\nYou advanced to level {}!", self.lvl)
         } else {
             String::new()
         }

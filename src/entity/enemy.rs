@@ -36,7 +36,7 @@ impl Enemy {
     }
     pub fn new_rats(status: EnemyStatus) -> Self {
         Self {
-            name: String::from("swarm rats"),
+            name: String::from("swarm of rats"),
             desc: String::from("A swarm of rats raves along the floor."),
             inspect: String::from("The creatures chatter and scrape viciously."),
             hp: 24,
