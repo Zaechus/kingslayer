@@ -1,6 +1,6 @@
 [package]
 name = "kingslayer"
-version = "0.5.4"
+version = "0.5.5"
 authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
 edition = "2018"
 license = "MIT"
