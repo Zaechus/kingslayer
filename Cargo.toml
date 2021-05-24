@@ -6,7 +6,7 @@ edition = "2018"
 license = "MIT"
 description = "A text adventure dungeon crawler game written in Rust"
 readme = "README.md"
-repository = "https://github.com/Maxgy/kingslayer"
+repository = "https://github.com/Zaechus/kingslayer"
 keywords = ["text", "adventure", "game", "dungeon", "crawler"]
 categories = ["games", "game-engines"]
 
