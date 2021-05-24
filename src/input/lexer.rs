@@ -33,18 +33,16 @@ impl Lexer {
                         None,
                     )
                 } else {
-                    let (obj, obj_prep) = if words[1..pos].is_empty() && words[pos + 1..].is_empty()
-                    {
-                        (None, None)
-                    } else if words[1..pos].is_empty() {
-                        (None, Some(words[pos + 1..].join(" ")))
-                    } else if words[pos + 1..].is_empty() {
-                        (Some(words[1..pos].join(" ")), None)
+                    let obj = if words[1..pos].is_empty() {
+                        None
                     } else {
-                        (
-                            Some(words[1..pos].join(" ")),
-                            Some(words[pos + 1..].join(" ")),
-                        )
+                        Some(words[1..pos].join(" "))
+                    };
+
+                    let obj_prep = if words[pos + 1..].is_empty() {
+                        None
+                    } else {
+                        Some(words[pos + 1..].join(" "))
                     };
 
                     CmdTokens::new(
