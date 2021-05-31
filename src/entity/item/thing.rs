@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::entity::Entity;
 
-// An object to be interacted with by the user
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Thing {
     name: String,

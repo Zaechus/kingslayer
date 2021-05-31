@@ -8,7 +8,6 @@ use crate::{
     types::{Action, CmdResult, Items},
 };
 
-// An object to be interacted with by the user
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Container {
     name: String,
