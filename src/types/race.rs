@@ -7,6 +7,7 @@ pub enum Race {
     Human,
     Dwarf,
     Elf,
+    Dragonborn,
 }
 
 impl Race {
@@ -14,6 +15,7 @@ impl Race {
         match input.chars().next() {
             Some('2') => Race::Dwarf,
             Some('3') => Race::Elf,
+            Some('4') => Race::Dragonborn,
             _ => Race::Human,
         }
     }
@@ -22,7 +24,8 @@ impl Race {
         "Choose a race:\n  \
             1) Human\n  \
             2) Dwarf\n  \
-            3) Elf\n\n"
+            3) Elf\n  \
+            4) Dragonborn\n\n"
             .to_owned()
     }
 }
@@ -33,6 +36,7 @@ impl fmt::Display for Race {
             Self::Human => "Human",
             Self::Dwarf => "Dwarf",
             Self::Elf => "Elf",
+            Self::Dragonborn => "Dragonborn",
         };
         write!(f, "{}", s.to_owned())
     }
