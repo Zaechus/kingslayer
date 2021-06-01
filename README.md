@@ -47,7 +47,7 @@ fn main() {
     loop {
         let s = cli.ask(&Cli::prompt());
         println!("{}", s);
-        if s.contains("You died.") {
+        if s.contains("Farewell") {
             break;
         }
     }
