@@ -135,8 +135,7 @@ impl Player {
     }
 
     fn set_equipped(&mut self, item_name: &str, item: Box<Item>) -> CmdResult {
-        // move old main hand back to inventory
-        match &*item {
+        match *item {
             Armor(_) => {
                 self.take(item_name, Some(item));
                 self.don_armor(item_name);

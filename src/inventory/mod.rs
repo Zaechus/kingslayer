@@ -166,7 +166,7 @@ impl Inventory {
 
             let mut gold = 0;
             self.items.retain(|x| {
-                if let Gold(g) = &**x {
+                if let Gold(ref g) = **x {
                     gold += g.amount();
                     false
                 } else {
