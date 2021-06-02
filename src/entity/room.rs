@@ -28,25 +28,26 @@ pub struct Room {
 impl Room {
     // collects all descriptions of entities in the Room for printing
     pub fn long_desc(&self) -> String {
-        let mut desc = format!("{}\n{}", self.name, self.desc);
-        for el in self.elements.iter() {
-            desc.push_str(&format!("\n{}", el.desc()));
-        }
-        for path in self.paths.iter() {
-            if !path.desc().is_empty() {
-                desc.push_str(&format!("\n{}", path.long_desc()));
-            }
-        }
-        for item in self.items.iter() {
-            desc.push_str(&format!("\n{}", item.long_desc()));
-        }
-        for ally in self.allies.iter() {
-            desc.push_str(&format!("\n{}", ally.desc()));
-        }
-        for enemy in self.enemies.iter() {
-            desc.push_str(&format!("\n{}", enemy.long_desc()));
-        }
-        desc
+        format!(
+            "{}\n{}{}{}{}{}{}",
+            self.name,
+            self.desc,
+            self.elements.iter().fold(String::new(), |desc, el| {
+                format!("{}\n{}", desc, el.desc())
+            }),
+            self.paths.iter().fold(String::new(), |desc, path| {
+                format!("{}\n{}", desc, path.long_desc())
+            }),
+            self.items.iter().fold(String::new(), |desc, item| {
+                format!("{}\n{}", desc, item.long_desc())
+            }),
+            self.allies.iter().fold(String::new(), |desc, ally| {
+                format!("{}\n{}", desc, ally.desc())
+            }),
+            self.enemies.iter().fold(String::new(), |desc, enemy| {
+                format!("{}\n{}", desc, enemy.long_desc())
+            }),
+        )
     }
 
     #[allow(clippy::borrowed_box)]
@@ -216,24 +217,31 @@ impl Room {
                         ),
                     )
                 } else {
-                    let mut res = format!(
-                        "You hit the {} with your {} for {} damage. It is dead.\n",
-                        enemy_name,
-                        attack.weapon_name(),
-                        damage
-                    );
-                    if !enemy.loot().is_empty() {
-                        res.push_str("It dropped:\n");
-                        for loot in enemy.loot() {
-                            res.push_str(&format!(" {},", loot.long_name()));
-                        }
-                    }
-                    if cfg!(target_arch = "wasm32") {
-                        self.items.extend(enemy.drop_loot());
-                    } else {
-                        self.items.par_extend(enemy.drop_loot());
-                    }
-                    CmdResult::new(Action::Active, res)
+                    CmdResult::new(
+                        Action::Active,
+                        format!(
+                            "You hit the {} with your {} for {} damage. It is dead.\n{}",
+                            enemy_name,
+                            attack.weapon_name(),
+                            damage,
+                            if !enemy.loot().is_empty() {
+                                let res = enemy
+                                    .loot()
+                                    .iter()
+                                    .fold(String::from("It dropped:\n"), |drops, loot| {
+                                        format!("{} {},", drops, loot.long_name())
+                                    });
+                                if cfg!(target_arch = "wasm32") {
+                                    self.items.extend(enemy.drop_loot());
+                                } else {
+                                    self.items.par_extend(enemy.drop_loot());
+                                }
+                                res
+                            } else {
+                                String::new()
+                            }
+                        ),
+                    )
                 }
             } else {
                 CmdResult::dont_have(&attack.weapon_name())

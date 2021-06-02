@@ -121,14 +121,10 @@ impl Inventory {
         if self.items.is_empty() {
             String::from("Your inventory is empty.")
         } else {
-            let mut items_carried = format!("Gold: {}\nYou are carrying:", self.gold);
-            items_carried.reserve(5 * self.items.len() + 8);
-
-            for item in self.items.iter() {
-                items_carried = format!("{}\n  {}", items_carried, item.long_name());
-            }
-            items_carried.shrink_to_fit();
-            items_carried
+            self.items.iter().fold(
+                format!("Gold: {}\nYou are carrying:", self.gold),
+                |res, item| format!("{}\n  {}", res, item.long_name()),
+            )
         }
     }
 
@@ -168,10 +164,6 @@ impl Inventory {
                 self.items.par_extend(items);
             }
 
-            let mut res = String::with_capacity(7 * times);
-            for _ in 0..times {
-                res.push_str("Taken. ");
-            }
             let mut gold = 0;
             self.items.retain(|x| {
                 if let Gold(g) = &**x {
@@ -182,7 +174,10 @@ impl Inventory {
                 }
             });
             self.gold += gold;
-            CmdResult::new(Action::Active, res)
+            CmdResult::new(
+                Action::Active,
+                (0..times).fold(String::new(), |res, _| format!("{}Taken. ", res)),
+            )
         }
     }
 

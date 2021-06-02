@@ -255,16 +255,23 @@ impl Player {
     }
 
     pub fn print_inventory(&self) -> CmdResult {
-        let mut items_carried = String::with_capacity(25);
-        if let Some(weapon) = &self.main_hand {
-            items_carried.push_str(&format!("Main hand: {}\n", weapon.name()));
-        }
-        if let Some(armor) = &self.armor {
-            items_carried.push_str(&format!("Armor: {}\n", armor.name()));
-        }
-        items_carried.push_str(&self.inventory.print());
-        items_carried.shrink_to_fit();
-        CmdResult::new(Action::Active, items_carried)
+        CmdResult::new(
+            Action::Active,
+            format!(
+                "{}{}{}",
+                if let Some(weapon) = &self.main_hand {
+                    format!("Main hand: {}\n", weapon.name())
+                } else {
+                    String::new()
+                },
+                if let Some(armor) = &self.armor {
+                    format!("Armor: {}\n", armor.name())
+                } else {
+                    String::new()
+                },
+                self.inventory.print()
+            ),
+        )
     }
 
     fn is_main_hand(&self, name: &str) -> bool {

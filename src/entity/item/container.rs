@@ -20,11 +20,11 @@ pub struct Container {
 impl Container {
     pub fn long_name(&self) -> String {
         if !self.contents.is_empty() && self.opening.is_open() {
-            let mut desc = format!("{}; it contains:", self.name);
-            for item in self.contents.iter() {
-                desc = format!("{}\n    {}", desc, item.name());
-            }
-            desc
+            self.contents
+                .iter()
+                .fold(format!("{}; it contains:", self.name), |desc, item| {
+                    format!("{}\n    {}", desc, item.name())
+                })
         } else {
             self.name.to_owned()
         }
@@ -32,11 +32,10 @@ impl Container {
 
     pub fn long_desc(&self) -> String {
         if !self.contents.is_empty() && self.opening.is_open() {
-            let mut desc = format!("{}\nThe {} contains:", self.desc, self.name);
-            for item in self.contents.iter() {
-                desc = format!("{}\n  {}", desc, item.name());
-            }
-            desc
+            self.contents.iter().fold(
+                format!("{}\nThe {} contains:", self.desc, self.name),
+                |desc, item| format!("{}\n  {}", desc, item.name()),
+            )
         } else {
             self.desc.to_owned()
         }
