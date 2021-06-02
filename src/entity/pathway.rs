@@ -74,7 +74,7 @@ impl Closeable for Pathway {
         if let Some(opening) = self.opening {
             if opening.is_closed() {
                 self.opening = Some(Opening::Open);
-                CmdResult::new(Action::Active, "Opened.".to_owned())
+                CmdResult::new(Action::Active, "Opened.")
             } else {
                 CmdResult::new(Action::Passive, String::from("The way is already open."))
             }
@@ -87,7 +87,7 @@ impl Closeable for Pathway {
         if let Some(opening) = self.opening {
             if opening.is_open() {
                 self.opening = Some(Opening::Closed);
-                CmdResult::new(Action::Active, "Closed.".to_owned())
+                CmdResult::new(Action::Active, "Closed.")
             } else {
                 CmdResult::new(Action::Passive, String::from("The way cannot be closed."))
             }
@@ -111,11 +111,11 @@ impl Lockable for Pathway {
             if lock.is_locked() {
                 if dice_roll(1, 20) > 10 {
                     self.lock = Some(DoorLock::Unlocked);
-                    CmdResult::new(Action::Active, "Unlocked.".to_owned())
+                    CmdResult::new(Action::Active, "Unlocked.")
                 } else {
                     CmdResult::new(
                         Action::Active,
-                        "You failed to pick the lock. This is harder than it looks.".to_owned(),
+                        "You failed to pick the lock. This is harder than it looks.",
                     )
                 }
             } else {
@@ -133,7 +133,7 @@ impl Lockable for Pathway {
     }
 
     fn lock(&mut self) -> CmdResult {
-        CmdResult::new(Action::Passive, "TODO: lock it".to_owned())
+        CmdResult::new(Action::Passive, "TODO: lock it")
     }
 
     fn is_locked(&self) -> bool {

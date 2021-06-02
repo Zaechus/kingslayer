@@ -63,12 +63,9 @@ impl Player {
     pub fn attack_main(&mut self) -> Attack {
         if let Some(weapon) = &self.main_hand {
             if let Weapon(ref weapon) = **weapon {
-                Attack::new(
-                    weapon.name().to_owned(),
-                    Some(self.deal_damage(weapon.damage())),
-                )
+                Attack::new(weapon.name(), Some(self.deal_damage(weapon.damage())))
             } else {
-                Attack::new(weapon.name().to_owned(), Some(self.default_damage()))
+                Attack::new(weapon.name(), Some(self.default_damage()))
             }
         } else {
             Attack::default()
@@ -78,28 +75,22 @@ impl Player {
     pub fn attack_with(&mut self, weapon_name: &str) -> Attack {
         if let Some(weapon) = self.inventory.find_item(weapon_name) {
             if let Weapon(ref weapon) = **weapon {
-                Attack::new(
-                    weapon_name.to_owned(),
-                    Some(self.deal_damage(weapon.damage())),
-                )
+                Attack::new(weapon_name, Some(self.deal_damage(weapon.damage())))
             } else {
-                Attack::new(weapon_name.to_owned(), Some(self.default_damage()))
+                Attack::new(weapon_name, Some(self.default_damage()))
             }
         } else if self.is_main_hand(weapon_name) {
             if let Some(weapon) = &self.main_hand {
                 if let Weapon(ref weapon) = **weapon {
-                    Attack::new(
-                        weapon_name.to_owned(),
-                        Some(self.deal_damage(weapon.damage())),
-                    )
+                    Attack::new(weapon_name, Some(self.deal_damage(weapon.damage())))
                 } else {
-                    Attack::new(weapon_name.to_owned(), Some(self.default_damage()))
+                    Attack::new(weapon_name, Some(self.default_damage()))
                 }
             } else {
-                Attack::new(weapon_name.to_owned(), None)
+                Attack::new(weapon_name, None)
             }
         } else {
-            Attack::new(weapon_name.to_owned(), None)
+            Attack::new(weapon_name, None)
         }
     }
 
@@ -118,7 +109,7 @@ impl Player {
                 self.take(armor_name, Some(armor));
             }
             self.armor = Some(item);
-            CmdResult::new(Action::Active, "Donned.".to_owned())
+            CmdResult::new(Action::Active, "Donned.")
         } else {
             self.inventory.push(item);
             CmdResult::new(
@@ -149,14 +140,14 @@ impl Player {
             Armor(_) => {
                 self.take(item_name, Some(item));
                 self.don_armor(item_name);
-                CmdResult::new(Action::Active, "Donned.".to_owned())
+                CmdResult::new(Action::Active, "Donned.")
             }
             Weapon(_) => {
                 if let Some(weapon) = self.main_hand.take() {
                     self.take(&weapon.name().to_owned(), Some(weapon));
                 }
                 self.main_hand = Some(item);
-                CmdResult::new(Action::Active, "Equipped.".to_owned())
+                CmdResult::new(Action::Active, "Equipped.")
             }
             _ => {
                 self.inventory.push(item);
@@ -227,10 +218,10 @@ impl Player {
         if name == "me" || name == "self" || name == "myself" {
             Some(self.info())
         } else if let Some(item) = self.inventory.find_item(name) {
-            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, item.inspect()))
         } else if let Some(item) = &self.main_hand {
             if item.name() == name {
-                Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
+                Some(CmdResult::new(Action::Active, item.inspect()))
             } else {
                 None
             }
@@ -349,13 +340,10 @@ impl Player {
                     ),
                 )
             } else {
-                CmdResult::new(
-                    Action::Passive,
-                    "You cannot rest while in combat.".to_owned(),
-                )
+                CmdResult::new(Action::Passive, "You cannot rest while in combat.")
             }
         } else {
-            CmdResult::new(Action::Passive, "You already have full health.".to_owned())
+            CmdResult::new(Action::Passive, "You already have full health.")
         }
     }
 
@@ -419,6 +407,6 @@ impl Player {
     }
 
     pub fn wait() -> CmdResult {
-        CmdResult::new(Action::Active, "Time passes...".to_owned())
+        CmdResult::new(Action::Active, "Time passes...")
     }
 }

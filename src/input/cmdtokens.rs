@@ -9,28 +9,52 @@ pub struct CmdTokens {
 }
 
 impl CmdTokens {
-    pub const fn new(
-        verb: Option<String>,
-        obj: Option<String>,
-        prep: Option<String>,
-        obj_prep: Option<String>,
-    ) -> Self {
+    pub fn new<S>(verb: S) -> Self
+    where
+        S: Into<String>,
+    {
         Self {
-            verb,
-            obj,
-            prep,
-            obj_prep,
+            verb: Some(verb.into()),
+            obj: None,
+            prep: None,
+            obj_prep: None,
         }
     }
 
-    pub fn with_obj(mut self, obj: Option<String>) -> Self {
-        self.obj = obj;
+    pub fn with_obj<S>(mut self, obj: S) -> Self
+    where
+        S: Into<String>,
+    {
+        self.obj = Some(obj.into());
         self
     }
 
-    pub fn with_obj_prep(mut self, obj: Option<String>) -> Self {
-        self.obj_prep = obj;
+    pub fn with_prep<S>(mut self, prep: S) -> Self
+    where
+        S: Into<String>,
+    {
+        self.prep = Some(prep.into());
         self
+    }
+
+    pub fn with_obj_prep<S>(mut self, obj_prep: S) -> Self
+    where
+        S: Into<String>,
+    {
+        self.obj_prep = Some(obj_prep.into());
+        self
+    }
+
+    pub fn from<OS>(verb: OS, obj: OS, prep: OS, obj_prep: OS) -> Self
+    where
+        OS: Into<Option<String>>,
+    {
+        Self {
+            verb: verb.into(),
+            obj: obj.into(),
+            prep: prep.into(),
+            obj_prep: obj_prep.into(),
+        }
     }
 
     pub fn short_verb(&self) -> (Option<&str>, Option<&str>) {
@@ -47,16 +71,13 @@ impl CmdTokens {
     pub fn verb(&self) -> Option<&str> {
         self.verb.as_deref()
     }
-    pub fn verb_clone(&self) -> Option<String> {
-        self.verb.clone()
+    pub fn obj(&self) -> Option<&str> {
+        self.obj.as_deref()
     }
-    pub fn obj(&self) -> Option<&String> {
-        self.obj.as_ref()
+    pub fn prep(&self) -> Option<&str> {
+        self.prep.as_deref()
     }
-    pub fn prep(&self) -> Option<&String> {
-        self.prep.as_ref()
-    }
-    pub fn obj_prep(&self) -> Option<&String> {
-        self.obj_prep.as_ref()
+    pub fn obj_prep(&self) -> Option<&str> {
+        self.obj_prep.as_deref()
     }
 }

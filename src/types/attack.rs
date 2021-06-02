@@ -5,9 +5,12 @@ pub struct Attack {
 }
 
 impl Attack {
-    pub fn new(weapon_name: String, damage: Option<u32>) -> Self {
+    pub fn new<S>(weapon_name: S, damage: Option<u32>) -> Self
+    where
+        S: Into<String>,
+    {
         Self {
-            weapon_name,
+            weapon_name: weapon_name.into(),
             damage,
         }
     }
@@ -16,7 +19,7 @@ impl Attack {
         self.damage
     }
 
-    pub fn weapon_name(&self) -> &String {
+    pub fn weapon_name(&self) -> &str {
         &self.weapon_name
     }
 }

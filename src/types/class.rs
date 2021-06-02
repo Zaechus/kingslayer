@@ -66,6 +66,6 @@ impl fmt::Display for Class {
             Self::Monk => "Monk",
             Self::Templar => "Templar",
         };
-        write!(f, "{}", s.to_owned())
+        write!(f, "{}", s)
     }
 }

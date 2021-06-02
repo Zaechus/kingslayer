@@ -69,17 +69,17 @@ impl World {
     pub fn move_room(&mut self, direction: &str) -> CmdResult {
         if let Some(path) = self.get_curr_room().find_path(direction) {
             if path.is_closed() {
-                CmdResult::new(Action::Active, "The way is shut.".to_owned())
+                CmdResult::new(Action::Active, "The way is shut.")
             } else if path.is_locked() {
                 CmdResult::is_locked(direction)
             } else if self.any_angry_enemies() {
-                CmdResult::new(Action::Passive, "Enemies bar your way.".to_owned())
+                CmdResult::new(Action::Passive, "Enemies bar your way.")
             } else {
                 self.curr_room = path.name().to_owned();
                 self.look()
             }
         } else {
-            CmdResult::new(Action::Passive, "You cannot go that way.".to_owned())
+            CmdResult::new(Action::Passive, "You cannot go that way.")
         }
     }
 

@@ -27,10 +27,13 @@ impl Default for CmdResult {
 }
 
 impl CmdResult {
-    pub const fn new(action: Action, output: String) -> Self {
+    pub fn new<S>(action: Action, output: S) -> Self
+    where
+        S: Into<String>,
+    {
         Self {
             action,
-            output,
+            output: output.into(),
             request_input: None,
         }
     }
@@ -81,21 +84,16 @@ impl CmdResult {
 
     pub fn do_what(verb: &str) -> CmdResult {
         CmdResult::new(Action::Passive, format!("What do you want to {}?", verb))
-            .with_request_input(CmdTokens::new(Some(verb.to_owned()), None, None, None))
+            .with_request_input(CmdTokens::new(verb))
     }
 
-    pub fn do_what_prep(verb: &str, prep: Option<&String>, obj_prep: Option<&String>) -> CmdResult {
+    pub fn do_what_prep(verb: &str, prep: Option<&str>, obj_prep: Option<&str>) -> CmdResult {
         if let (Some(prep), Some(obj_prep)) = (prep, obj_prep) {
             CmdResult::new(
                 Action::Passive,
                 format!("What do you want to {} {} the {}?", verb, prep, obj_prep),
             )
-            .with_request_input(CmdTokens::new(
-                Some(verb.to_owned()),
-                None,
-                Some(prep.to_owned()),
-                Some(obj_prep.to_owned()),
-            ))
+            .with_request_input(CmdTokens::new(verb).with_prep(prep).with_obj_prep(obj_prep))
         } else {
             CmdResult::do_what(verb)
         }
@@ -106,10 +104,7 @@ impl CmdResult {
     }
 
     pub fn no_comprendo() -> CmdResult {
-        CmdResult::new(
-            Action::Failed,
-            "I do not understand that phrase.".to_owned(),
-        )
+        CmdResult::new(Action::Failed, "I do not understand that phrase.")
     }
 
     pub fn no_item_here(name: &str) -> CmdResult {

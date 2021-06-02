@@ -12,7 +12,7 @@ impl Lexer {
         if words.is_empty() {
             CmdTokens::default()
         } else if words.len() < 2 {
-            CmdTokens::new(Some(words[0].to_owned()), None, None, None)
+            CmdTokens::new(words[0].to_owned())
         } else {
             let prep_pos = if cfg!(target_arch = "wasm32") {
                 words
@@ -26,12 +26,7 @@ impl Lexer {
 
             if let Some(pos) = prep_pos {
                 if pos == 0 {
-                    CmdTokens::new(
-                        Some(words[0].to_owned()),
-                        Some(words[1..].join(" ")),
-                        None,
-                        None,
-                    )
+                    CmdTokens::new(words[0].to_owned()).with_obj(words[1..].join(" "))
                 } else {
                     let obj = if words[1..pos].is_empty() {
                         None
@@ -45,7 +40,7 @@ impl Lexer {
                         Some(words[pos + 1..].join(" "))
                     };
 
-                    CmdTokens::new(
+                    CmdTokens::from(
                         Some(words[0].to_owned()),
                         obj,
                         Some(words[pos].to_owned()),
@@ -53,12 +48,7 @@ impl Lexer {
                     )
                 }
             } else {
-                CmdTokens::new(
-                    Some(words[0].to_owned()),
-                    Some(words[1..].join(" ")),
-                    None,
-                    None,
-                )
+                CmdTokens::new(words[0].to_owned()).with_obj(words[1..].join(" "))
             }
         }
     }

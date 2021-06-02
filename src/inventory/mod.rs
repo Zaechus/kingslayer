@@ -90,7 +90,7 @@ impl Inventory {
                         CmdResult::new(Action::Active, format!("The {} is closed.", container_name))
                     } else {
                         container.push_item(item);
-                        CmdResult::new(Action::Active, "Placed.".to_owned())
+                        CmdResult::new(Action::Active, "Placed.")
                     }
                 } else {
                     self.items.push(item);
@@ -159,7 +159,7 @@ impl Inventory {
 
     pub fn take_all(&mut self, items: Items) -> CmdResult {
         if items.is_empty() {
-            CmdResult::new(Action::Passive, "There is nothing to take.".to_owned())
+            CmdResult::new(Action::Passive, "There is nothing to take.")
         } else {
             let times = items.len();
             if cfg!(target_arch = "wasm32") {

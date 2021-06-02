@@ -38,6 +38,6 @@ impl fmt::Display for Race {
             Self::Elf => "Elf",
             Self::Dragonborn => "Dragonborn",
         };
-        write!(f, "{}", s.to_owned())
+        write!(f, "{}", s)
     }
 }

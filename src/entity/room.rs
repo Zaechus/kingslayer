@@ -131,7 +131,7 @@ impl Room {
                         )
                     } else {
                         container.push_item(item);
-                        (CmdResult::new(Action::Active, "Placed.".to_owned()), None)
+                        (CmdResult::new(Action::Active, "Placed."), None)
                     }
                 } else {
                     (CmdResult::not_container(container_name), Some(item))
@@ -182,7 +182,7 @@ impl Room {
                 CmdResult::already_closed(name)
             } else {
                 path.close();
-                CmdResult::new(Action::Active, "Closed.".to_owned())
+                CmdResult::new(Action::Active, "Closed.")
             }
         } else if let Some(item) = self.find_item_mut(name) {
             if let Container(ref mut item) = **item {
@@ -197,7 +197,7 @@ impl Room {
 
     // interact with an Ally
     pub fn hail(&self, _ally_name: &str) -> CmdResult {
-        CmdResult::new(Action::Passive, "Hail, friend.".to_owned())
+        CmdResult::new(Action::Passive, "Hail, friend.")
     }
 
     fn harm(&mut self, enemy: usize, enemy_name: &str, attack: Attack) -> CmdResult {
@@ -253,25 +253,25 @@ impl Room {
 
     pub fn inspect(&self, name: &str) -> Option<CmdResult> {
         if let Some(item) = self.find_item(name) {
-            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, item.inspect()))
         } else if let Some(item) = self.find_element(name) {
-            Some(CmdResult::new(Action::Active, item.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, item.inspect()))
         } else if let Some(pathway) = self.find_path(name) {
-            Some(CmdResult::new(Action::Active, pathway.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, pathway.inspect()))
         } else if let Some(enemy) = self.find_enemy(name) {
-            Some(CmdResult::new(Action::Active, enemy.inspect().to_owned()))
+            Some(CmdResult::new(Action::Active, enemy.inspect()))
         } else {
             self.allies
                 .iter()
                 .find(|x| x.name() == name)
-                .map(|ally| CmdResult::new(Action::Active, ally.inspect().to_owned()))
+                .map(|ally| CmdResult::new(Action::Active, ally.inspect()))
         }
     }
 
     pub fn take_item(&mut self, name: &str, item: Option<Box<Item>>) -> CmdResult {
         if let Some(item) = item {
             self.items.push(item);
-            CmdResult::new(Action::Active, "Dropped.".to_owned())
+            CmdResult::new(Action::Active, "Dropped.")
         } else {
             CmdResult::dont_have(name)
         }

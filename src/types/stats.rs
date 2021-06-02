@@ -66,7 +66,7 @@ impl Stats {
                         "cha" => self.cha += 1,
                         _ => (),
                     }
-                    CmdResult::new(Action::Active, "Ability score increased by one.".to_owned())
+                    CmdResult::new(Action::Active, "Ability score increased by one.")
                 }
                 _ => CmdResult::new(
                     Action::Passive,
@@ -74,10 +74,7 @@ impl Stats {
                 ),
             }
         } else {
-            CmdResult::new(
-                Action::Passive,
-                "You do not have any stat points.".to_owned(),
-            )
+            CmdResult::new(Action::Passive, "You do not have any stat points.")
         }
     }
 

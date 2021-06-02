@@ -34,14 +34,8 @@ impl Parser {
                 }
                 res
             } else {
-                CmdResult::do_what(&format!("{} the {} with", verb, obj)).with_request_input(
-                    CmdTokens::new(
-                        Some(verb.to_owned()),
-                        Some(obj.to_owned()),
-                        Some("with".to_owned()),
-                        None,
-                    ),
-                )
+                CmdResult::do_what(&format!("{} the {} with", verb, obj))
+                    .with_request_input(CmdTokens::new(verb).with_obj(obj).with_prep("with"))
             }
         } else {
             CmdResult::do_what_prep(verb, words.prep(), words.obj_prep())
@@ -98,7 +92,7 @@ impl Parser {
         if let Some(obj) = words.obj() {
             world.hail(&obj)
         } else {
-            CmdResult::new(Action::Passive, "Hello, sailor!".to_owned())
+            CmdResult::new(Action::Passive, "Hello, sailor!")
         }
     }
 
@@ -118,7 +112,7 @@ impl Parser {
             world.move_room(&obj)
         } else {
             CmdResult::new(Action::Passive, format!("Where do you want to {}?", verb))
-                .with_request_input(CmdTokens::new(Some(verb.to_owned()), None, None, None))
+                .with_request_input(CmdTokens::new(verb))
         }
     }
 
@@ -154,7 +148,7 @@ impl Parser {
         player: &mut Player,
     ) -> CmdResult {
         if let Some(prep) = words.prep() {
-            match prep.as_str() {
+            match prep {
                 "in" | "inside" => {
                     if let Some(obj) = words.obj() {
                         if let Some(obj_prep) = words.obj_prep() {
@@ -172,12 +166,7 @@ impl Parser {
                             }
                         } else {
                             CmdResult::do_what(&format!("place in the {}", obj)).with_request_input(
-                                CmdTokens::new(
-                                    Some("place".to_owned()),
-                                    Some(obj.to_owned()),
-                                    Some("in".to_owned()),
-                                    None,
-                                ),
+                                CmdTokens::new("place").with_obj(obj).with_prep("in"),
                             )
                         }
                     } else {
@@ -194,14 +183,8 @@ impl Parser {
                 _ => CmdResult::no_comprendo(),
             }
         } else if let Some(obj) = words.obj() {
-            CmdResult::do_what(&format!("{} the {} in", verb, obj)).with_request_input(
-                CmdTokens::new(
-                    Some("put".to_owned()),
-                    Some(obj.to_owned()),
-                    Some("in".to_owned()),
-                    None,
-                ),
-            )
+            CmdResult::do_what(&format!("{} the {} in", verb, obj))
+                .with_request_input(CmdTokens::new("put").with_obj(obj).with_prep("in"))
         } else {
             CmdResult::do_what_prep(verb, words.prep(), words.obj_prep())
         }
@@ -224,12 +207,9 @@ impl Parser {
                         }
                     } else {
                         CmdResult::do_what(&format!("{} the {} from", verb, obj))
-                            .with_request_input(CmdTokens::new(
-                                Some("take".to_owned()),
-                                Some(obj.to_owned()),
-                                Some("from".to_owned()),
-                                None,
-                            ))
+                            .with_request_input(
+                                CmdTokens::new("take").with_obj(obj).with_prep("from"),
+                            )
                     }
                 } else {
                     CmdResult::no_comprendo()
@@ -258,7 +238,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(words: CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
+    pub fn parse(words: &CmdTokens, world: &mut World, player: &mut Player) -> CmdResult {
         if let (Some(verb), Some(short_verb)) = words.short_verb() {
             match short_verb {
                 "north" | "south" | "east" | "west" | "northeast" | "northwest" | "southeast"

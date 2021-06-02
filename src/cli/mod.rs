@@ -107,8 +107,7 @@ Some available commands:
     Manage your character
         heal            replenish some HP
         increase        increase a chosen ability score by 1 if stat points are available
-        c | stats          display information on the state of your character"
-                .to_owned(),
+        c | stats          display information on the state of your character",
         )
     }
 
@@ -142,13 +141,17 @@ Some available commands:
         let command = Lexer::lex(input);
 
         let res = if let Some(last_cmd) = self.last_cmd_res.borrow().request_input() {
-            let last_cmd = if last_cmd.obj().is_some() {
-                last_cmd.with_obj_prep(command.verb_clone())
+            let last_cmd = if let Some(verb) = command.verb() {
+                if last_cmd.obj().is_some() {
+                    last_cmd.with_obj_prep(verb)
+                } else {
+                    last_cmd.with_obj(verb)
+                }
             } else {
-                last_cmd.with_obj(command.verb_clone())
+                last_cmd
             };
             Parser::parse(
-                last_cmd,
+                &last_cmd,
                 &mut self.world.borrow_mut(),
                 &mut self.player.borrow_mut(),
             )
@@ -157,12 +160,12 @@ Some available commands:
                 Some("quit") => self.quit(),
                 Some("save") => self.save(command.obj()),
                 Some("again") => Parser::parse(
-                    self.last_successful_cmd.borrow().clone(),
+                    &self.last_successful_cmd.borrow(),
                     &mut self.world.borrow_mut(),
                     &mut self.player.borrow_mut(),
                 ),
                 _ => Parser::parse(
-                    command.clone(),
+                    &command,
                     &mut self.world.borrow_mut(),
                     &mut self.player.borrow_mut(),
                 ),
@@ -239,7 +242,7 @@ Some available commands:
         CmdResult::new(Action::Passive, String::from("\nFarewell.\n"))
     }
 
-    fn save(&self, name: Option<&String>) -> CmdResult {
+    fn save(&self, name: Option<&str>) -> CmdResult {
         let saved = ron::ser::to_string(&self).expect("Error serializing world save file.");
 
         let filename = if let Some(name) = name {

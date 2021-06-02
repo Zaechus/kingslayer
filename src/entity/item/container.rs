@@ -103,7 +103,7 @@ impl Closeable for Container {
     fn open(&mut self) -> CmdResult {
         if self.opening.is_closed() {
             self.opening = Opening::Open;
-            CmdResult::new(Action::Active, "Opened.".to_owned())
+            CmdResult::new(Action::Active, "Opened.")
         } else {
             CmdResult::already_opened(&self.name)
         }
@@ -112,7 +112,7 @@ impl Closeable for Container {
     fn close(&mut self) -> CmdResult {
         if self.opening.is_open() {
             self.opening = Opening::Closed;
-            CmdResult::new(Action::Active, "Closed.".to_owned())
+            CmdResult::new(Action::Active, "Closed.")
         } else {
             CmdResult::already_closed(&self.name)
         }
