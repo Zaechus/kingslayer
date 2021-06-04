@@ -1,4 +1,5 @@
 mod ally;
+mod breakable;
 mod closeable;
 mod element;
 mod enemy;
@@ -8,6 +9,7 @@ mod pathway;
 mod room;
 
 pub use ally::Ally;
+pub use breakable::{Breakable, Durability};
 pub use closeable::{Closeable, Opening};
 pub use element::Element;
 pub use enemy::Enemy;

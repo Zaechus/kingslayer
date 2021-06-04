@@ -2,7 +2,7 @@ use rayon::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-use super::{Closeable, DoorLock, Entity, Lockable, Opening};
+use super::{Closeable, DoorLock, Durability, Entity, Lockable, Opening};
 use crate::{
     dice_roll,
     types::{Action, CmdResult},
@@ -18,6 +18,8 @@ pub struct Pathway {
     inspect: String,
     opening: Option<Opening>,
     lock: Option<DoorLock>,
+    #[serde(default)]
+    durability: Durability,
 }
 
 impl Pathway {
