@@ -2,16 +2,16 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::CmdResult;
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum DoorLock {
-    Locked,
+    Locked(String),
     Unlocked,
 }
 
 impl DoorLock {
-    pub fn is_locked(self) -> bool {
+    pub fn is_locked(&self) -> bool {
         match self {
-            DoorLock::Locked => true,
+            DoorLock::Locked(_) => true,
             DoorLock::Unlocked => false,
         }
     }

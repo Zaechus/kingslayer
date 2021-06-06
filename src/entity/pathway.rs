@@ -109,7 +109,7 @@ impl Closeable for Pathway {
 
 impl Lockable for Pathway {
     fn unlock(&mut self) -> CmdResult {
-        if let Some(lock) = self.lock {
+        if let Some(lock) = &self.lock {
             if lock.is_locked() {
                 if dice_roll(1, 20) > 10 {
                     self.lock = Some(DoorLock::Unlocked);
@@ -139,7 +139,7 @@ impl Lockable for Pathway {
     }
 
     fn is_locked(&self) -> bool {
-        if let Some(lock) = self.lock {
+        if let Some(lock) = &self.lock {
             lock.is_locked()
         } else {
             false
