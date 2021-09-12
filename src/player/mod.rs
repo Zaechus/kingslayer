@@ -124,7 +124,7 @@ impl Player {
 
     pub fn don_armor(&mut self, armor_name: &str) -> CmdResult {
         if let Some(item) = self.inventory.remove_item(armor_name) {
-            self.set_armor(&armor_name, item)
+            self.set_armor(armor_name, item)
         } else {
             CmdResult::dont_have(armor_name)
         }

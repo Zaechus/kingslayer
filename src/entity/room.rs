@@ -244,7 +244,7 @@ impl Room {
                     )
                 }
             } else {
-                CmdResult::dont_have(&attack.weapon_name())
+                CmdResult::dont_have(attack.weapon_name())
             }
         } else {
             CmdResult::no_item_here(enemy_name)

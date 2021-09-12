@@ -60,9 +60,9 @@ impl CmdTokens {
     pub fn short_verb(&self) -> (Option<&str>, Option<&str>) {
         if let Some(verb) = &self.verb {
             if verb.len() >= 6 {
-                (Some(&verb), Some(&verb[0..6]))
+                (Some(verb), Some(&verb[0..6]))
             } else {
-                (Some(&verb), Some(&verb))
+                (Some(verb), Some(verb))
             }
         } else {
             (None, None)
