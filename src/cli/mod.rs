@@ -1,6 +1,5 @@
 use std::{
     cell::{Cell, RefCell},
-    convert::TryInto,
     fs::{self, File},
     io::{BufReader, Read, Write},
 };

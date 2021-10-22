@@ -29,7 +29,6 @@ impl Stats {
     pub fn print_stats(&self) -> String {
         format!(
             "Stat points: {}\
-                
              \n  Strength:     {} ({})\
              \n  Dexterity:    {} ({})\
              \n  Constitution: {} ({})\

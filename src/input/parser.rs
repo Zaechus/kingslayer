@@ -159,10 +159,8 @@ impl Parser {
                                     world.insert_into(obj, obj_prep, player.remove(obj));
                                 if let Some(item) = rejected_item {
                                     player.take_back(item);
-                                    res
-                                } else {
-                                    res
                                 }
+                                res
                             }
                         } else {
                             CmdResult::do_what(&format!("place in the {}", obj)).with_request_input(
