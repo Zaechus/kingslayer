@@ -1,19 +1,5 @@
 # Cargo
 /target
-**/*.rs.bk
-# Cargo.lock
-
-# IDE
-.vscode
-*.vim
-
-# WASM
-wapm_packages
-pkg
-
-# flamegraph
-*.svg
-perf.data*
 
 # kingslayer
 *.save.ron
