@@ -1,11 +1,7 @@
 # 👑 Kingslayer ⚔️
 
-[![Linux](https://github.com/Zaechus/kingslayer/workflows/Linux/badge.svg)](https://github.com/Zaechus/kingslayer/actions?query=workflow%3ALinux)
-[![Windows](https://github.com/Zaechus/kingslayer/workflows/Windows/badge.svg)](https://github.com/Zaechus/kingslayer/actions?query=workflow%3AWindows)
-[![Mac](https://github.com/Zaechus/kingslayer/workflows/Mac/badge.svg)](https://github.com/Zaechus/kingslayer/actions?query=workflow%3AMac)
 [![Crates.io](https://img.shields.io/crates/v/kingslayer)](https://crates.io/crates/kingslayer)
 [![Kingslayer documentation](https://docs.rs/kingslayer/badge.svg)](https://docs.rs/kingslayer)
-[![Run on Repl.it](https://repl.it/badge/github/Zaechus/kingslayer)](https://repl.it/github/Zaechus/kingslayer)
 
 Kingslayer is a text-based dungeon crawler written in Rust. It is a continuation of [thekinggame](https://github.com/Zaechus/thekinggame).
 

@@ -1,12 +1,12 @@
 [package]
 name = "kingslayer"
 version = "0.5.5"
-authors = ["Maxwell Anderson <maxwell.brayden.anderson@gmail.com>"]
+authors = ["Maxwell Anderson <maxwell.anderson.public@protonmail.com>"]
 edition = "2021"
 license = "MIT"
 description = "A text adventure dungeon crawler game written in Rust"
 readme = "README.md"
-repository = "https://github.com/Zaechus/kingslayer"
+repository = "https://gitlab.com/Zaechus/kingslayer"
 keywords = ["text", "adventure", "game", "dungeon", "crawler"]
 categories = ["games", "game-engines"]
 
