@@ -5,8 +5,9 @@ authors = ["Maxwell Anderson <maxwell.anderson.public@protonmail.com>"]
 edition = "2021"
 license = "MIT"
 description = "A text adventure dungeon crawler game written in Rust"
+exclude = [".github"]
 readme = "README.md"
-repository = "https://gitlab.com/Zaechus/kingslayer"
+repository = "https://github.com/Zaechus/kingslayer"
 keywords = ["text", "adventure", "game", "dungeon", "crawler"]
 categories = ["games", "game-engines"]
 

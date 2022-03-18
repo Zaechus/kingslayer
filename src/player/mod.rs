@@ -143,7 +143,7 @@ impl Player {
             }
             Weapon(_) => {
                 if let Some(weapon) = self.main_hand.take() {
-                    self.take(&weapon.name().to_owned(), Some(weapon));
+                    self.take("", Some(weapon));
                 }
                 self.main_hand = Some(item);
                 CmdResult::new(Action::Active, "Equipped.")

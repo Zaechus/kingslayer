@@ -44,6 +44,12 @@ rooms: {
             desc: "A leaf lies on the ground.",
             inspect: "It's small, brown, and dry."
         )),
+        Weapon(Weapon(
+            name: "stick",
+            desc: "There is a stick here.",
+            inspect: "It's short but stout.",
+            damage: 4
+        )),
     ]
 ),
 "Small Cave": Room(

@@ -1,18 +1,16 @@
 run:
     cargo run --release
 
-test:
-    cargo clippy
+t:
     cargo test
+    cargo clippy
 
 c:
     cargo fmt
     cargo update
 
-    cargo clippy
-    cargo c
-
     cargo doc
     cargo build
 
     cargo test
+    cargo clippy
