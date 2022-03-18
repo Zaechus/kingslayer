@@ -157,7 +157,13 @@ Some available commands:
         } else {
             match command.verb() {
                 Some("quit") => self.quit(),
-                Some("save") => self.save(command.obj()),
+                Some("save") => {
+                    if self.player.borrow().in_combat() {
+                        CmdResult::new(Action::Passive, "You cannot save while in combat.")
+                    } else {
+                        self.save(command.obj())
+                    }
+                }
                 Some("again") => Parser::parse(
                     &self.last_successful_cmd.borrow(),
                     &mut self.world.borrow_mut(),

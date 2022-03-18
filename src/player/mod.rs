@@ -183,6 +183,13 @@ impl Player {
         self.hp.1
     }
 
+    pub fn in_combat(&self) -> bool {
+        match self.in_combat {
+            CombatStatus::Resting => false,
+            CombatStatus::InCombat => true,
+        }
+    }
+
     pub fn increase_ability_score(&mut self, ability_score: &str) -> CmdResult {
         self.stats.increase_ability_score(ability_score)
     }
