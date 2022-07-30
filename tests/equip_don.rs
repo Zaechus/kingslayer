@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn player_equip() {
-        let cli = Cli::from_file("worlds/test_world.ron");
+        let cli = Cli::from_file("worlds/test_world.ron").unwrap();
 
         cli.ask("n");
         cli.ask("take iron sword");
@@ -39,7 +39,7 @@ mod tests {
 
     #[test]
     fn player_don() {
-        let cli = Cli::from_file("worlds/test_world.ron");
+        let cli = Cli::from_file("worlds/test_world.ron").unwrap();
 
         cli.ask("n");
         cli.ask("take leather armor");

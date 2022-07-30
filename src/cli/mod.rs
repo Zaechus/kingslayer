@@ -1,7 +1,7 @@
 use std::{
     cell::{Cell, RefCell},
     fs::{self, File},
-    io::{BufReader, Read, Write},
+    io::{self, BufReader, Read, Write},
 };
 
 use serde::{Deserialize, Serialize};
@@ -32,16 +32,14 @@ pub struct Cli {
 
 impl Cli {
     /// Construct from a RON file
-    pub fn from_file(path: &str) -> Self {
-        let metadata = fs::metadata(path).expect("Error getting metadata from file");
-        let world_file = File::open(path).expect("Unable to open world file");
+    pub fn from_file(path: &str) -> Result<Self, io::Error> {
+        let metadata = fs::metadata(path)?;
+        let world_file = File::open(path)?;
         let mut world_file_reader = BufReader::new(world_file);
         let mut data = String::with_capacity(metadata.len().try_into().unwrap());
-        world_file_reader
-            .read_to_string(&mut data)
-            .expect("Unable to read string from world file");
+        world_file_reader.read_to_string(&mut data)?;
 
-        ron::de::from_str(&data).expect("Error creating world from RON file.")
+        Ok(ron::de::from_str(&data).expect("Error creating world from RON file."))
     }
 
     /// Construct from a string containing RON
@@ -70,7 +68,7 @@ impl Cli {
     pub fn help() -> CmdResult {
         CmdResult::new(
             Action::Passive,
-            "Typical format (but the game is quite lenient): 
+            "Typical format (but the game is quite lenient):
     <action> [object] [preposition] [object]
 
     some prepositions: in, inside, from, on, with
@@ -89,7 +87,7 @@ Some available commands:
                north, south, east, west,
                northeast, northwest, southeast, southwest,
                up, down, (any other listed entrance)
-        
+
         r, again        repeat last command
         l, look         look around the room
         open | close    open/close an item or pathway

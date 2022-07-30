@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn take_remove() {
-        let cli = Cli::from_file("worlds/test_world.ron");
+        let cli = Cli::from_file("worlds/test_world.ron").unwrap();
 
         cli.ask("take leaf");
         assert!(cli.ask("take leaf").contains("is no"));
@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn cli_take_all() {
-        let cli = Cli::from_file("worlds/test_world.ron");
+        let cli = Cli::from_file("worlds/test_world.ron").unwrap();
 
         cli.ask("take leaf");
         cli.ask("n");

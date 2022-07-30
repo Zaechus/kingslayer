@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn increase_stat_pts() {
-        let cli = Cli::from_file("worlds/test_world.ron");
+        let cli = Cli::from_file("worlds/test_world.ron").unwrap();
 
         assert!(cli.ask("c").contains("Stat points: 4"));
         assert!(cli

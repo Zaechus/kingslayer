@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn readme_example() {
-        let cli = Cli::from_file("worlds/world.ron");
+        let cli = Cli::from_file("worlds/world.ron").unwrap();
 
         println!("{}", cli.ask("l"));
         loop {

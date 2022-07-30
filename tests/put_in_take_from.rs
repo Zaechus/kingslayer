@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn put_in_take_from() {
-        let cli = Cli::from_file("worlds/test_world.ron");
+        let cli = Cli::from_file("worlds/test_world.ron").unwrap();
 
         cli.ask("take leaf");
         cli.ask("drop the leaf");

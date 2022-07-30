@@ -1,10 +1,13 @@
-use std::env;
+use std::{env, process};
 
 use kingslayer::{Armor, Cli, Element, Enemy, EnemyStatus, Gold, Item, Thing, Weapon};
 
 fn main() {
     let cli = if let Some(path) = env::args().nth(1) {
-        Cli::from_file(&path)
+        Cli::from_file(&path).unwrap_or_else(|err| {
+            eprintln!("Error reading world file: {}", err);
+            process::exit(1);
+        })
     } else {
         let cli = Cli::from_ron_str(
             r#"

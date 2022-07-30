@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn player_inspect() {
-        let cli = Cli::from_file("worlds/test_world.ron");
+        let cli = Cli::from_file("worlds/test_world.ron").unwrap();
 
         assert_eq!(cli.ask("inspect leaf"), "It's small, brown, and dry.");
         cli.ask("take leaf");
