@@ -74,7 +74,7 @@ impl Player {
 
     pub fn attack_with(&mut self, weapon_name: &str) -> Attack {
         if let Some(weapon) = self.inventory.find_item(weapon_name) {
-            if let Weapon(ref weapon) = **weapon {
+            if let Weapon(ref weapon) = weapon {
                 Attack::new(weapon_name, Some(self.deal_damage(weapon.damage())))
             } else {
                 Attack::new(weapon_name, Some(self.default_damage()))

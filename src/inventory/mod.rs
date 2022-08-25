@@ -26,7 +26,7 @@ impl Inventory {
 
     pub fn close(&mut self, item_name: &str) -> Option<CmdResult> {
         if let Some(item) = self.find_item_mut(item_name) {
-            if let Container(ref mut item) = **item {
+            if let Container(ref mut item) = item {
                 Some(item.close())
             } else {
                 Some(CmdResult::not_container(item_name))
@@ -58,18 +58,16 @@ impl Inventory {
         }
     }
 
-    #[allow(clippy::borrowed_box)]
-    pub fn find_item(&self, item_name: &str) -> Option<&Box<Item>> {
+    pub fn find_item(&self, item_name: &str) -> Option<&Item> {
         if let Some(pos) = self.item_pos(item_name) {
-            self.items.get(pos)
+            self.items.get(pos).map(|x| &**x)
         } else {
             None
         }
     }
-    #[allow(clippy::borrowed_box)]
-    pub fn find_item_mut(&mut self, item_name: &str) -> Option<&mut Box<Item>> {
+    pub fn find_item_mut(&mut self, item_name: &str) -> Option<&mut Item> {
         if let Some(pos) = self.item_pos(item_name) {
-            self.items.get_mut(pos)
+            self.items.get_mut(pos).map(|x| &mut **x)
         } else {
             None
         }
@@ -84,7 +82,7 @@ impl Inventory {
 
         if let Some(item) = item {
             if let Some(container) = self.find_item_mut(container_name) {
-                if let Container(ref mut container) = **container {
+                if let Container(ref mut container) = container {
                     if container.is_closed() {
                         self.items.push(item);
                         CmdResult::new(Action::Active, format!("The {} is closed.", container_name))
@@ -107,7 +105,7 @@ impl Inventory {
 
     pub fn open(&mut self, item_name: &str) -> Option<CmdResult> {
         if let Some(item) = self.find_item_mut(item_name) {
-            if let Container(ref mut item) = **item {
+            if let Container(ref mut item) = item {
                 Some(item.open())
             } else {
                 Some(CmdResult::not_container(item_name))
@@ -187,7 +185,7 @@ impl Inventory {
         container_name: &str,
     ) -> Result<Box<Item>, CmdResult> {
         if let Some(container) = self.find_item_mut(container_name) {
-            if let Container(ref mut container) = **container {
+            if let Container(ref mut container) = container {
                 container.give_item(item_name)
             } else {
                 Err(CmdResult::not_container(container_name))

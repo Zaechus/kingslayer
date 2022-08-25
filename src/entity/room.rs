@@ -50,22 +50,27 @@ impl Room {
         )
     }
 
-    #[allow(clippy::borrowed_box)]
-    fn find_element(&self, name: &str) -> Option<&Box<Element>> {
+    fn find_element(&self, name: &str) -> Option<&Element> {
         if cfg!(target_arch = "wasm32") {
-            self.elements.iter().find(|el| {
-                el.name().split_whitespace().any(|el_word| {
-                    name.split_whitespace()
-                        .any(|name_word| name_word == el_word)
+            self.elements
+                .iter()
+                .find(|el| {
+                    el.name().split_whitespace().any(|el_word| {
+                        name.split_whitespace()
+                            .any(|name_word| name_word == el_word)
+                    })
                 })
-            })
+                .map(|x| &**x)
         } else {
-            self.elements.par_iter().find_any(|el| {
-                el.name().par_split_whitespace().any(|el_word| {
-                    name.par_split_whitespace()
-                        .any(|name_word| name_word == el_word)
+            self.elements
+                .par_iter()
+                .find_any(|el| {
+                    el.name().par_split_whitespace().any(|el_word| {
+                        name.par_split_whitespace()
+                            .any(|name_word| name_word == el_word)
+                    })
                 })
-            })
+                .map(|x| &**x)
         }
     }
 
@@ -74,18 +79,16 @@ impl Room {
             .par_iter()
             .position_any(|pathway| pathway.any_direction(dir_name))
     }
-    #[allow(clippy::borrowed_box)]
-    pub fn find_path(&self, direction: &str) -> Option<&Box<Pathway>> {
+    pub fn find_path(&self, direction: &str) -> Option<&Pathway> {
         if let Some(pos) = self.path_pos(direction) {
-            self.paths.get(pos)
+            self.paths.get(pos).map(|x| &**x)
         } else {
             None
         }
     }
-    #[allow(clippy::borrowed_box)]
-    pub fn find_path_mut(&mut self, direction: &str) -> Option<&mut Box<Pathway>> {
+    pub fn find_path_mut(&mut self, direction: &str) -> Option<&mut Pathway> {
         if let Some(pos) = self.path_pos(direction) {
-            self.paths.get_mut(pos)
+            self.paths.get_mut(pos).map(|x| &mut **x)
         } else {
             None
         }
@@ -333,15 +336,13 @@ impl Room {
                 })
         }
     }
-    #[allow(clippy::borrowed_box)]
-    fn find_item(&self, item_name: &str) -> Option<&Box<Item>> {
+    fn find_item(&self, item_name: &str) -> Option<&Item> {
         if let Some(pos) = self.item_pos(item_name) {
-            self.items.get(pos)
+            self.items.get(pos).map(|x| &**x)
         } else {
             None
         }
     }
-    #[allow(clippy::borrowed_box)]
     fn find_item_mut(&mut self, item_name: &str) -> Option<&mut Box<Item>> {
         if let Some(pos) = self.item_pos(item_name) {
             self.items.get_mut(pos)
@@ -371,10 +372,9 @@ impl Room {
                 })
         }
     }
-    #[allow(clippy::borrowed_box)]
-    fn find_enemy(&self, enemy_name: &str) -> Option<&Box<Enemy>> {
+    fn find_enemy(&self, enemy_name: &str) -> Option<&Enemy> {
         if let Some(pos) = self.enemy_pos(enemy_name) {
-            self.enemies.get(pos)
+            self.enemies.get(pos).map(|x| &**x)
         } else {
             None
         }
