@@ -1,7 +1,7 @@
-Session.vim
+*.save
 
 # Cargo
 /target
 
-# kingslayer
-*.save.ron
+# Nix
+result
