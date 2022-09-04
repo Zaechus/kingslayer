@@ -18,7 +18,7 @@ categories = [ "games", "game-engines", "game-development" ]
 ron = "0.8"
 bincode = "1.3"
 serde = { version = "1", features = ["derive"] }
-# rayon = "1.5"
+rayon = "1.5"
 
 [profile.release]
 strip = true

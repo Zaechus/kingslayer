@@ -2,10 +2,13 @@
 rooms: {
 "Brig": (
     name: "Brig",
-    desc: "You are in a small wooden room with a wood pillar in the middle. The ground slowly creaks and rocks beneath you."
+    desc: "You are in a small wooden room with a wood pillar in the middle. The ground slowly creaks and rocks beneath you.",
+    items: [
+        Thing((name: "stick", desc: "There is a stick here.", inspect: "It's short but stout.")),
+    ],
 ),
 "Hold 1": (
     name: "Hold",
-    desc: "You are in the middle of a spacious hold. Crates and barrels array the sides."
-)
+    desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.",
+),
 })

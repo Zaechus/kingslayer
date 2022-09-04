@@ -2,12 +2,12 @@ use std::{
     cell::Cell,
     collections::HashMap,
     fs::File,
-    io::{self, BufReader, Read, Write},
+    io::{self, BufReader, BufWriter, Read, Write},
 };
 
 use serde::{Deserialize, Serialize};
 
-use crate::{player::Player, read_line, room::Room};
+use crate::{lexer::lex, player::Player, read_line, room::Room};
 
 /// An interface to a Kingslayer game
 #[derive(Deserialize, Serialize)]
@@ -29,47 +29,63 @@ impl Game {
     }
 
     /// Load a game from a savefile
-    pub fn load(filename: &str) -> Self {
-        let mut reader = BufReader::new(File::open(filename).unwrap());
+    pub fn load(filename: &str) -> io::Result<Self> {
+        let mut reader = BufReader::new(File::open(filename)?);
         let mut bytes = Vec::new();
-        reader.read_to_end(&mut bytes).unwrap();
+        reader.read_to_end(&mut bytes)?;
 
-        bincode::deserialize(&bytes).unwrap()
+        Ok(bincode::deserialize(&bytes).unwrap())
     }
 
     /// Save the game to the current directory as kingslayer.save
-    fn save(&self) -> io::Result<&str> {
+    fn save(&self) -> String {
         match File::create("kingslayer.save") {
-            Ok(mut file) => {
-                file.write_all(&bincode::serialize(&self).unwrap())?;
-                Ok("Saved.")
+            Ok(file) => {
+                let mut writer = BufWriter::new(file);
+                writer
+                    .write_all(&bincode::serialize(&self).unwrap())
+                    .unwrap();
+                "Saved.".to_owned()
             }
-            Err(e) => Err(e),
+            Err(e) => format!("error: {}", e),
         }
     }
 
-    fn ask(&self, input: &str) -> String {
-        match input.trim() {
+    fn ask(&mut self, input: String) -> String {
+        let command = lex(input);
+
+        match command.verb().unwrap_or_default() {
+            "drop" => self
+                .rooms
+                .get_mut(&self.curr_room)
+                .unwrap()
+                .take(self.player.drop(command.obj().unwrap())),
             "i" => self.player.inventory().to_string(),
             "l" => self.rooms.get(&self.curr_room).unwrap().to_string(),
+            "take" => self.player.take(
+                self.rooms
+                    .get_mut(&self.curr_room)
+                    .unwrap()
+                    .give(command.obj().unwrap()),
+            ),
             "quit" => {
                 self.running.set(false);
-                "\nFarewell".to_owned()
+                "\nFarewell.\n".to_owned()
             }
-            "save" => self.save().unwrap().to_owned(),
+            "save" => self.save(),
             _ => "Excuse me?".to_owned(),
         }
     }
 
     /// Start a normal game from the command line
-    pub fn play(&self) {
+    pub fn play(&mut self) {
         self.running.set(true);
 
         while self.running.get() {
             print!("\n> ");
             io::stdout().flush().unwrap();
 
-            println!("{}", self.ask(&read_line()));
+            println!("{}", self.ask(read_line()));
         }
     }
 }
