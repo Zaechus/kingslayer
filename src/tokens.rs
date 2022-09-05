@@ -1,4 +1,4 @@
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub(crate) struct Tokens {
     verb: Option<String>,
     obj: Option<String>,
@@ -7,7 +7,7 @@ pub(crate) struct Tokens {
 }
 
 impl Tokens {
-    pub(crate) fn new(
+    pub(crate) const fn new(
         verb: Option<String>,
         obj: Option<String>,
         prep: Option<String>,

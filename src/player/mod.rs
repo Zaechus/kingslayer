@@ -29,7 +29,7 @@ impl Player {
         }
     }
 
-    pub(crate) fn inventory(&self) -> &Inventory {
+    pub(crate) const fn inventory(&self) -> &Inventory {
         &self.inventory
     }
 }

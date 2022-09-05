@@ -9,7 +9,7 @@ use super::Entity;
 
 mod thing;
 
-/// Find the position of an Item in a vector of Items based on a name query
+/// Find the position of an Item in a collection of Items based on a name query
 ///
 /// Given a room containging just an item with the name "red block":
 /// > take red              =>  Taken.
@@ -20,7 +20,7 @@ mod thing;
 /// > take red block block  =>  Taken.
 /// > take blue block       =>  There is no "blue block" here.
 /// > take green plate      =>  There is no "green plate" here.
-pub(crate) fn item_index(items: &Vec<Item>, item_name: &str) -> Option<usize> {
+pub(crate) fn item_index(items: &[Item], item_name: &str) -> Option<usize> {
     items.par_iter().position_any(|item| {
         item_name
             .par_split_whitespace()

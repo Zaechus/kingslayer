@@ -24,10 +24,9 @@ pub(crate) struct Room {
 
 impl Room {
     pub(crate) fn give<'a>(&mut self, item_name: &'a str) -> Result<Item, &'a str> {
-        if let Some(pos) = item_index(&self.items, item_name) {
-            Ok(self.items.remove(pos))
-        } else {
-            Err(item_name)
+        match item_index(&self.items, item_name) {
+            Some(pos) => Ok(self.items.remove(pos)),
+            None => Err(item_name),
         }
     }
 

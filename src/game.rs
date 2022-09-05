@@ -24,14 +24,14 @@ pub struct Game {
 
 impl Default for Game {
     fn default() -> Self {
-        ron::de::from_str(include_str!("worlds/world.ron")).unwrap()
+        ron::de::from_str(include_str!("worlds/world.ron")).expect("RON error")
     }
 }
 
 impl Game {
     /// Setup a game from RON
     pub fn from_ron_str(ron_str: &str) -> Self {
-        ron::de::from_str(ron_str).unwrap()
+        ron::de::from_str(ron_str).expect("RON error")
     }
 
     /// Load a game from a savefile
@@ -59,6 +59,7 @@ impl Game {
 
     fn ask(&mut self, input: String) -> String {
         let command = lex(input);
+        dbg!(&command);
 
         match command.verb().unwrap_or_default() {
             "drop" => self
