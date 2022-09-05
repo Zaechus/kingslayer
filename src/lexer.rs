@@ -7,7 +7,7 @@ const USELESS_WORDS: [&str; 10] = [
 ];
 const PREPOSITIONS: [&str; 5] = ["in", "inside", "from", "on", "with"];
 
-pub fn lex(input: String) -> Tokens {
+pub(crate) fn lex(input: String) -> Tokens {
     let mut words: Vec<_> = input
         .par_split_whitespace()
         .map(str::to_lowercase)

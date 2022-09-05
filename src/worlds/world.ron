@@ -5,6 +5,7 @@ rooms: {
     desc: "You are in a small wooden room with a wood pillar in the middle. The ground slowly creaks and rocks beneath you.",
     items: [
         Thing((name: "stick", desc: "There is a stick here.", inspect: "It's short but stout.")),
+        Thing((name: "red block", desc: "There is a red block here.")),
     ],
 ),
 "Hold 1": (

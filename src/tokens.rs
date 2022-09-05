@@ -1,5 +1,5 @@
 #[derive(Default)]
-pub struct Tokens {
+pub(crate) struct Tokens {
     verb: Option<String>,
     obj: Option<String>,
     prep: Option<String>,
@@ -7,7 +7,7 @@ pub struct Tokens {
 }
 
 impl Tokens {
-    pub fn new(
+    pub(crate) fn new(
         verb: Option<String>,
         obj: Option<String>,
         prep: Option<String>,
@@ -21,19 +21,19 @@ impl Tokens {
         }
     }
 
-    pub fn verb(&self) -> Option<&str> {
+    pub(crate) fn verb(&self) -> Option<&str> {
         self.verb.as_deref()
     }
 
-    pub fn obj(&self) -> Option<&str> {
+    pub(crate) fn obj(&self) -> Option<&str> {
         self.obj.as_deref()
     }
 
-    pub fn prep(&self) -> Option<&str> {
+    fn prep(&self) -> Option<&str> {
         self.prep.as_deref()
     }
 
-    pub fn obj_prep(&self) -> Option<&str> {
+    fn obj_prep(&self) -> Option<&str> {
         self.obj_prep.as_deref()
     }
 }

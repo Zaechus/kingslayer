@@ -7,7 +7,7 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{lexer::lex, player::Player, read_line, room::Room};
+use crate::{entity::room::Room, lexer::lex, player::Player, read_line};
 
 /// An interface to a Kingslayer game
 #[derive(Deserialize, Serialize)]
@@ -20,6 +20,12 @@ pub struct Game {
     player: Player,
     rooms: HashMap<String, Room>,
     curr_room: String,
+}
+
+impl Default for Game {
+    fn default() -> Self {
+        ron::de::from_str(include_str!("worlds/world.ron")).unwrap()
+    }
 }
 
 impl Game {
@@ -77,9 +83,11 @@ impl Game {
         }
     }
 
-    /// Start a normal game from the command line
+    /// Start a game from the command line
     pub fn play(&mut self) {
         self.running.set(true);
+
+        println!("{}", self.ask("l".into()));
 
         while self.running.get() {
             print!("\n> ");

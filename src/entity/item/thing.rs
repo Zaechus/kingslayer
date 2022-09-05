@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::entity::Entity;
 
 #[derive(Default, Deserialize, Serialize)]
-pub struct Thing {
+pub(crate) struct Thing {
     name: String,
     desc: String,
     #[serde(default)]
