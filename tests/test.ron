@@ -1,0 +1,7 @@
+(curr_room: "Center Room",
+rooms: {
+"Center Room": (
+    name: "Center Room",
+    desc: "You are in the center room."
+)
+})

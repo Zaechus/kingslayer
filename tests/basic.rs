@@ -1,9 +1,9 @@
 #[cfg(test)]
 mod tests {
-    // use kingslayer::Game;
+    use kingslayer::Game;
 
     #[test]
-    fn test() {
-        assert!(true);
+    fn basic() {
+        Game::from_ron_str(include_str!("test.ron"));
     }
 }
