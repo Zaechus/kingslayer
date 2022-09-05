@@ -27,11 +27,18 @@ pub(crate) fn lex(input: String) -> Tokens {
                 Some(words[1..].join(" ")),
             )
         } else {
+            let obj = words[1..prep_pos].join(" ");
+            let obj_prep = words[prep_pos + 1..].join(" ");
+
             Tokens::new(
                 Some(words[0].to_owned()),
-                Some(words[1..prep_pos].join(" ")),
+                if obj.is_empty() { None } else { Some(obj) },
                 Some(words[prep_pos].to_owned()),
-                Some(words[prep_pos + 1..].join(" ")),
+                if obj_prep.is_empty() {
+                    None
+                } else {
+                    Some(obj_prep)
+                },
             )
         }
     } else if words.len() > 1 {

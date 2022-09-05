@@ -7,7 +7,13 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{entity::room::Room, lexer::lex, player::Player, read_line};
+use crate::{
+    entity::room::Room,
+    lexer::lex,
+    parse::{parse_drop, parse_take},
+    player::Player,
+    read_line,
+};
 
 /// An interface to a Kingslayer game
 #[derive(Deserialize, Serialize)]
@@ -18,8 +24,8 @@ pub struct Game {
     num_moves: Cell<u32>,
     #[serde(default)]
     player: Player,
-    rooms: HashMap<String, Room>,
     curr_room: String,
+    rooms: HashMap<String, Room>,
 }
 
 impl Default for Game {
@@ -57,44 +63,73 @@ impl Game {
         }
     }
 
-    fn ask(&mut self, input: String) -> String {
-        let command = lex(input);
-        dbg!(&command);
+    fn move_room(&mut self, direction: &str) -> String {
+        if let Some(path) = self
+            .rooms
+            .get(&self.curr_room)
+            .unwrap()
+            .find_path(direction)
+        {
+            self.curr_room = path.target().to_owned();
+            self.rooms.get(&self.curr_room).unwrap().to_string()
+        } else {
+            "You cannot go that way.".to_owned()
+        }
+    }
 
-        match command.verb().unwrap_or_default() {
-            "drop" => self
-                .rooms
-                .get_mut(&self.curr_room)
-                .unwrap()
-                .take(self.player.drop(command.obj().unwrap())),
-            "i" => self.player.inventory().to_string(),
-            "l" => self.rooms.get(&self.curr_room).unwrap().to_string(),
-            "take" => self.player.take(
-                self.rooms
-                    .get_mut(&self.curr_room)
-                    .unwrap()
-                    .give(command.obj().unwrap()),
-            ),
-            "quit" => {
-                self.running.set(false);
-                "\nFarewell.\n".to_owned()
+    pub fn ask(&mut self, input: String) -> String {
+        let command = lex(input);
+
+        if let Some(verb) = command.verb() {
+            match verb {
+                "north" | "south" | "east" | "west" | "northeast" | "northwest" | "southeast"
+                | "southwest" | "up" | "down" => self.move_room(verb),
+                "enter" | "go" | "move" | "exit" => {
+                    if let Some(obj) = command.obj() {
+                        self.move_room(obj)
+                    } else {
+                        format!("Where do you want to {}?", verb)
+                    }
+                }
+                "drop" => parse_drop(
+                    verb,
+                    &command,
+                    &mut self.player,
+                    self.rooms.get_mut(&self.curr_room).unwrap(),
+                ),
+                "i" => self.player.inventory().to_string(),
+                "l" | "look" => self.rooms.get(&self.curr_room).unwrap().to_string(),
+                "take" => parse_take(
+                    verb,
+                    &command,
+                    &mut self.player,
+                    self.rooms.get_mut(&self.curr_room).unwrap(),
+                ),
+                "quit" => {
+                    self.running.set(false);
+                    "\nFarewell.\n".to_owned()
+                }
+                "save" => self.save(),
+                _ => format!("I do not know the word \"{}\".", verb),
             }
-            "save" => self.save(),
-            _ => "Excuse me?".to_owned(),
+        } else {
+            "I do not understand that phrase.".to_owned()
         }
     }
 
     /// Start a game from the command line
-    pub fn play(&mut self) {
+    pub fn play(&mut self) -> io::Result<()> {
         self.running.set(true);
 
         println!("{}", self.ask("l".into()));
 
         while self.running.get() {
             print!("\n> ");
-            io::stdout().flush().unwrap();
+            io::stdout().flush()?;
 
-            println!("{}", self.ask(read_line()));
+            println!("{}", self.ask(read_line()?));
         }
+
+        Ok(())
     }
 }

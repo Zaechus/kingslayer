@@ -11,13 +11,14 @@ mod thing;
 
 /// Find the position of an Item in a collection of Items based on a name query
 ///
-/// Given a room containging just an item with the name "red block":
+/// Given a room containing just an item with the name "red block":
 /// > take red              =>  Taken.
 /// > take block            =>  Taken.
 /// > take red block        =>  Taken.
 /// > take red red          =>  Taken.
 /// > take block block      =>  Taken.
 /// > take red block block  =>  Taken.
+/// > take red plate      =>  There is no "red plate" here.
 /// > take blue block       =>  There is no "blue block" here.
 /// > take green plate      =>  There is no "green plate" here.
 pub(crate) fn item_index(items: &[Item], item_name: &str) -> Option<usize> {

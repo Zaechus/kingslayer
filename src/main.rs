@@ -16,6 +16,7 @@ fn try_main() -> io::Result<()> {
         Game::default()
     };
 
-    game.play();
+    game.play()?;
+
     Ok(())
 }

@@ -3,6 +3,14 @@ rooms: {
 "Brig": (
     name: "Brig",
     desc: "You are in a small wooden room with a wood pillar in the middle. The ground slowly creaks and rocks beneath you.",
+    paths: [
+        (
+            directions: ["door", "north"],
+            target: "Hold 1",
+            desc: "There is a door on the north side.",
+            inspect: "The door is plain and wooden.",
+        ),
+    ],
     items: [
         Thing((name: "stick", desc: "There is a stick here.", inspect: "It's short but stout.")),
         Thing((name: "red block", desc: "There is a red block here.")),
@@ -11,5 +19,13 @@ rooms: {
 "Hold 1": (
     name: "Hold",
     desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.",
+    paths: [
+        (
+            directions: ["door", "south"],
+            target: "Brig",
+            desc: "There is a door to the south.",
+            inspect: "The door is plain and wooden.",
+        ),
+    ],
 ),
 })

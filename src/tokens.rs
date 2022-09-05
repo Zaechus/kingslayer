@@ -29,11 +29,11 @@ impl Tokens {
         self.obj.as_deref()
     }
 
-    fn prep(&self) -> Option<&str> {
+    pub(crate) fn prep(&self) -> Option<&str> {
         self.prep.as_deref()
     }
 
-    fn obj_prep(&self) -> Option<&str> {
+    pub(crate) fn obj_prep(&self) -> Option<&str> {
         self.obj_prep.as_deref()
     }
 }

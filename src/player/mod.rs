@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::entity::item::{item_index, Item};
@@ -26,6 +27,18 @@ impl Player {
                 "Taken.".to_owned()
             }
             Err(item_name) => format!("There is no \"{}\" here.", item_name),
+        }
+    }
+
+    pub(crate) fn take_all(&mut self, items: Vec<Item>) -> String {
+        if items.is_empty() {
+            "There is nothing to take.".to_owned()
+        } else {
+            let times = items.len();
+
+            self.inventory.items.par_extend(items);
+
+            (0..times).fold(String::new(), |acc, _| format!("{}Taken. ", acc))
         }
     }
 
