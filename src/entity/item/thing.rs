@@ -6,7 +6,6 @@ use crate::entity::Entity;
 pub(crate) struct Thing {
     name: String,
     desc: String,
-    #[serde(default)]
     inspect: String,
 }
 

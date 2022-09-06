@@ -13,7 +13,7 @@ rooms: {
     ],
     items: [
         Thing((name: "stick", desc: "There is a stick here.", inspect: "It's short but stout.")),
-        Thing((name: "red block", desc: "There is a red block here.")),
+        Thing((name: "red block", desc: "There is a red block here.", inspect: "It's red and blocky.")),
     ],
 ),
 "Hold 1": (
@@ -26,6 +26,14 @@ rooms: {
             desc: "There is a door to the south.",
             inspect: "The door is plain and wooden.",
         ),
+    ],
+    items: [
+        Container((
+            name: "box", desc: "There is a box here.", inspect: "It looks like it's made of cardboard.",
+            contents: [
+                Thing((name: "apple", desc: "There is an apple.", inspect: "This apple looks delicious.")),
+            ],
+        )),
     ],
 ),
 })

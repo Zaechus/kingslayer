@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use crate::entity::item::{item_index, Item};
 
 use self::inventory::Inventory;
-
 mod inventory;
 
 #[derive(Default, Deserialize, Serialize)]
@@ -20,13 +19,13 @@ impl Player {
         }
     }
 
-    pub(crate) fn take(&mut self, item: Result<Item, &str>) -> String {
+    pub(crate) fn take(&mut self, item: Result<Item, String>) -> String {
         match item {
             Ok(item) => {
                 self.inventory.items.push(item);
                 "Taken.".to_owned()
             }
-            Err(item_name) => format!("There is no \"{}\" here.", item_name),
+            Err(message) => message,
         }
     }
 

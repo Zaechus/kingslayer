@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     entity::room::Room,
     lexer::lex,
-    parse::{parse_drop, parse_take},
+    parse::{parse_drop, parse_put_in, parse_take},
     player::Player,
     read_line,
 };
@@ -99,6 +99,12 @@ impl Game {
                 ),
                 "i" => self.player.inventory().to_string(),
                 "l" | "look" => self.rooms.get(&self.curr_room).unwrap().to_string(),
+                "put" | "place" => parse_put_in(
+                    verb,
+                    &command,
+                    &mut self.player,
+                    self.rooms.get_mut(&self.curr_room).unwrap(),
+                ),
                 "take" => parse_take(
                     verb,
                     &command,

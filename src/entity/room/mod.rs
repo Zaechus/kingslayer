@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use self::pathway::Pathway;
 
-use super::item::{item_index, Item};
+use super::item::{container::Container, item_index, Item};
 
 mod pathway;
 
@@ -41,10 +41,10 @@ impl Room {
         })
     }
 
-    pub(crate) fn give<'a>(&mut self, item_name: &'a str) -> Result<Item, &'a str> {
+    pub(crate) fn give(&mut self, item_name: &str) -> Result<Item, String> {
         match item_index(&self.items, item_name) {
             Some(pos) => Ok(self.items.remove(pos)),
-            None => Err(item_name),
+            None => Err(format!("There is no \"{}\" here.", item_name)),
         }
     }
 
@@ -52,13 +52,46 @@ impl Room {
         self.items.par_drain(..).collect()
     }
 
-    pub(crate) fn take(&mut self, item: Result<Item, String>) -> String {
+    pub(crate) fn give_from(
+        &mut self,
+        item_name: &str,
+        container_name: &str,
+    ) -> Result<Item, String> {
+        match item_index(&self.items, container_name) {
+            Some(pos) => {
+                if let Item::Container(container) = &mut self.items[pos] {
+                    container.give(item_name)
+                } else {
+                    Err("That is not a container.".to_owned())
+                }
+            }
+            None => Err(format!("There is no \"{}\" here.", container_name)),
+        }
+    }
+
+    pub(crate) fn receive(&mut self, item: Result<Item, String>) -> String {
         match item {
             Ok(item) => {
                 self.items.push(item);
                 "Dropped.".to_owned()
             }
             Err(message) => message,
+        }
+    }
+
+    pub(crate) fn get_container_mut(
+        &mut self,
+        container_name: &str,
+    ) -> Result<&mut Container, String> {
+        match item_index(&self.items, container_name) {
+            Some(pos) => {
+                if let Item::Container(container) = &mut self.items[pos] {
+                    Ok(container)
+                } else {
+                    Err("That is not a container.".to_owned())
+                }
+            }
+            None => Err(format!("There is no \"{}\" here.", container_name)),
         }
     }
 }
