@@ -42,7 +42,6 @@ pub(crate) fn parse_put_in(
     player: &mut Player,
     room: &mut Room,
 ) -> String {
-    dbg!(command);
     if let Some(obj) = command.obj() {
         if let Some(_prep) = command.prep() {
             if let Some(obj_prep) = command.obj_prep() {
@@ -56,6 +55,22 @@ pub(crate) fn parse_put_in(
         } else {
             format!("What do you want to {} the {} in?", verb, obj)
         }
+    } else {
+        format!("What do you want to {}?", verb)
+    }
+}
+
+pub(crate) fn parse_open(command: &Tokens, room: &mut Room) -> String {
+    if let Some(obj) = command.obj() {
+        room.open(obj)
+    } else {
+        "What do you want to open?".to_owned()
+    }
+}
+
+pub(crate) fn parse_close(verb: &str, command: &Tokens, room: &mut Room) -> String {
+    if let Some(obj) = command.obj() {
+        room.close(obj)
     } else {
         format!("What do you want to {}?", verb)
     }

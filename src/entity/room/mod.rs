@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 
 use self::pathway::Pathway;
 
-use super::item::{container::Container, item_index, Item};
+use super::{
+    item::{container::Container, item_index, Item},
+    open::Closeable,
+};
 
 mod pathway;
 
@@ -92,6 +95,20 @@ impl Room {
                 }
             }
             None => Err(format!("There is no \"{}\" here.", container_name)),
+        }
+    }
+
+    pub(crate) fn open(&mut self, name: &str) -> String {
+        match self.get_container_mut(name) {
+            Ok(container) => container.open(),
+            Err(message) => message,
+        }
+    }
+
+    pub(crate) fn close(&mut self, name: &str) -> String {
+        match self.get_container_mut(name) {
+            Ok(container) => container.close(),
+            Err(message) => message,
         }
     }
 }

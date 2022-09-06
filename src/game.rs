@@ -2,7 +2,7 @@ use std::{
     cell::Cell,
     collections::HashMap,
     fs::File,
-    io::{self, BufReader, BufWriter, Read, Write},
+    io::{self, Read, Write},
 };
 
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     entity::room::Room,
     lexer::lex,
-    parse::{parse_drop, parse_put_in, parse_take},
+    parse::{parse_close, parse_drop, parse_open, parse_put_in, parse_take},
     player::Player,
     read_line,
 };
@@ -42,7 +42,7 @@ impl Game {
 
     /// Load a game from a savefile
     pub fn load(filename: &str) -> io::Result<Self> {
-        let mut reader = BufReader::new(File::open(filename)?);
+        let mut reader = File::open(filename)?;
         let mut bytes = Vec::new();
         reader.read_to_end(&mut bytes)?;
 
@@ -52,11 +52,8 @@ impl Game {
     /// Save the game to the current directory as kingslayer.save
     fn save(&self) -> String {
         match File::create("kingslayer.save") {
-            Ok(file) => {
-                let mut writer = BufWriter::new(file);
-                writer
-                    .write_all(&bincode::serialize(&self).unwrap())
-                    .unwrap();
+            Ok(mut file) => {
+                file.write_all(&bincode::serialize(&self).unwrap()).unwrap();
                 "Saved.".to_owned()
             }
             Err(e) => format!("error: {}", e),
@@ -91,21 +88,25 @@ impl Game {
                         format!("Where do you want to {}?", verb)
                     }
                 }
+                "close" | "shut" => {
+                    parse_close(verb, &command, self.rooms.get_mut(&self.curr_room).unwrap())
+                }
                 "drop" => parse_drop(
                     verb,
                     &command,
                     &mut self.player,
                     self.rooms.get_mut(&self.curr_room).unwrap(),
                 ),
-                "i" => self.player.inventory().to_string(),
+                "i" | "inv" | "inventory" => self.player.inventory().to_string(),
                 "l" | "look" => self.rooms.get(&self.curr_room).unwrap().to_string(),
-                "put" | "place" => parse_put_in(
+                "open" => parse_open(&command, self.rooms.get_mut(&self.curr_room).unwrap()),
+                "put" | "place" | "insert" => parse_put_in(
                     verb,
                     &command,
                     &mut self.player,
                     self.rooms.get_mut(&self.curr_room).unwrap(),
                 ),
-                "take" => parse_take(
+                "take" | "get" => parse_take(
                     verb,
                     &command,
                     &mut self.player,

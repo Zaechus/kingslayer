@@ -1,4 +1,5 @@
 pub(crate) mod item;
+mod open;
 pub(crate) mod room;
 
 pub(crate) trait Entity {

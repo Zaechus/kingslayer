@@ -30,10 +30,12 @@ rooms: {
     items: [
         Container((
             name: "box", desc: "There is a box here.", inspect: "It looks like it's made of cardboard.",
+            opening: Some(Open),
             contents: [
                 Thing((name: "apple", desc: "There is an apple.", inspect: "This apple looks delicious.")),
             ],
         )),
+        Container((name: "", desc: "", inspect: "")),
     ],
 ),
 })

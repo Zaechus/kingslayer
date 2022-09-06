@@ -36,7 +36,7 @@ pub(crate) fn item_index(items: &[Item], item_name: &str) -> Option<usize> {
 impl Display for Item {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Container(container) => write!(f, "{}", container.to_string()),
+            Self::Container(container) => write!(f, "{}", container),
             _ => write!(f, "{}", self.desc()),
         }
     }
