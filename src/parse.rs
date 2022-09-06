@@ -45,7 +45,7 @@ pub(crate) fn parse_put_in(
     if let Some(obj) = command.obj() {
         if let Some(_prep) = command.prep() {
             if let Some(obj_prep) = command.obj_prep() {
-                match room.get_container_mut(obj_prep) {
+                match room.get_open_container_mut(obj_prep) {
                     Ok(container) => container.receive(player.drop(obj)),
                     Err(message) => message,
                 }

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 pub(super) enum Opening {
     Open,
     Closed,
@@ -11,5 +11,5 @@ pub(super) trait Closeable {
 
     fn close(&mut self) -> String;
 
-    fn is_open(&self) -> bool;
+    fn is_closed(&self) -> bool;
 }

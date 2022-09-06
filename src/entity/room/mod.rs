@@ -98,6 +98,22 @@ impl Room {
         }
     }
 
+    pub(crate) fn get_open_container_mut(
+        &mut self,
+        container_name: &str,
+    ) -> Result<&mut Container, String> {
+        match self.get_container_mut(container_name) {
+            Ok(container) => {
+                if !container.is_closed() {
+                    Ok(container)
+                } else {
+                    Err("It's closed.".to_owned())
+                }
+            }
+            Err(message) => Err(message),
+        }
+    }
+
     pub(crate) fn open(&mut self, name: &str) -> String {
         match self.get_container_mut(name) {
             Ok(container) => container.open(),
