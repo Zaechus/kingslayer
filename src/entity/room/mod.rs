@@ -37,11 +37,21 @@ impl Room {
     /// All query words must match but not all directions must be present in the query.
     /// See the docs for item_index
     pub(crate) fn find_path(&self, direction: &str) -> Option<&Pathway> {
-        self.paths.par_iter().find_any(|path| {
-            direction
-                .par_split_whitespace()
-                .all(|word| path.directions.contains(&word.to_owned()))
-        })
+        self.paths
+            .par_iter()
+            .find_any(|path| Room::direction_matches(direction, path))
+    }
+
+    pub(crate) fn find_path_mut(&mut self, direction: &str) -> Option<&mut Pathway> {
+        self.paths
+            .par_iter_mut()
+            .find_any(|path| Room::direction_matches(direction, path))
+    }
+
+    fn direction_matches(direction: &str, path: &Pathway) -> bool {
+        direction
+            .par_split_whitespace()
+            .all(|word| path.directions.contains(&word.to_owned()))
     }
 
     pub(crate) fn give(&mut self, item_name: &str) -> Result<Item, String> {
@@ -115,16 +125,34 @@ impl Room {
     }
 
     pub(crate) fn open(&mut self, name: &str) -> String {
-        match self.get_container_mut(name) {
-            Ok(container) => container.open(),
-            Err(message) => message,
+        match item_index(&self.items, name) {
+            Some(pos) => {
+                if let Item::Container(container) = &mut self.items[pos] {
+                    container.open()
+                } else {
+                    "That is not a container.".to_owned()
+                }
+            }
+            None => match self.find_path_mut(name) {
+                Some(path) => path.open(),
+                None => format!("There is no \"{}\" here.", name),
+            },
         }
     }
 
     pub(crate) fn close(&mut self, name: &str) -> String {
-        match self.get_container_mut(name) {
-            Ok(container) => container.close(),
-            Err(message) => message,
+        match item_index(&self.items, name) {
+            Some(pos) => {
+                if let Item::Container(container) = &mut self.items[pos] {
+                    container.close()
+                } else {
+                    "That is not a container.".to_owned()
+                }
+            }
+            None => match self.find_path_mut(name) {
+                Some(path) => path.close(),
+                None => format!("There is no \"{}\" here.", name),
+            },
         }
     }
 }

@@ -70,3 +70,24 @@ impl Entity for Item {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_item_index() {
+        let items = vec![
+            Item::Thing(Thing::_new("red block", "", "")),
+            Item::Thing(Thing::_new("stick", "", "")),
+        ];
+
+        for query in ["stick", "red", "block", "red block", "block red"] {
+            assert!(item_index(&items, query).is_some());
+        }
+
+        for query in ["plate", "red plate", "blue block", "blue plate"] {
+            assert!(!item_index(&items, query).is_some());
+        }
+    }
+}

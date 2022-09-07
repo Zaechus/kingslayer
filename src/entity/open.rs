@@ -6,7 +6,7 @@ pub(super) enum Opening {
     Closed,
 }
 
-pub(super) trait Closeable {
+pub(crate) trait Closeable {
     fn open(&mut self) -> String;
 
     fn close(&mut self) -> String;

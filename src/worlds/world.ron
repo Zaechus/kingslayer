@@ -9,6 +9,7 @@ rooms: {
             target: "Hold 1",
             desc: "There is a door on the north side.",
             inspect: "The door is plain and wooden.",
+            door: Some(Closed),
         ),
     ],
     items: [

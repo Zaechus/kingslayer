@@ -9,6 +9,16 @@ pub(crate) struct Thing {
     inspect: String,
 }
 
+impl Thing {
+    pub(super) fn _new<S: Into<String>>(name: S, desc: S, inspect: S) -> Self {
+        Self {
+            name: name.into(),
+            desc: desc.into(),
+            inspect: inspect.into(),
+        }
+    }
+}
+
 impl Entity for Thing {
     fn name(&self) -> &str {
         &self.name

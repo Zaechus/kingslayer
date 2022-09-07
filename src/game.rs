@@ -8,7 +8,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    entity::room::Room,
+    entity::{open::Closeable, room::Room},
     lexer::lex,
     parse::{parse_close, parse_drop, parse_open, parse_put_in, parse_take},
     player::Player,
@@ -36,6 +36,12 @@ impl Default for Game {
 
 impl Game {
     /// Setup a game from RON
+    ///
+    /// ```
+    /// use kingslayer::Game;
+    ///
+    /// Game::from_ron_str(include_str!("worlds/world.ron"));
+    /// ```
     pub fn from_ron_str(ron_str: &str) -> Self {
         ron::de::from_str(ron_str).expect("RON error")
     }
@@ -67,15 +73,20 @@ impl Game {
             .unwrap()
             .find_path(direction)
         {
-            self.curr_room = path.target().to_owned();
-            self.rooms.get(&self.curr_room).unwrap().to_string()
+            if !path.is_closed() {
+                self.curr_room = path.target().to_owned();
+                self.rooms.get(&self.curr_room).unwrap().to_string()
+            } else {
+                "The way is shut.".to_owned()
+            }
         } else {
             "You cannot go that way.".to_owned()
         }
     }
 
-    pub fn ask(&mut self, input: String) -> String {
-        let command = lex(input);
+    /// Parse a command and return the output
+    pub fn ask<S: Into<String>>(&mut self, input: S) -> String {
+        let command = lex(input.into());
 
         if let Some(verb) = command.verb() {
             match verb {
@@ -128,7 +139,7 @@ impl Game {
     pub fn play(&mut self) -> io::Result<()> {
         self.running.set(true);
 
-        println!("{}", self.ask("l".into()));
+        println!("{}", self.ask("l"));
 
         while self.running.get() {
             print!("\n> ");
