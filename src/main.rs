@@ -1,22 +1,32 @@
-use std::{env, io, process};
+use std::{collections::HashMap, env, error, process};
 
-use kingslayer::Game;
+use kingslayer::*;
 
 fn main() {
     if let Err(e) = try_main() {
-        eprintln!("error: {}", e);
-        process::exit(e.raw_os_error().unwrap_or(1));
+        println!("{}", e);
+        process::exit(1);
     }
 }
 
-fn try_main() -> io::Result<()> {
+fn try_main() -> Result<(), Box<dyn error::Error>> {
     let mut game = if let Some(filename) = env::args().nth(1) {
-        Game::load(&filename)?
+        Game::restore(&filename)?
     } else {
-        Game::default()
+        tmp()
     };
 
     game.play()?;
 
     Ok(())
+}
+
+fn tmp() -> Game {
+    let mut rooms = HashMap::new();
+    rooms.insert(
+        "1,1,1".to_owned(),
+        Room::new("Green Room", "You are in a green room."),
+    );
+
+    Game::new(Player::new("1,1,1"), rooms)
 }

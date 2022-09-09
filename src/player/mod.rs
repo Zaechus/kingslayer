@@ -1,47 +1,29 @@
-use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::entity::item::{item_index, Item};
-
 use self::inventory::Inventory;
+
 mod inventory;
 
-#[derive(Default, Deserialize, Serialize)]
-pub(crate) struct Player {
+/// Represents a player's current position and Inventory
+#[derive(Deserialize, Serialize)]
+pub struct Player {
+    location: String,
     inventory: Inventory,
 }
 
 impl Player {
-    pub(crate) fn drop(&mut self, item_name: &str) -> Result<Item, String> {
-        match item_index(&self.inventory.items, item_name) {
-            Some(pos) => Ok(self.inventory.items.remove(pos)),
-            None => Err(format!("You do not have the \"{}\".", item_name)),
+    pub fn new<S: Into<String>>(location: S) -> Self {
+        Self {
+            location: location.into(),
+            inventory: Inventory::default(),
         }
     }
 
-    pub(crate) fn take(&mut self, item: Result<Item, String>) -> String {
-        match item {
-            Ok(item) => {
-                self.inventory.items.push(item);
-                "Taken.".to_owned()
-            }
-            Err(message) => message,
-        }
+    pub fn location(&self) -> &str {
+        &self.location
     }
 
-    pub(crate) fn take_all(&mut self, items: Vec<Item>) -> String {
-        if items.is_empty() {
-            "There is nothing to take.".to_owned()
-        } else {
-            let times = items.len();
-
-            self.inventory.items.par_extend(items);
-
-            (0..times).fold(String::new(), |acc, _| format!("{}Taken. ", acc))
-        }
-    }
-
-    pub(crate) const fn inventory(&self) -> &Inventory {
+    pub fn inventory(&self) -> &Inventory {
         &self.inventory
     }
 }
