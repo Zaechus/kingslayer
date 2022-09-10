@@ -1,12 +1,9 @@
 use std::io;
 
-pub use crate::{game::Game, player::Player, room::Room};
+pub use {game::Game, thing::Thing};
 
-mod exit;
 mod game;
-mod item;
-mod player;
-mod room;
+mod thing;
 mod tokens;
 
 fn read_line() -> io::Result<String> {
