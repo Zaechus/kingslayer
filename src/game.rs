@@ -17,7 +17,7 @@ use crate::{
 pub(crate) const PLAYER: &str = "PLAYER";
 
 /// A Kingslayer game
-#[derive(Default, Deserialize, Serialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Game {
     player: Thing,
     things: HashMap<String, Thing>,
@@ -226,14 +226,39 @@ impl Game {
     }
 
     fn take(&mut self, noun: &str) -> String {
-        if let Some(thing) = self
+        if noun == "all" || noun == "everything" {
+            self.take_all()
+        } else {
+            if let Some(thing) = self
+                .things
+                .values_mut()
+                .find(|thing| thing.is_in(self.player.location()) && thing.names_contains(noun))
+            {
+                thing.take().to_owned()
+            } else {
+                format!("There is no \"{}\" here.", noun)
+            }
+        }
+    }
+
+    fn take_all(&mut self) -> String {
+        let message = self
             .things
             .values_mut()
-            .find(|thing| thing.is_in(self.player.location()) && thing.names_contains(noun))
-        {
-            thing.take().to_owned()
+            .fold(String::new(), |acc, i| {
+                if i.is_in(self.player.location()) && !i.desc().is_empty() {
+                    format!("{}\n{}: {}", acc, i.name().to_owned(), i.take())
+                } else {
+                    acc
+                }
+            })
+            .trim()
+            .to_owned();
+
+        if message.is_empty() {
+            "You can't see anything you can take.".to_owned()
         } else {
-            format!("There is no \"{}\" here.", noun)
+            message
         }
     }
 

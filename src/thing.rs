@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::game::PLAYER;
 
-#[derive(Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub(crate) struct Thing {
     names: Vec<String>,
@@ -112,7 +112,7 @@ impl Thing {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) enum Container {
     Open,
     Closed,
