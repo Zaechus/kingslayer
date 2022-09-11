@@ -2,14 +2,26 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 
+use crate::game::PLAYER;
+
 #[derive(Default, Deserialize, Serialize)]
-pub struct Thing {
+#[serde(default)]
+pub(crate) struct Thing {
     names: Vec<String>,
     desc: String,
-    location: String,
-    dest: Option<String>,
+    what: String,
+    #[serde(default = "rooms")]
+    locations: Vec<String>,
+    dest: String,
     can_take: bool,
+    container: Container,
+    door: String,
     take_message: String,
+    go_message: String,
+}
+
+fn rooms() -> Vec<String> {
+    vec![String::new()]
 }
 
 impl Display for Thing {
@@ -19,37 +31,6 @@ impl Display for Thing {
 }
 
 impl Thing {
-    pub fn new<S: Into<String>>(desc: S) -> Self {
-        Self {
-            names: Vec::new(),
-            desc: desc.into(),
-            location: String::new(),
-            dest: None,
-            can_take: false,
-            take_message: String::new(),
-        }
-    }
-
-    pub fn with_name<S: Into<String>>(mut self, name: S) -> Self {
-        self.names.push(name.into());
-        self
-    }
-
-    pub fn with_location<S: Into<String>>(mut self, location: S) -> Self {
-        self.location = location.into();
-        self
-    }
-
-    pub fn with_dest<S: Into<String>>(mut self, dest: S) -> Self {
-        self.dest = Some(dest.into());
-        self
-    }
-
-    pub fn with_take(mut self) -> Self {
-        self.can_take = true;
-        self
-    }
-
     pub(crate) fn name(&self) -> &str {
         &self.names[0]
     }
@@ -68,25 +49,59 @@ impl Thing {
     }
 
     pub(crate) fn location(&self) -> &str {
-        &self.location
+        &self.locations[0]
     }
 
     pub(crate) fn set_location(&mut self, location: String) {
-        self.location = location;
+        self.locations = vec![location];
     }
 
-    pub(crate) fn dest(&self) -> Option<&str> {
-        self.dest.as_deref()
+    pub(crate) fn dest(&self) -> &str {
+        &self.dest
     }
 
     pub(crate) fn take(&mut self) -> &str {
         if self.can_take {
-            self.location = "player".to_owned();
+            self.locations[0] = PLAYER.to_owned();
             "Taken."
         } else if self.take_message.is_empty() {
             "You cannot take that."
         } else {
             &self.take_message
         }
+    }
+
+    pub(crate) fn is_container(&self) -> bool {
+        !matches!(self.container, Container::False)
+    }
+
+    pub(crate) fn can_open(&self) -> bool {
+        matches!(self.container, Container::Open | Container::Closed)
+    }
+
+    pub(crate) fn is_open(&self) -> bool {
+        matches!(self.container, Container::Open | Container::True)
+    }
+
+    pub(crate) fn open(&mut self) {
+        self.container = Container::Open;
+    }
+
+    pub(crate) fn go_message(&self) -> &str {
+        &self.go_message
+    }
+}
+
+#[derive(Deserialize, Serialize)]
+enum Container {
+    Open,
+    Closed,
+    True,
+    False,
+}
+
+impl Default for Container {
+    fn default() -> Self {
+        Self::False
     }
 }

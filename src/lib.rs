@@ -1,6 +1,6 @@
 use std::io;
 
-pub use {game::Game, thing::Thing};
+pub use game::Game;
 
 mod game;
 mod thing;

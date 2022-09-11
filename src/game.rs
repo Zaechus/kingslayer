@@ -3,11 +3,14 @@ use std::{
     error,
     fs::File,
     io::{self, Read, Write},
+    str::FromStr,
 };
 
 use serde::{Deserialize, Serialize};
 
 use crate::{read_line, thing::Thing, tokens::Tokens};
+
+pub(crate) const PLAYER: &str = "PLAYER";
 
 /// A Kingslayer game
 #[derive(Default, Deserialize, Serialize)]
@@ -16,19 +19,20 @@ pub struct Game {
     things: HashMap<String, Thing>,
 }
 
+impl FromStr for Game {
+    type Err = ron::error::SpannedError;
+
+    /// Create a Game from a RON string
+    /// ```
+    /// # use kingslayer::Game;
+    /// include_str!("world.ron").parse::<Game>();
+    /// ```
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        ron::from_str(s)
+    }
+}
+
 impl Game {
-    pub fn new<S: Into<String>>(start: S) -> Self {
-        Self {
-            player: Thing::default().with_location(start),
-            things: HashMap::new(),
-        }
-    }
-
-    pub fn with<S: Into<String>>(mut self, key: S, thing: Thing) -> Self {
-        self.things.insert(key.into(), thing);
-        self
-    }
-
     /// Start the Game in a command line setting where `print` macros are expected to work
     pub fn play(&mut self) -> Result<(), Box<dyn error::Error>> {
         println!("{}", self.ask("l"));
@@ -42,6 +46,7 @@ impl Game {
                 match read_line()?.trim() {
                     "quit" => break,
                     "save" => self.save()?,
+                    "" => "Excuse me?".to_owned(),
                     s => self.ask(s),
                 }
             );
@@ -51,6 +56,11 @@ impl Game {
     }
 
     /// Parse a string into a game action and return the output
+    /// ```
+    /// # use kingslayer::Game;
+    /// # let mut game: Game = include_str!("world.ron").parse().unwrap();
+    /// println!("{}", game.ask("look around"));
+    /// ```
     pub fn ask<S: Into<String>>(&mut self, input: S) -> String {
         self.parse(Tokens::new(input.into()))
     }
@@ -58,20 +68,29 @@ impl Game {
     fn parse(&mut self, tokens: Tokens) -> String {
         if let Some(verb) = tokens.verb() {
             match verb {
-                "l" | "look" => self.look(),
+                "l" | "look" => self.parse_look(&tokens),
                 "i" | "inventory" => self.inventory(),
-                "go" => {
+                "go" | "enter" => {
                     if let Some(noun) = tokens.noun() {
                         self.go(noun)
                     } else {
-                        "Where do you want to go?".to_owned()
+                        format!("Where do you want to {}?", verb)
                     }
                 }
                 "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => self.go(verb),
-                "take" | "get" => self.parse_take(verb, &tokens),
-                "drop" => self.parse_drop(verb, &tokens),
                 _ => {
-                    format!("I do not know the word \"{}\".", verb)
+                    if let Some(noun) = tokens.noun() {
+                        match verb {
+                            "take" | "get" => self.take(noun),
+                            "drop" => self.drop(noun),
+                            "open" => self.open(noun),
+                            _ => {
+                                format!("I do not know the word \"{}\".", verb)
+                            }
+                        }
+                    } else {
+                        format!("What do you want to {}?", verb)
+                    }
                 }
             }
         } else {
@@ -79,33 +98,73 @@ impl Game {
         }
     }
 
-    fn look(&self) -> String {
-        self.things.values().fold(
+    fn parse_look(&self, tokens: &Tokens) -> String {
+        if let Some(noun) = tokens.noun() {
+            if let Some((location, _)) = self.things.iter().find(|(location, thing)| {
+                (location.as_str() == self.player.location()
+                    || thing.location() == self.player.location())
+                    && thing.names_contains(noun)
+            }) {
+                self.look(location)
+            } else {
+                format!("You can't see any {} here.", noun)
+            }
+        } else {
+            self.look(self.player.location())
+        }
+    }
+
+    // TODO
+    fn look(&self, location: &str) -> String {
+        let thing = self.things.get(location).unwrap();
+
+        if thing.is_container() {
             self.things
-                .get(self.player.location())
-                .unwrap()
-                .desc()
-                .to_owned(),
-            |acc, thing| {
-                if thing.location() == self.player.location() && !thing.desc().is_empty() {
-                    format!("{}\n{}", acc, thing)
-                } else {
-                    acc
-                }
-            },
-        )
+                .iter()
+                .fold(thing.desc().to_owned(), |acc, (loc, i)| {
+                    if thing.is_open() && i.location() == location && !i.desc().is_empty() {
+                        if i.is_container() {
+                            format!("{}\n{}", acc, self.look(loc))
+                        } else if thing.is_container() && thing.is_open() {
+                            format!("{}\n  a {}", acc, i.name())
+                        } else {
+                            format!("{}\n{}", acc, i)
+                        }
+                    } else {
+                        acc
+                    }
+                })
+        } else {
+            self.things
+                .iter()
+                .fold(thing.desc().to_owned(), |acc, (loc, i)| {
+                    if i.location() == location && !i.desc().is_empty() {
+                        if i.is_container() {
+                            format!("{}\n{}", acc, self.look(loc))
+                        } else {
+                            format!("{}\n{}", acc, i)
+                        }
+                    } else {
+                        acc
+                    }
+                })
+        }
     }
 
     fn inventory(&self) -> String {
-        self.things
-            .values()
-            .fold(String::from("You are carrying:"), |acc, thing| {
-                if thing.location() == "player" && !thing.desc().is_empty() {
-                    format!("{}\n  a {}", acc, thing.name())
-                } else {
-                    acc
-                }
-            })
+        let inv = self.things.values().fold(String::new(), |acc, thing| {
+            if thing.location() == PLAYER && !thing.desc().is_empty() {
+                format!("{}\n  a {}", acc, thing.name())
+            } else {
+                acc
+            }
+        });
+
+        if inv.is_empty() {
+            "Your inventory is empty.".to_owned()
+        } else {
+            format!("You are carring:{}", inv)
+        }
     }
 
     // TODO
@@ -113,47 +172,57 @@ impl Game {
         if let Some(exit) = self.things.values().find(|thing| {
             thing.location() == self.player.location() && thing.names_contains(direction)
         }) {
-            if let Some(dest) = exit.dest() {
-                self.player.set_location(dest.to_owned());
-                self.look()
+            if !exit.dest().is_empty() {
+                self.player.set_location(exit.dest().to_owned());
+                self.look(self.player.location())
+            } else if !exit.go_message().is_empty() {
+                exit.go_message().to_owned()
             } else {
                 "Nice try.".to_owned()
             }
-        } else {
+        } else if matches!(
+            direction,
+            "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d"
+        ) {
             "You cannot go that way.".to_owned()
+        } else {
+            format!("You cannot see any {} here.", direction)
         }
     }
 
-    fn parse_take(&mut self, verb: &str, tokens: &Tokens) -> String {
-        if let Some(noun) = tokens.noun() {
-            if let Some(thing) = self
-                .things
-                .values_mut()
-                .find(|thing| thing.names_contains(noun))
-            {
-                thing.take().to_owned()
-            } else {
-                format!("There is no \"{}\" here.", noun)
-            }
+    fn take(&mut self, noun: &str) -> String {
+        if let Some(thing) = self
+            .things
+            .values_mut()
+            .find(|thing| thing.location() == self.player.location() && thing.names_contains(noun))
+        {
+            thing.take().to_owned()
         } else {
-            format!("What do you want to {}?", verb)
+            format!("There is no \"{}\" here.", noun)
         }
     }
 
-    fn parse_drop(&mut self, verb: &str, tokens: &Tokens) -> String {
-        if let Some(noun) = tokens.noun() {
-            if let Some(thing) = self
-                .things
-                .values_mut()
-                .find(|thing| thing.location() == "player" && thing.names_contains(noun))
-            {
-                thing.set_location(self.player.location().to_owned());
-                "Dropped.".to_owned()
-            } else {
-                format!("You do not have the \"{}\".", noun)
-            }
+    fn drop(&mut self, noun: &str) -> String {
+        if let Some(thing) = self
+            .things
+            .values_mut()
+            .find(|thing| thing.location() == PLAYER && thing.names_contains(noun))
+        {
+            thing.set_location(self.player.location().to_owned());
+            "Dropped.".to_owned()
         } else {
-            format!("What do you want to {}?", verb)
+            format!("You do not have the \"{}\".", noun)
+        }
+    }
+
+    fn open(&mut self, noun: &str) -> String {
+        if let Some(thing) = self.things.values_mut().find(|i| {
+            i.location() == self.player.location() && i.can_open() && i.names_contains(noun)
+        }) {
+            thing.open();
+            "Opened.".to_owned()
+        } else {
+            format!("There is no \"{}\" here.", noun)
         }
     }
 
@@ -172,7 +241,7 @@ impl Game {
         Ok(bincode::deserialize(&bytes)?)
     }
 
-    /// Save the Game to kingslayer.save
+    /// Save the Game to `kingslayer.save`.
     /// ```
     /// # use kingslayer::Game;
     /// # let game = Game::default();
