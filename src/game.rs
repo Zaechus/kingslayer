@@ -8,7 +8,11 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::{read_line, thing::Thing, tokens::Tokens};
+use crate::{
+    read_line,
+    thing::{Container, Thing},
+    tokens::Tokens,
+};
 
 pub(crate) const PLAYER: &str = "PLAYER";
 
@@ -81,6 +85,7 @@ impl Game {
                 _ => {
                     if let Some(noun) = tokens.noun() {
                         match verb {
+                            "examine" | "inspect" | "what" => self.examine(noun),
                             "take" | "get" => self.take(noun),
                             "drop" => self.drop(noun),
                             "open" => self.open(noun),
@@ -101,8 +106,7 @@ impl Game {
     fn parse_look(&self, tokens: &Tokens) -> String {
         if let Some(noun) = tokens.noun() {
             if let Some((location, _)) = self.things.iter().find(|(location, thing)| {
-                (location.as_str() == self.player.location()
-                    || thing.location() == self.player.location())
+                (location.as_str() == self.player.location() || thing.is_in(self.player.location()))
                     && thing.names_contains(noun)
             }) {
                 self.look(location)
@@ -119,26 +123,30 @@ impl Game {
         let thing = self.things.get(location).unwrap();
 
         if thing.is_container() {
-            self.things
-                .iter()
-                .fold(thing.desc().to_owned(), |acc, (loc, i)| {
-                    if thing.is_open() && i.location() == location && !i.desc().is_empty() {
-                        if i.is_container() {
-                            format!("{}\n{}", acc, self.look(loc))
-                        } else if thing.is_container() && thing.is_open() {
-                            format!("{}\n  a {}", acc, i.name())
-                        } else {
-                            format!("{}\n{}", acc, i)
-                        }
+            let contents = self.things.iter().fold(String::new(), |acc, (loc, i)| {
+                if thing.is_open() && i.is_in(location) && !i.desc().is_empty() {
+                    if i.is_container() {
+                        format!("{}\n{}", acc, self.look(loc))
+                    } else if thing.is_container() && thing.is_open() {
+                        format!("{}\n  a {}", acc, i.name())
                     } else {
-                        acc
+                        format!("{}\n{}", acc, i)
                     }
-                })
+                } else {
+                    acc
+                }
+            });
+
+            if contents.is_empty() {
+                thing.desc().to_owned()
+            } else {
+                format!("{} It contains:{}", thing.desc(), contents)
+            }
         } else {
             self.things
                 .iter()
                 .fold(thing.desc().to_owned(), |acc, (loc, i)| {
-                    if i.location() == location && !i.desc().is_empty() {
+                    if i.is_in(location) && !i.desc().is_empty() {
                         if i.is_container() {
                             format!("{}\n{}", acc, self.look(loc))
                         } else {
@@ -153,7 +161,7 @@ impl Game {
 
     fn inventory(&self) -> String {
         let inv = self.things.values().fold(String::new(), |acc, thing| {
-            if thing.location() == PLAYER && !thing.desc().is_empty() {
+            if thing.is_in(PLAYER) && !thing.desc().is_empty() {
                 format!("{}\n  a {}", acc, thing.name())
             } else {
                 acc
@@ -169,9 +177,11 @@ impl Game {
 
     // TODO
     fn go(&mut self, direction: &str) -> String {
-        if let Some(exit) = self.things.values().find(|thing| {
-            thing.location() == self.player.location() && thing.names_contains(direction)
-        }) {
+        if let Some(exit) = self
+            .things
+            .values()
+            .find(|thing| thing.is_in(self.player.location()) && thing.names_contains(direction))
+        {
             if !exit.dest().is_empty() {
                 self.player.set_location(exit.dest().to_owned());
                 self.look(self.player.location())
@@ -190,11 +200,31 @@ impl Game {
         }
     }
 
+    fn examine(&mut self, noun: &str) -> String {
+        if let Some((loc, thing)) = self
+            .things
+            .iter()
+            .find(|(_, i)| i.is_in(self.player.location()) && i.names_contains(noun))
+        {
+            if !thing.what().is_empty() {
+                thing.what().to_owned()
+            } else {
+                match thing.container() {
+                    Container::Open | Container::True => self.look(loc),
+                    Container::Closed => format!("The {} is closed.", thing.name()),
+                    _ => format!("There is nothing remarkable about the {}.", thing.name()),
+                }
+            }
+        } else {
+            format!("There is no \"{}\" here.", noun)
+        }
+    }
+
     fn take(&mut self, noun: &str) -> String {
         if let Some(thing) = self
             .things
             .values_mut()
-            .find(|thing| thing.location() == self.player.location() && thing.names_contains(noun))
+            .find(|thing| thing.is_in(self.player.location()) && thing.names_contains(noun))
         {
             thing.take().to_owned()
         } else {
@@ -206,7 +236,7 @@ impl Game {
         if let Some(thing) = self
             .things
             .values_mut()
-            .find(|thing| thing.location() == PLAYER && thing.names_contains(noun))
+            .find(|thing| thing.is_in(PLAYER) && thing.names_contains(noun))
         {
             thing.set_location(self.player.location().to_owned());
             "Dropped.".to_owned()
@@ -216,9 +246,11 @@ impl Game {
     }
 
     fn open(&mut self, noun: &str) -> String {
-        if let Some(thing) = self.things.values_mut().find(|i| {
-            i.location() == self.player.location() && i.can_open() && i.names_contains(noun)
-        }) {
+        if let Some(thing) = self
+            .things
+            .values_mut()
+            .find(|i| i.is_in(self.player.location()) && i.can_open() && i.names_contains(noun))
+        {
             thing.open();
             "Opened.".to_owned()
         } else {

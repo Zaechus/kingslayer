@@ -31,6 +31,42 @@ impl Display for Thing {
 }
 
 impl Thing {
+    pub(crate) fn can_open(&self) -> bool {
+        matches!(self.container, Container::Open | Container::Closed)
+    }
+
+    pub(crate) fn container(&self) -> &Container {
+        &self.container
+    }
+
+    pub(crate) fn desc(&self) -> &str {
+        &self.desc
+    }
+
+    pub(crate) fn dest(&self) -> &str {
+        &self.dest
+    }
+
+    pub(crate) fn go_message(&self) -> &str {
+        &self.go_message
+    }
+
+    pub(crate) fn is_container(&self) -> bool {
+        !matches!(self.container, Container::False)
+    }
+
+    pub(crate) fn is_in(&self, location: &str) -> bool {
+        self.locations.iter().any(|l| l == location)
+    }
+
+    pub(crate) fn is_open(&self) -> bool {
+        matches!(self.container, Container::Open | Container::True)
+    }
+
+    pub(crate) fn location(&self) -> &str {
+        &self.locations[0]
+    }
+
     pub(crate) fn name(&self) -> &str {
         &self.names[0]
     }
@@ -44,20 +80,12 @@ impl Thing {
         })
     }
 
-    pub(crate) fn desc(&self) -> &str {
-        &self.desc
-    }
-
-    pub(crate) fn location(&self) -> &str {
-        &self.locations[0]
+    pub(crate) fn open(&mut self) {
+        self.container = Container::Open;
     }
 
     pub(crate) fn set_location(&mut self, location: String) {
         self.locations = vec![location];
-    }
-
-    pub(crate) fn dest(&self) -> &str {
-        &self.dest
     }
 
     pub(crate) fn take(&mut self) -> &str {
@@ -71,29 +99,13 @@ impl Thing {
         }
     }
 
-    pub(crate) fn is_container(&self) -> bool {
-        !matches!(self.container, Container::False)
-    }
-
-    pub(crate) fn can_open(&self) -> bool {
-        matches!(self.container, Container::Open | Container::Closed)
-    }
-
-    pub(crate) fn is_open(&self) -> bool {
-        matches!(self.container, Container::Open | Container::True)
-    }
-
-    pub(crate) fn open(&mut self) {
-        self.container = Container::Open;
-    }
-
-    pub(crate) fn go_message(&self) -> &str {
-        &self.go_message
+    pub(crate) fn what(&self) -> &str {
+        &self.what
     }
 }
 
 #[derive(Deserialize, Serialize)]
-enum Container {
+pub(crate) enum Container {
     Open,
     Closed,
     True,
