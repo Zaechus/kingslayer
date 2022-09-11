@@ -64,11 +64,19 @@ impl Thing {
     }
 
     pub(crate) fn location(&self) -> &str {
-        &self.locations[0]
+        if let Some(location) = self.locations.get(0) {
+            location
+        } else {
+            ""
+        }
     }
 
     pub(crate) fn name(&self) -> &str {
-        &self.names[0]
+        if let Some(name) = self.names.get(0) {
+            name
+        } else {
+            ""
+        }
     }
 
     pub(crate) fn names_contains(&self, search: &str) -> bool {

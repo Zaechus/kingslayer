@@ -143,9 +143,13 @@ impl Game {
                 format!("{} It contains:{}", thing.desc(), contents)
             }
         } else {
-            self.things
-                .iter()
-                .fold(thing.desc().to_owned(), |acc, (loc, i)| {
+            self.things.iter().fold(
+                if thing.location().is_empty() && !thing.name().is_empty() {
+                    format!("{}\n{}", thing.name(), thing.desc())
+                } else {
+                    thing.desc().to_owned()
+                },
+                |acc, (loc, i)| {
                     if i.is_in(location) && !i.desc().is_empty() {
                         if i.is_container() {
                             format!("{}\n{}", acc, self.look(loc))
@@ -155,7 +159,8 @@ impl Game {
                     } else {
                         acc
                     }
-                })
+                },
+            )
         }
     }
 
