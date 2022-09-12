@@ -1,4 +1,5 @@
 *.save
+dev.ron
 
 # Cargo
 /target

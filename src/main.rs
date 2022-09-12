@@ -13,7 +13,7 @@ fn try_main() -> Result<(), Box<dyn error::Error>> {
     let mut game = if let Some(filename) = env::args().nth(1) {
         Game::restore(&filename)?
     } else {
-        include_str!("world.ron").parse()?
+        include_str!("dev.ron").parse()?
     };
 
     game.play()?;

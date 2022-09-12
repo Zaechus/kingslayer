@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     read_line,
-    thing::{Container, Thing},
+    thing::{list_things, Container, Thing},
     tokens::Tokens,
 };
 
@@ -23,13 +23,22 @@ pub struct Game {
     things: HashMap<String, Thing>,
 }
 
+impl Default for Game {
+    fn default() -> Self {
+        ron::from_str(include_str!("world.ron")).unwrap()
+    }
+}
+
 impl FromStr for Game {
     type Err = ron::error::SpannedError;
 
     /// Create a Game from a RON string
     /// ```
     /// # use kingslayer::Game;
-    /// include_str!("world.ron").parse::<Game>();
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let game: Game = include_str!("world.ron").parse()?;
+    /// # Ok(())
+    /// # }
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         ron::from_str(s)
@@ -89,6 +98,7 @@ impl Game {
                             "take" | "get" => self.take(noun),
                             "drop" => self.drop(noun),
                             "open" => self.open(noun),
+                            "close" => self.close(noun),
                             _ => {
                                 format!("I do not know the word \"{}\".", verb)
                             }
@@ -127,10 +137,8 @@ impl Game {
                 if thing.is_open() && i.is_in(location) && !i.desc().is_empty() {
                     if i.is_container() {
                         format!("{}\n{}", acc, self.look(loc))
-                    } else if thing.is_container() && thing.is_open() {
-                        format!("{}\n  a {}", acc, i.name())
                     } else {
-                        format!("{}\n{}", acc, i)
+                        format!("{}\n  a {}", acc, i.name())
                     }
                 } else {
                     acc
@@ -273,13 +281,37 @@ impl Game {
         }
     }
 
+    // TODO
     fn open(&mut self, noun: &str) -> String {
+        let (loc, name) = if let Some((loc, thing)) = self.things.iter_mut().find(|(_, i)| {
+            i.is_in(self.player.location()) && i.can_open() && i.names_contains(noun)
+        }) {
+            if thing.is_open() {
+                return format!("The {} is already open.", thing.name());
+            } else {
+                thing.open();
+                (loc.to_owned(), thing.name().to_owned())
+            }
+        } else {
+            return format!("There is no \"{}\" here.", noun);
+        };
+
+        let reveals = list_things(self.things.values().filter(|i| i.is_in(&loc)).collect());
+
+        if reveals.is_empty() {
+            "Opened.".to_owned()
+        } else {
+            format!("Opening the {} reveals {}.", name, reveals)
+        }
+    }
+
+    fn close(&mut self, noun: &str) -> String {
         if let Some(thing) = self
             .things
             .values_mut()
             .find(|i| i.is_in(self.player.location()) && i.can_open() && i.names_contains(noun))
         {
-            thing.open()
+            thing.close()
         } else {
             format!("There is no \"{}\" here.", noun)
         }

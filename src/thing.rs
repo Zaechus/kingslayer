@@ -7,21 +7,16 @@ use crate::game::PLAYER;
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub(crate) struct Thing {
-    names: Vec<String>,
-    desc: String,
-    what: String,
-    #[serde(default = "rooms")]
-    locations: Vec<String>,
-    dest: String,
     can_take: bool,
     container: Container,
+    desc: String,
+    dest: String,
     door: String,
-    take_message: String,
     go_message: String,
-}
-
-fn rooms() -> Vec<String> {
-    vec![String::new()]
+    locations: Vec<String>,
+    names: Vec<String>,
+    take_message: String,
+    what: String,
 }
 
 impl Display for Thing {
@@ -33,6 +28,15 @@ impl Display for Thing {
 impl Thing {
     pub(crate) fn can_open(&self) -> bool {
         matches!(self.container, Container::Open | Container::Closed)
+    }
+
+    pub(crate) fn close(&mut self) -> String {
+        if let Container::Closed = self.container {
+            format!("The {} is already closed.", self.name())
+        } else {
+            self.container = Container::Closed;
+            "Closed.".to_owned()
+        }
     }
 
     pub(crate) fn container(&self) -> &Container {
@@ -81,6 +85,8 @@ impl Thing {
 
     pub(crate) fn names_contains(&self, search: &str) -> bool {
         self.names.iter().any(|name| {
+            let name = name.to_lowercase();
+
             search.split_whitespace().all(|search_word| {
                 name.split_whitespace()
                     .any(|name_word| name_word == search_word)
@@ -88,13 +94,8 @@ impl Thing {
         })
     }
 
-    pub(crate) fn open(&mut self) -> String {
-        if let Container::Open = self.container {
-            format!("The {} is already open.", self.name())
-        } else {
-            self.container = Container::Open;
-            "Opened.".to_owned()
-        }
+    pub(crate) fn open(&mut self) {
+        self.container = Container::Open;
     }
 
     pub(crate) fn set_location(&mut self, location: String) {
@@ -128,5 +129,26 @@ pub(crate) enum Container {
 impl Default for Container {
     fn default() -> Self {
         Self::False
+    }
+}
+
+pub(crate) fn list_things(items: Vec<&Thing>) -> String {
+    match items.len() {
+        0 => String::new(),
+        1 => format!("a {}", items[0].name()),
+        2 => format!("a {} and a {}", items[0].name(), items[1].name()),
+        _ => {
+            format!(
+                "{}, and a {}",
+                format!(
+                    "a {}",
+                    items[1..items.len() - 1].iter().fold(
+                        items[0].name().to_owned(),
+                        |acc, i| format!("{}, a {}", acc, i.name())
+                    )
+                ),
+                items[items.len() - 1].name()
+            )
+        }
     }
 }

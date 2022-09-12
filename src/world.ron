@@ -1,0 +1,33 @@
+(player: (locations: ["FIELD"]), things: {
+    "FIELD": (desc: "You are in a field.", names: ["Field"]),
+    "CAVE": (desc: "You are in a cave.", names: ["Cave"]),
+    "CAVE ENTRANCE": (
+        desc: "There is a cave to the north.",
+        names: ["cave", "n"],
+        locations: ["FIELD"],
+        dest: "CAVE",
+    ),
+    "CAVE EXIT": (
+        locations: ["CAVE"],
+        names: ["field", "s"],
+        dest: "FIELD",
+    ),
+    "IRON SWORD": (
+        desc: "There is an iron sword on the ground.",
+        names: ["iron sword"],
+        locations: ["CAVE"],
+        can_take: true,
+    ),
+    "CHEST": (
+        desc: "There is a chest here.",
+        names: ["chest"],
+        locations: ["CAVE"],
+        take_message: "It's way too large and heavy.",
+    ),
+    "RUBY": (
+        desc: "There is a shiny ruby here.",
+        names: ["ruby"],
+        locations: ["CHEST"],
+        can_take: true,
+    ),
+})
