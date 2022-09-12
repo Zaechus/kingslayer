@@ -88,8 +88,13 @@ impl Thing {
         })
     }
 
-    pub(crate) fn open(&mut self) {
-        self.container = Container::Open;
+    pub(crate) fn open(&mut self) -> String {
+        if let Container::Open = self.container {
+            format!("The {} is already open.", self.name())
+        } else {
+            self.container = Container::Open;
+            "Opened.".to_owned()
+        }
     }
 
     pub(crate) fn set_location(&mut self, location: String) {

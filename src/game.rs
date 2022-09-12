@@ -228,16 +228,14 @@ impl Game {
     fn take(&mut self, noun: &str) -> String {
         if noun == "all" || noun == "everything" {
             self.take_all()
+        } else if let Some(thing) = self
+            .things
+            .values_mut()
+            .find(|thing| thing.is_in(self.player.location()) && thing.names_contains(noun))
+        {
+            thing.take().to_owned()
         } else {
-            if let Some(thing) = self
-                .things
-                .values_mut()
-                .find(|thing| thing.is_in(self.player.location()) && thing.names_contains(noun))
-            {
-                thing.take().to_owned()
-            } else {
-                format!("There is no \"{}\" here.", noun)
-            }
+            format!("There is no \"{}\" here.", noun)
         }
     }
 
@@ -281,8 +279,7 @@ impl Game {
             .values_mut()
             .find(|i| i.is_in(self.player.location()) && i.can_open() && i.names_contains(noun))
         {
-            thing.open();
-            "Opened.".to_owned()
+            thing.open()
         } else {
             format!("There is no \"{}\" here.", noun)
         }
