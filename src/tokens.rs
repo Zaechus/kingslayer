@@ -1,5 +1,5 @@
-const USELESS_WORDS: [&str; 11] = [
-    "a", "an", "around", "at", "for", "of", "my", "that", "the", "through", "to",
+const USELESS_WORDS: [&str; 12] = [
+    "a", "an", "around", "at", "for", "of", "my", "that", "the", "this", "through", "to",
 ];
 const PREPOSITIONS: [&str; 5] = ["in", "inside", "from", "on", "with"];
 

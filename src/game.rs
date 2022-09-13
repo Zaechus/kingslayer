@@ -14,6 +14,7 @@ use crate::{
     tokens::Tokens,
 };
 
+pub(crate) const BINCODE_SHIFT: u8 = 142;
 pub(crate) const PLAYER: &str = "PLAYER";
 
 /// A Kingslayer game
@@ -95,7 +96,7 @@ impl Game {
                     if let Some(noun) = tokens.noun() {
                         match verb {
                             "examine" | "inspect" | "what" => self.examine(noun),
-                            "take" | "get" => self.take(noun),
+                            "take" | "get" => self.parse_take(noun),
                             "drop" => self.drop(noun),
                             "open" => self.open(noun),
                             "close" => self.close(noun),
@@ -214,11 +215,10 @@ impl Game {
     }
 
     fn examine(&mut self, noun: &str) -> String {
-        if let Some((loc, thing)) = self
-            .things
-            .iter()
-            .find(|(_, i)| i.is_in(self.player.location()) && i.names_contains(noun))
-        {
+        if let Some((loc, thing)) = self.things.iter().find(|(loc, i)| {
+            (loc.as_str() == self.player.location() || i.is_in(self.player.location()))
+                && i.names_contains(noun)
+        }) {
             if !thing.what().is_empty() {
                 thing.what().to_owned()
             } else {
@@ -233,18 +233,32 @@ impl Game {
         }
     }
 
-    fn take(&mut self, noun: &str) -> String {
+    fn parse_take(&mut self, noun: &str) -> String {
         if noun == "all" || noun == "everything" {
             self.take_all()
         } else if let Some(thing) = self
             .things
-            .values_mut()
-            .find(|thing| thing.is_in(self.player.location()) && thing.names_contains(noun))
+            .get_mut(&self.location_in(noun, self.player.location()))
         {
             thing.take().to_owned()
         } else {
             format!("There is no \"{}\" here.", noun)
         }
+    }
+
+    // TODO
+    fn location_in(&self, noun: &str, location: &str) -> String {
+        for (loc, i) in self.things.iter() {
+            if i.is_in(location) {
+                if i.names_contains(noun) {
+                    return loc.to_owned();
+                } else if i.is_container() && i.is_open() {
+                    return self.location_in(noun, loc);
+                }
+            }
+        }
+
+        String::new()
     }
 
     fn take_all(&mut self) -> String {
@@ -329,7 +343,12 @@ impl Game {
         let mut bytes = Vec::new();
         file.read_to_end(&mut bytes)?;
 
-        Ok(bincode::deserialize(&bytes)?)
+        Ok(bincode::deserialize(
+            &bytes
+                .into_iter()
+                .map(|x| x.wrapping_sub(BINCODE_SHIFT))
+                .collect::<Vec<u8>>(),
+        )?)
     }
 
     /// Save the Game to `kingslayer.save`.
@@ -341,7 +360,12 @@ impl Game {
     pub fn save(&self) -> Result<String, Box<dyn error::Error>> {
         match File::create("kingslayer.save") {
             Ok(mut file) => {
-                file.write_all(&bincode::serialize(&self)?)?;
+                file.write_all(
+                    &bincode::serialize(&self)?
+                        .into_iter()
+                        .map(|x| x.wrapping_add(BINCODE_SHIFT))
+                        .collect::<Vec<u8>>(),
+                )?;
                 Ok("Saved.".to_owned())
             }
             Err(e) => Ok(e.to_string()),

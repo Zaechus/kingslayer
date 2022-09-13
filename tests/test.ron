@@ -1,0 +1,6 @@
+(player: (locations: ["CENTER ROOM"]), things: {
+    "CENTER ROOM": (
+        desc: "You are in the center room.",
+        names: ["Center Room"],
+    ),
+})
