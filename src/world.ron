@@ -1,4 +1,4 @@
-(player: (locations: ["FIELD"]), things: {
+(player: (locations: ["FIELD"]), items: {
     "FIELD": (desc: "You are in a field.", names: ["Field"]),
     "CAVE": (desc: "You are in a cave.", names: ["Cave"]),
     "CAVE ENTRANCE": (

@@ -1,12 +1,10 @@
-use std::fmt::Display;
-
 use serde::{Deserialize, Serialize};
 
 use crate::game::PLAYER;
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
-pub(crate) struct Thing {
+pub(crate) struct Item {
     can_take: bool,
     container: Container,
     desc: String,
@@ -19,13 +17,7 @@ pub(crate) struct Thing {
     what: String,
 }
 
-impl Display for Thing {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.desc)
-    }
-}
-
-impl Thing {
+impl Item {
     pub(crate) fn can_open(&self) -> bool {
         matches!(self.container, Container::Open | Container::Closed)
     }
@@ -49,6 +41,10 @@ impl Thing {
 
     pub(crate) fn dest(&self) -> &str {
         &self.dest
+    }
+
+    pub(crate) fn door(&self) -> &str {
+        &self.door
     }
 
     pub(crate) fn go_message(&self) -> &str {
@@ -107,7 +103,7 @@ impl Thing {
             self.locations[0] = PLAYER.to_owned();
             "Taken."
         } else if self.take_message.is_empty() {
-            "You cannot take that."
+            "Nice try."
         } else {
             &self.take_message
         }
@@ -132,20 +128,17 @@ impl Default for Container {
     }
 }
 
-pub(crate) fn list_things(items: Vec<&Thing>) -> String {
+pub(crate) fn list_items(items: Vec<&Item>) -> String {
     match items.len() {
         0 => String::new(),
         1 => format!("a {}", items[0].name()),
         2 => format!("a {} and a {}", items[0].name(), items[1].name()),
         _ => {
             format!(
-                "{}, and a {}",
-                format!(
-                    "a {}",
-                    items[1..items.len() - 1].iter().fold(
-                        items[0].name().to_owned(),
-                        |acc, i| format!("{}, a {}", acc, i.name())
-                    )
+                "a {}, and a {}",
+                items[1..items.len() - 1].iter().fold(
+                    items[0].name().to_owned(),
+                    |acc, i| format!("{}, a {}", acc, i.name())
                 ),
                 items[items.len() - 1].name()
             )

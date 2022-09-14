@@ -3,7 +3,7 @@ use std::io;
 pub use game::Game;
 
 mod game;
-mod thing;
+mod item;
 mod tokens;
 
 fn read_line() -> io::Result<String> {

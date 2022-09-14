@@ -9,19 +9,19 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    item::{list_items, Container, Item},
     read_line,
-    thing::{list_things, Container, Thing},
     tokens::Tokens,
 };
 
-pub(crate) const BINCODE_SHIFT: u8 = 142;
+const BINCODE_SHIFT: u8 = 42;
 pub(crate) const PLAYER: &str = "PLAYER";
 
 /// A Kingslayer game
 #[derive(Deserialize, Serialize)]
 pub struct Game {
-    player: Thing,
-    things: HashMap<String, Thing>,
+    player: Item,
+    items: HashMap<String, Item>,
 }
 
 impl Default for Game {
@@ -46,18 +46,21 @@ impl FromStr for Game {
     }
 }
 
+fn prompt(p: &str) -> io::Result<String> {
+    print!("{}", p);
+    io::stdout().flush()?;
+    read_line()
+}
+
 impl Game {
     /// Start the Game in a command line setting where `print` macros are expected to work
     pub fn play(&mut self) -> Result<(), Box<dyn error::Error>> {
         println!("{}", self.ask("l"));
 
         loop {
-            print!("\n> ");
-            io::stdout().flush()?;
-
             println!(
                 "{}",
-                match read_line()?.trim() {
+                match prompt("\n> ")?.trim() {
                     "quit" => break,
                     "save" => self.save()?,
                     "" => "Excuse me?".to_owned(),
@@ -95,11 +98,12 @@ impl Game {
                 _ => {
                     if let Some(noun) = tokens.noun() {
                         match verb {
-                            "examine" | "inspect" | "what" => self.examine(noun),
+                            "examine" | "inspect" | "read" | "what" => self.examine(noun),
                             "take" | "get" => self.parse_take(noun),
                             "drop" => self.drop(noun),
                             "open" => self.open(noun),
                             "close" => self.close(noun),
+                            "put" | "place" => todo!("put"),
                             _ => {
                                 format!("I do not know the word \"{}\".", verb)
                             }
@@ -116,28 +120,34 @@ impl Game {
 
     fn parse_look(&self, tokens: &Tokens) -> String {
         if let Some(noun) = tokens.noun() {
-            if let Some((location, _)) = self.things.iter().find(|(location, thing)| {
-                (location.as_str() == self.player.location() || thing.is_in(self.player.location()))
-                    && thing.names_contains(noun)
+            if let Some((loc, item)) = self.items.iter().find(|(loc, i)| {
+                self.is_visible(loc, i) && i.names_contains(noun) && !i.desc().is_empty()
             }) {
-                self.look(location)
+                self.look(loc, item)
+            } else if let Some((loc, item)) = self
+                .items
+                .iter()
+                .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+            {
+                self.look(loc, item)
             } else {
-                format!("You can't see any {} here.", noun)
+                cant_see_any(noun)
             }
         } else {
-            self.look(self.player.location())
+            self.look(
+                self.player.location(),
+                self.items.get(self.player.location()).unwrap(),
+            )
         }
     }
 
-    // TODO
-    fn look(&self, location: &str) -> String {
-        let thing = self.things.get(location).unwrap();
-
-        if thing.is_container() {
-            let contents = self.things.iter().fold(String::new(), |acc, (loc, i)| {
-                if thing.is_open() && i.is_in(location) && !i.desc().is_empty() {
+    // TODO: its so ugly but it works...
+    fn look(&self, location: &str, item: &Item) -> String {
+        if item.is_container() {
+            let contents = self.items.iter().fold(String::new(), |acc, (loc, i)| {
+                if item.is_open() && i.is_in(location) && !i.desc().is_empty() {
                     if i.is_container() {
-                        format!("{}\n{}", acc, self.look(loc))
+                        format!("{}\n{}", acc, self.look(loc, i))
                     } else {
                         format!("{}\n  a {}", acc, i.name())
                     }
@@ -147,23 +157,31 @@ impl Game {
             });
 
             if contents.is_empty() {
-                thing.desc().to_owned()
+                item.desc().to_owned()
             } else {
-                format!("{} It contains:{}", thing.desc(), contents)
+                format!("{} It contains:{}", item.desc(), contents)
             }
         } else {
-            self.things.iter().fold(
-                if thing.location().is_empty() && !thing.name().is_empty() {
-                    format!("{}\n{}", thing.name(), thing.desc())
+            self.items.iter().fold(
+                if item.location().is_empty() && !item.name().is_empty() {
+                    format!(
+                        "{}\n{}",
+                        item.name(),
+                        if item.desc().is_empty() {
+                            item.what()
+                        } else {
+                            item.desc()
+                        }
+                    )
                 } else {
-                    thing.desc().to_owned()
+                    item.desc().to_owned()
                 },
                 |acc, (loc, i)| {
                     if i.is_in(location) && !i.desc().is_empty() {
                         if i.is_container() {
-                            format!("{}\n{}", acc, self.look(loc))
+                            format!("{}\n{}", acc, self.look(loc, i))
                         } else {
-                            format!("{}\n{}", acc, i)
+                            format!("{}\n{}", acc, i.desc())
                         }
                     } else {
                         acc
@@ -174,9 +192,9 @@ impl Game {
     }
 
     fn inventory(&self) -> String {
-        let inv = self.things.values().fold(String::new(), |acc, thing| {
-            if thing.is_in(PLAYER) && !thing.desc().is_empty() {
-                format!("{}\n  a {}", acc, thing.name())
+        let inv = self.items.values().fold(String::new(), |acc, item| {
+            if item.is_in(PLAYER) {
+                format!("{}\n  a {}", acc, item.name())
             } else {
                 acc
             }
@@ -192,13 +210,28 @@ impl Game {
     // TODO
     fn go(&mut self, direction: &str) -> String {
         if let Some(exit) = self
-            .things
+            .items
             .values()
-            .find(|thing| thing.is_in(self.player.location()) && thing.names_contains(direction))
+            .find(|item| item.is_in(self.player.location()) && item.names_contains(direction))
         {
             if !exit.dest().is_empty() {
-                self.player.set_location(exit.dest().to_owned());
-                self.look(self.player.location())
+                if let Some(door) = self.items.get(exit.door()) {
+                    if door.is_open() {
+                        self.player.set_location(exit.dest().to_owned());
+                        self.look(
+                            self.player.location(),
+                            self.items.get(self.player.location()).unwrap(),
+                        )
+                    } else {
+                        format!("The {} is closed.", door.name())
+                    }
+                } else {
+                    self.player.set_location(exit.dest().to_owned());
+                    self.look(
+                        self.player.location(),
+                        self.items.get(self.player.location()).unwrap(),
+                    )
+                }
             } else if !exit.go_message().is_empty() {
                 exit.go_message().to_owned()
             } else {
@@ -214,56 +247,75 @@ impl Game {
         }
     }
 
-    fn examine(&mut self, noun: &str) -> String {
-        if let Some((loc, thing)) = self.things.iter().find(|(loc, i)| {
-            (loc.as_str() == self.player.location() || i.is_in(self.player.location()))
-                && i.names_contains(noun)
-        }) {
-            if !thing.what().is_empty() {
-                thing.what().to_owned()
+    fn is_visible(&self, loc: &str, i: &Item) -> bool {
+        loc == self.player.location()
+            || i.is_in(PLAYER)
+            || i.is_in(self.player.location())
+            || if let Some(parent) = self.items.get(i.location()) {
+                parent.is_open() && parent.is_in(self.player.location())
             } else {
-                match thing.container() {
-                    Container::Open | Container::True => self.look(loc),
-                    Container::Closed => format!("The {} is closed.", thing.name()),
-                    _ => format!("There is nothing remarkable about the {}.", thing.name()),
-                }
+                false
+            }
+    }
+
+    fn in_room(&self, i: &Item) -> bool {
+        i.is_in(self.player.location())
+            || if let Some(parent) = self.items.get(i.location()) {
+                parent.is_open() && parent.is_in(self.player.location())
+            } else {
+                false
+            }
+    }
+
+    // TODO
+    fn examine(&self, noun: &str) -> String {
+        if let Some((_, item)) = self.items.iter().find(|(loc, i)| {
+            self.is_visible(loc, i) && i.names_contains(noun) && !i.what().is_empty()
+        }) {
+            item.what().to_owned()
+        } else if let Some((loc, item)) = self
+            .items
+            .iter()
+            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+        {
+            match item.container() {
+                Container::Open | Container::True => self.look(loc, item),
+                Container::Closed => format!("The {} is closed.", item.name()),
+                _ => format!("There is nothing remarkable about the {}.", item.name()),
             }
         } else {
-            format!("There is no \"{}\" here.", noun)
+            cant_see_any(noun)
         }
     }
 
     fn parse_take(&mut self, noun: &str) -> String {
         if noun == "all" || noun == "everything" {
             self.take_all()
-        } else if let Some(thing) = self
-            .things
-            .get_mut(&self.location_in(noun, self.player.location()))
+        } else if let Some((loc, _)) = self
+            .items
+            .iter()
+            .find(|(_, i)| self.in_room(i) && i.names_contains(noun))
         {
-            thing.take().to_owned()
+            self.items
+                .get_mut(&loc.to_owned())
+                .unwrap()
+                .take()
+                .to_owned()
+        } else if self
+            .items
+            .values()
+            .find(|i| i.location() == PLAYER && i.names_contains(noun))
+            .is_some()
+        {
+            "You already have that!".to_owned()
         } else {
-            format!("There is no \"{}\" here.", noun)
+            cant_see_any(noun)
         }
-    }
-
-    // TODO
-    fn location_in(&self, noun: &str, location: &str) -> String {
-        for (loc, i) in self.things.iter() {
-            if i.is_in(location) {
-                if i.names_contains(noun) {
-                    return loc.to_owned();
-                } else if i.is_container() && i.is_open() {
-                    return self.location_in(noun, loc);
-                }
-            }
-        }
-
-        String::new()
     }
 
     fn take_all(&mut self) -> String {
         let message = self
-            .things
+            .items
             .values_mut()
             .fold(String::new(), |acc, i| {
                 if i.is_in(self.player.location()) && !i.desc().is_empty() {
@@ -283,12 +335,12 @@ impl Game {
     }
 
     fn drop(&mut self, noun: &str) -> String {
-        if let Some(thing) = self
-            .things
+        if let Some(item) = self
+            .items
             .values_mut()
-            .find(|thing| thing.is_in(PLAYER) && thing.names_contains(noun))
+            .find(|item| item.is_in(PLAYER) && item.names_contains(noun))
         {
-            thing.set_location(self.player.location().to_owned());
+            item.set_location(self.player.location().to_owned());
             "Dropped.".to_owned()
         } else {
             format!("You do not have the \"{}\".", noun)
@@ -297,20 +349,27 @@ impl Game {
 
     // TODO
     fn open(&mut self, noun: &str) -> String {
-        let (loc, name) = if let Some((loc, thing)) = self.things.iter_mut().find(|(_, i)| {
-            i.is_in(self.player.location()) && i.can_open() && i.names_contains(noun)
-        }) {
-            if thing.is_open() {
-                return format!("The {} is already open.", thing.name());
+        let (loc, name) = if let Some((loc, item)) = self
+            .items
+            .iter_mut()
+            .find(|(_, i)| i.is_in(self.player.location()) && i.names_contains(noun))
+        {
+            if item.is_open() {
+                return format!("The {} is already open.", item.name());
+            } else if item.can_open() {
+                (loc.to_owned(), item.name().to_owned())
+            } else if !item.door().is_empty() {
+                (item.door().to_owned(), item.name().to_owned())
             } else {
-                thing.open();
-                (loc.to_owned(), thing.name().to_owned())
+                return format!("The {} cannot be opened.", item.name());
             }
         } else {
-            return format!("There is no \"{}\" here.", noun);
+            return cant_see_any(noun);
         };
 
-        let reveals = list_things(self.things.values().filter(|i| i.is_in(&loc)).collect());
+        self.items.get_mut(&loc).unwrap().open();
+
+        let reveals = list_items(self.items.values().filter(|i| i.is_in(&loc)).collect());
 
         if reveals.is_empty() {
             "Opened.".to_owned()
@@ -320,12 +379,12 @@ impl Game {
     }
 
     fn close(&mut self, noun: &str) -> String {
-        if let Some(thing) = self
-            .things
+        if let Some(item) = self
+            .items
             .values_mut()
             .find(|i| i.is_in(self.player.location()) && i.can_open() && i.names_contains(noun))
         {
-            thing.close()
+            item.close()
         } else {
             format!("There is no \"{}\" here.", noun)
         }
@@ -371,4 +430,8 @@ impl Game {
             Err(e) => Ok(e.to_string()),
         }
     }
+}
+
+fn cant_see_any(noun: &str) -> String {
+    format!("You can't see any {} here.", noun)
 }
