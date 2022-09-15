@@ -1,5 +1,6 @@
-const USELESS_WORDS: [&str; 13] = [
-    "a", "an", "around", "at", "for", "is", "of", "my", "that", "the", "this", "through", "to",
+const USELESS_WORDS: [&str; 14] = [
+    "a", "am", "an", "around", "at", "for", "is", "of", "my", "that", "the", "this", "through",
+    "to",
 ];
 const PREPOSITIONS: [&str; 5] = ["in", "inside", "from", "on", "with"];
 
@@ -80,16 +81,16 @@ impl Tokens {
 // TODO
 fn alias(s: String) -> String {
     match s.as_str() {
-        "north" => "n".to_owned(),
-        "south" => "s".to_owned(),
-        "east" => "e".to_owned(),
-        "west" => "w".to_owned(),
-        "northeast" => "ne".to_owned(),
-        "northwest" => "nw".to_owned(),
-        "southeast" => "se".to_owned(),
-        "southwest" => "sw".to_owned(),
-        "up" => "u".to_owned(),
-        "down" => "d".to_owned(),
+        "n" => "north".to_owned(),
+        "s" => "south".to_owned(),
+        "e" => "east".to_owned(),
+        "w" => "west".to_owned(),
+        "ne" => "northeast".to_owned(),
+        "nw" => "northwest".to_owned(),
+        "se" => "southeast".to_owned(),
+        "sw" => "southwest".to_owned(),
+        "u" => "up".to_owned(),
+        "d" => "down".to_owned(),
         _ => s,
     }
 }

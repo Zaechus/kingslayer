@@ -87,23 +87,24 @@ impl Game {
             match verb {
                 "l" | "look" => self.parse_look(&tokens),
                 "i" | "inventory" => self.inventory(),
-                "go" | "enter" => {
+                verb if verb.is_direction() => self.go(verb),
+                "go" | "walk" => {
                     if let Some(noun) = tokens.noun() {
                         self.go(noun)
                     } else {
                         format!("Where do you want to {}?", verb)
                     }
                 }
-                "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d" => self.go(verb),
                 _ => {
                     if let Some(noun) = tokens.noun() {
                         match verb {
-                            "examine" | "inspect" | "read" | "what" => self.examine(noun),
+                            "examine" | "inspect" | "read" | "what" | "who" => self.examine(noun),
                             "take" | "get" => self.parse_take(noun),
                             "drop" => self.drop(noun),
                             "open" => self.open(noun),
                             "close" => self.close(noun),
                             "put" | "place" => todo!("put"),
+                            "where" => self.where_is(noun),
                             _ => {
                                 format!("I do not know the word \"{}\".", verb)
                             }
@@ -115,6 +116,24 @@ impl Game {
             }
         } else {
             "I do not understand that phrase.".to_owned()
+        }
+    }
+
+    fn where_is(&self, noun: &str) -> String {
+        if noun == "i" {
+            self.items
+                .get(self.player.location())
+                .unwrap()
+                .desc()
+                .to_owned()
+        } else if self
+            .items
+            .iter()
+            .any(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+        {
+            "It's here.".to_owned()
+        } else {
+            cant_see_any(noun)
         }
     }
 
@@ -237,10 +256,7 @@ impl Game {
             } else {
                 "Nice try.".to_owned()
             }
-        } else if matches!(
-            direction,
-            "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw" | "u" | "d"
-        ) {
+        } else if direction.is_direction() {
             "You cannot go that way.".to_owned()
         } else {
             format!("You cannot see any {} here.", direction)
@@ -258,8 +274,9 @@ impl Game {
             }
     }
 
-    fn in_room(&self, i: &Item) -> bool {
-        i.is_in(self.player.location())
+    fn in_room(&self, loc: &str, i: &Item) -> bool {
+        loc == self.player.location()
+            || i.is_in(self.player.location())
             || if let Some(parent) = self.items.get(i.location()) {
                 parent.is_open() && parent.is_in(self.player.location())
             } else {
@@ -294,7 +311,7 @@ impl Game {
         } else if let Some((loc, _)) = self
             .items
             .iter()
-            .find(|(_, i)| self.in_room(i) && i.names_contains(noun))
+            .find(|(loc, i)| self.in_room(loc, i) && i.names_contains(noun))
         {
             self.items
                 .get_mut(&loc.to_owned())
@@ -430,6 +447,30 @@ impl Game {
             }
             Err(e) => Ok(e.to_string()),
         }
+    }
+}
+
+trait Direction {
+    fn is_direction(&self) -> bool;
+}
+
+impl Direction for str {
+    fn is_direction(&self) -> bool {
+        matches!(
+            self,
+            "north"
+                | "south"
+                | "east"
+                | "west"
+                | "northeast"
+                | "northwest"
+                | "southeast"
+                | "southwest"
+                | "up"
+                | "down"
+                | "enter"
+                | "exit"
+        )
     }
 }
 

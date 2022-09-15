@@ -3,13 +3,13 @@
     "CAVE": (desc: "You are in a cave.", names: ["Cave"]),
     "CAVE ENTRANCE": (
         desc: "There is a cave to the north.",
-        names: ["cave", "n"],
+        names: ["cave", "north"],
         locations: ["FIELD"],
         dest: "CAVE",
     ),
     "CAVE EXIT": (
         locations: ["CAVE"],
-        names: ["field", "s"],
+        names: ["field", "south"],
         dest: "FIELD",
     ),
     "IRON SWORD": (
