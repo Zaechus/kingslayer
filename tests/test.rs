@@ -4,7 +4,7 @@ mod tests {
 
     #[test]
     fn look() {
-        let mut game: Game = include_str!("test.ron").parse().unwrap();
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
 
         let expected = "Center Room\nYou are in the center room.";
         for x in [
@@ -22,7 +22,7 @@ mod tests {
 
     #[test]
     fn examine() {
-        let mut game: Game = include_str!("test.ron").parse().unwrap();
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
 
         let expected = "There is nothing remarkable about the Center Room.";
         for x in [

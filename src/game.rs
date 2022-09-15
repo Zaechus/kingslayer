@@ -62,7 +62,7 @@ impl Game {
                 "{}",
                 match prompt("\n> ")?.trim() {
                     "quit" => break,
-                    "save" => self.save()?,
+                    "save" => self.save("kingslayer.save")?,
                     "" => "Excuse me?".to_owned(),
                     s => self.ask(s),
                 }
@@ -304,8 +304,7 @@ impl Game {
         } else if self
             .items
             .values()
-            .find(|i| i.location() == PLAYER && i.names_contains(noun))
-            .is_some()
+            .any(|i| i.location() == PLAYER && i.names_contains(noun))
         {
             "You already have that!".to_owned()
         } else {
@@ -396,7 +395,7 @@ impl Game {
     /// ```
     /// # use kingslayer::Game;
     /// # let game = Game::default();
-    /// # game.save();
+    /// # game.save("kingslayer.save");
     /// Game::restore("kingslayer.save");
     /// ```
     pub fn restore(filename: &str) -> Result<Self, Box<dyn error::Error>> {
@@ -412,14 +411,14 @@ impl Game {
         )?)
     }
 
-    /// Save the Game to `kingslayer.save`.
+    /// Save the Game to a file.
     /// ```
     /// # use kingslayer::Game;
     /// # let game = Game::default();
-    /// game.save();
+    /// game.save("kingslayer.save");
     /// ```
-    pub fn save(&self) -> Result<String, Box<dyn error::Error>> {
-        match File::create("kingslayer.save") {
+    pub fn save(&self, filename: &str) -> Result<String, Box<dyn error::Error>> {
+        match File::create(filename) {
             Ok(mut file) => {
                 file.write_all(
                     &bincode::serialize(&self)?
