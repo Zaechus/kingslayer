@@ -13,6 +13,7 @@ pub(crate) struct Item {
     go_message: String,
     locations: Vec<String>,
     names: Vec<String>,
+    open_message: String,
     take_message: String,
     what: String,
 }
@@ -92,6 +93,10 @@ impl Item {
 
     pub(crate) fn open(&mut self) {
         self.container = Container::Open;
+    }
+
+    pub(crate) fn open_message(&self) -> &str {
+        &self.open_message
     }
 
     pub(crate) fn set_location(&mut self, location: String) {

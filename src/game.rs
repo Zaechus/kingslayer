@@ -14,11 +14,11 @@ use crate::{
     tokens::Tokens,
 };
 
-const BINCODE_SHIFT: u8 = 42;
+const BINCODE_SHIFT: u8 = 59;
 pub(crate) const PLAYER: &str = "PLAYER";
 
 /// A Kingslayer game
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Game {
     player: Item,
     items: HashMap<String, Item>,
@@ -360,6 +360,8 @@ impl Game {
                 (loc.to_owned(), item.name().to_owned())
             } else if !item.door().is_empty() {
                 (item.door().to_owned(), item.name().to_owned())
+            } else if !item.open_message().is_empty() {
+                return item.open_message().to_owned();
             } else {
                 return format!("The {} cannot be opened.", item.name());
             }
