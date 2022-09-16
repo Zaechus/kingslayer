@@ -334,7 +334,7 @@ impl Game {
             .items
             .values_mut()
             .fold(String::new(), |acc, i| {
-                if i.is_in(self.player.location()) && !i.desc().is_empty() {
+                if i.is_in(self.player.location()) && !i.name().is_empty() && !i.desc().is_empty() {
                     format!("{}\n{}: {}", acc, i.name().to_owned(), i.take())
                 } else {
                     acc

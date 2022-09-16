@@ -3,4 +3,17 @@
         desc: "You are in the center room.",
         names: ["Center Room"],
     ),
+    "BOX": (
+        desc: "There is a box here.",
+        names: ["box"],
+        locations: ["CENTER ROOM"],
+        container: Closed,
+        can_take: true,
+    ),
+    "APPLE": (
+        desc: "There is an apple on the ground.",
+        names: ["apple"],
+        locations: ["BOX"],
+        can_take: true,
+    ),
 })

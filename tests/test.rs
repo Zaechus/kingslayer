@@ -16,7 +16,7 @@ mod tests {
             "look room",
             "look at room",
         ] {
-            assert_eq!(game.ask(x), expected);
+            assert!(game.ask(x).starts_with(expected));
         }
     }
 
@@ -33,5 +33,31 @@ mod tests {
         ] {
             assert_eq!(game.ask(x), expected);
         }
+    }
+
+    #[test]
+    fn take() {
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
+
+        assert!(!game.ask("i").contains("box"));
+        assert!(!game.ask("i").contains("apple"));
+        assert!(game.ask("l").contains("box"));
+        assert!(!game.ask("l").contains("apple"));
+
+        assert_eq!(game.ask("open the box"), "Opening the box reveals a apple.");
+
+        assert!(game.ask("l").contains("box"));
+        assert!(game.ask("l").contains("apple"));
+        assert_ne!(game.ask("open the apple"), "Opened.");
+
+        game.ask("take apple");
+        assert!(game.ask("l").contains("box"));
+        assert!(!game.ask("l").contains("apple"));
+
+        game.ask("take box");
+        assert!(!game.ask("l").contains("box"));
+        assert!(!game.ask("l").contains("apple"));
+        assert!(game.ask("i").contains("box"));
+        assert!(game.ask("i").contains("apple"));
     }
 }
