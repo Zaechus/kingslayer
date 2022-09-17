@@ -36,7 +36,22 @@ mod tests {
     }
 
     #[test]
-    fn take() {
+    fn go_names() {
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
+
+        assert!(game.ask("l").starts_with("Center Room"));
+        assert!(game.ask("enter closet").starts_with("Closet"));
+        assert_eq!(game.ask("where is the sword"), "It's here.");
+        assert_eq!(game.ask("where is the iron sword"), "It's here.");
+        assert_eq!(game.ask("where is the block"), "It's here.");
+        assert_eq!(game.ask("where is the red block"), "It's here.");
+        assert_eq!(game.ask("where is the large red block"), "It's here.");
+        assert_ne!(game.ask("where is the big red block"), "It's here.");
+        assert_ne!(game.ask("where is the plate"), "It's here.");
+    }
+
+    #[test]
+    fn take_drop() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
         assert!(!game.ask("i").contains("box"));
@@ -45,6 +60,7 @@ mod tests {
         assert!(!game.ask("l").contains("apple"));
 
         assert_eq!(game.ask("open the box"), "Opening the box reveals a apple.");
+        assert_eq!(game.ask("open the box"), "The box is already open.");
 
         assert!(game.ask("l").contains("box"));
         assert!(game.ask("l").contains("apple"));
@@ -53,6 +69,9 @@ mod tests {
         game.ask("take apple");
         assert!(game.ask("l").contains("box"));
         assert!(!game.ask("l").contains("apple"));
+
+        assert_eq!(game.ask("close the box"), "Closed.");
+        assert_eq!(game.ask("close the box"), "The box is already closed.");
 
         game.ask("take box");
         assert!(!game.ask("l").contains("box"));

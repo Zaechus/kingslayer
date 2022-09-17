@@ -1,7 +1,12 @@
 (player: (locations: ["CENTER ROOM"]), items: {
     "CENTER ROOM": (
-        desc: "You are in the center room.",
+        desc: "You are in the center room. To the north, a doorway leads into a closet.",
         names: ["Center Room"],
+    ),
+    "CENTER ROOM NORTH": (
+        names: ["closet", "enter", "north"],
+        locations: ["CENTER ROOM"],
+        dest: "CLOSET",
     ),
     "BOX": (
         desc: "There is a box here.",
@@ -15,5 +20,19 @@
         names: ["apple"],
         locations: ["BOX"],
         can_take: true,
+    ),
+    "CLOSET": (
+        desc: "You are in the closet.",
+        names: ["Closet"],
+    ),
+    "IRON SWORD": (
+        desc: "There is an iron sword here.",
+        names: ["iron sword"],
+        locations: ["CLOSET"],
+    ),
+    "RED BLOCK": (
+        desc: "There is an large red block here.",
+        names: ["large red block"],
+        locations: ["CLOSET"],
     ),
 })
