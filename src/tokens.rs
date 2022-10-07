@@ -1,9 +1,10 @@
-const USELESS_WORDS: [&str; 14] = [
-    "a", "am", "an", "around", "at", "for", "is", "of", "my", "that", "the", "this", "through",
-    "to",
+const USELESS_WORDS: [&str; 15] = [
+    "a", "am", "an", "across", "around", "at", "for", "is", "of", "my", "that", "the", "this",
+    "through", "to",
 ];
-const PREPOSITIONS: [&str; 5] = ["in", "inside", "from", "on", "with"];
+const PREPOSITIONS: [&str; 6] = ["in", "inside", "from", "on", "under", "with"];
 
+#[derive(Debug)]
 pub(crate) struct Tokens {
     verb: Option<String>,
     noun: Option<String>,
@@ -69,16 +70,15 @@ impl Tokens {
         self.noun.as_deref()
     }
 
-    // pub(crate) fn prep(&self) -> Option<&str> {
-    //     self.prep.as_deref()
-    // }
+    pub(crate) fn prep(&self) -> Option<&str> {
+        self.prep.as_deref()
+    }
 
-    // pub(crate) fn obj(&self) -> Option<&str> {
-    //     self.obj.as_deref()
-    // }
+    pub(crate) fn obj(&self) -> Option<&str> {
+        self.obj.as_deref()
+    }
 }
 
-// TODO
 fn alias(s: String) -> String {
     match s.as_str() {
         "n" => "north".to_owned(),

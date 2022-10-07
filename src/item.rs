@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use crate::game::PLAYER;
-
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub(crate) struct Item {
@@ -14,25 +12,49 @@ pub(crate) struct Item {
     locations: Vec<String>,
     names: Vec<String>,
     open_message: String,
+    close_message: String,
     take_message: String,
     what: String,
 }
 
 impl Item {
-    pub(crate) fn can_open(&self) -> bool {
-        matches!(self.container, Container::Open | Container::Closed)
-    }
-
     pub(crate) fn close(&mut self) -> String {
-        if let Container::Closed = self.container {
-            format!("The {} is already closed.", self.name())
-        } else {
-            self.container = Container::Closed;
-            "Closed.".to_owned()
+        match self.container {
+            Container::Closed => {
+                format!("The {} is already closed.", self.name())
+            }
+            Container::Open => {
+                self.container = Container::Closed;
+                if self.close_message.is_empty() {
+                    "Closed.".to_owned()
+                } else {
+                    self.close_message.clone()
+                }
+            }
+            _ => format!("You cannot do that to a {}.", self.name()),
         }
     }
 
-    pub(crate) fn container(&self) -> &Container {
+    pub(crate) fn open(&mut self, reveals: String) -> String {
+        match self.container {
+            Container::Open => {
+                format!("The {} is already open.", self.name())
+            }
+            Container::Closed => {
+                self.container = Container::Open;
+                if !self.open_message.is_empty() {
+                    self.open_message.clone()
+                } else if !reveals.is_empty() {
+                    format!("Opening the {} reveals {}.", self.name(), reveals)
+                } else {
+                    "Opened.".to_owned()
+                }
+            }
+            _ => format!("You cannot do that to a {}.", self.name()),
+        }
+    }
+
+    pub(crate) const fn container(&self) -> &Container {
         &self.container
     }
 
@@ -52,7 +74,7 @@ impl Item {
         &self.go_message
     }
 
-    pub(crate) fn is_container(&self) -> bool {
+    pub(crate) const fn is_container(&self) -> bool {
         !matches!(self.container, Container::False)
     }
 
@@ -60,7 +82,7 @@ impl Item {
         self.locations.iter().any(|l| l == location)
     }
 
-    pub(crate) fn is_open(&self) -> bool {
+    pub(crate) const fn is_open(&self) -> bool {
         matches!(self.container, Container::Open | Container::True)
     }
 
@@ -91,21 +113,13 @@ impl Item {
         })
     }
 
-    pub(crate) fn open(&mut self) {
-        self.container = Container::Open;
-    }
-
-    pub(crate) fn open_message(&self) -> &str {
-        &self.open_message
-    }
-
     pub(crate) fn set_location(&mut self, location: String) {
         self.locations = vec![location];
     }
 
-    pub(crate) fn take(&mut self) -> &str {
+    pub(crate) fn take(&mut self, location: &str) -> &str {
         if self.can_take {
-            self.locations[0] = PLAYER.to_owned();
+            self.locations = vec![location.to_owned()];
             "Taken."
         } else if self.take_message.is_empty() {
             "Nice try."
@@ -133,7 +147,7 @@ impl Default for Container {
     }
 }
 
-pub(crate) fn list_items(items: Vec<&Item>) -> String {
+pub(crate) fn list_items(items: &[&Item]) -> String {
     match items.len() {
         0 => String::new(),
         1 => format!("a {}", items[0].name()),

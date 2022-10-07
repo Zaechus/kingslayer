@@ -6,17 +6,13 @@ mod tests {
     fn look() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        let expected = "Center Room\nYou are in the center room.";
-        for x in [
-            "l",
-            "look",
-            "look around",
-            "look around the room",
-            "look center room",
-            "look room",
-            "look at room",
+        let expected = "Center Room\nYou are in the center room.\nThere is a box here.";
+        for s in [
+            "l",           // alias
+            "look",        // look command
+            "look around", // long form
         ] {
-            assert!(game.ask(x).starts_with(expected));
+            assert_eq!(game.ask(s), expected);
         }
     }
 
@@ -24,59 +20,74 @@ mod tests {
     fn examine() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        let expected = "There is nothing remarkable about the Center Room.";
+        // examining a closed item without a special desc should explain the item is closed
+        assert_eq!(game.ask("examine box"), "The box is closed.");
+
+        // examining an open item with contents should return the contents
+        game.ask("open box");
+        assert_eq!(game.ask("examine box"), "The box contains:\n  a apple");
+
+        // examining an open item with no contents should return that the item is empty
+        game.ask("take apple");
+        assert_eq!(game.ask("examine box"), "The box is empty.");
+
+        // item with nothing special
+        assert_eq!(
+            game.ask("examine apple"),
+            "There is nothing remarkable about the apple."
+        );
+    }
+
+    #[test]
+    fn names() {
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
+
+        // test moving rooms
+        assert!(game.ask("l").starts_with("Center Room"));
+        assert!(game.ask("enter closet").starts_with("Closet"));
+
+        // test name matching
+
+        let expected = "It's here.";
+
+        assert_eq!(game.ask("where sword"), expected);
         for x in [
-            "examine room",
-            "examine this room",
-            "examine the center room",
-            "inspect center room",
+            "sword",           // 1/2 words
+            "iron sword",      // exact match 2 words
+            "iron",            // 1/2 words alt
+            "block",           // 1/3 words
+            "red block",       // 2/3 words
+            "large red block", // exact match 3 words
         ] {
-            assert_eq!(game.ask(x), expected);
+            assert_eq!(game.ask(format!("where is the {}", x)), expected)
+        }
+
+        for x in [
+            "big red block",  // adj big is not in any present item
+            "big blue block", // two adj not present
+            "plate",          // item not found
+        ] {
+            assert_ne!(game.ask(format!("where is the {}", x)), expected)
         }
     }
 
     #[test]
-    fn go_names() {
+    fn open_close_container() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        assert!(game.ask("l").starts_with("Center Room"));
-        assert!(game.ask("enter closet").starts_with("Closet"));
-        assert_eq!(game.ask("where is the sword"), "It's here.");
-        assert_eq!(game.ask("where is the iron sword"), "It's here.");
-        assert_eq!(game.ask("where is the block"), "It's here.");
-        assert_eq!(game.ask("where is the red block"), "It's here.");
-        assert_eq!(game.ask("where is the large red block"), "It's here.");
-        assert_ne!(game.ask("where is the big red block"), "It's here.");
-        assert_ne!(game.ask("where is the plate"), "It's here.");
-    }
+        // test reveal message
+        assert_eq!(game.ask("open box"), "Opening the box reveals a apple.");
 
-    #[test]
-    fn take_drop() {
-        let mut game: Game = include_str!("world.ron").parse().unwrap();
-
-        assert!(!game.ask("i").contains("box"));
-        assert!(!game.ask("i").contains("apple"));
-        assert!(game.ask("l").contains("box"));
-        assert!(!game.ask("l").contains("apple"));
-
-        assert_eq!(game.ask("open the box"), "Opening the box reveals a apple.");
-        assert_eq!(game.ask("open the box"), "The box is already open.");
-
-        assert!(game.ask("l").contains("box"));
-        assert!(game.ask("l").contains("apple"));
-        assert_ne!(game.ask("open the apple"), "Opened.");
+        // test already open
+        assert_eq!(game.ask("open box"), "The box is already open.");
 
         game.ask("take apple");
-        assert!(game.ask("l").contains("box"));
-        assert!(!game.ask("l").contains("apple"));
 
-        assert_eq!(game.ask("close the box"), "Closed.");
-        assert_eq!(game.ask("close the box"), "The box is already closed.");
+        // test close
+        assert_eq!(game.ask("close box"), "Closed.");
+        assert_eq!(game.ask("close box"), "The box is already closed.");
 
-        game.ask("take box");
-        assert!(!game.ask("l").contains("box"));
-        assert!(!game.ask("l").contains("apple"));
-        assert!(game.ask("i").contains("box"));
-        assert!(game.ask("i").contains("apple"));
+        // test open with no reveal
+        assert_eq!(game.ask("open box"), "Opened.");
     }
 }

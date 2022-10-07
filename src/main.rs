@@ -11,7 +11,7 @@ fn main() {
 
 fn try_main() -> Result<(), Box<dyn error::Error>> {
     let mut game = if let Some(filename) = env::args().nth(1) {
-        Game::restore(&filename)?
+        Game::load(&filename)?
     } else {
         include_str!("dev.ron").parse()?
     };

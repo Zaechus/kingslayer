@@ -6,7 +6,7 @@ description = "A text adventure game and library"
 readme = "README.md"
 license = "MIT"
 repository = "https://github.com/Zaechus/kingslayer"
-# homepage = "https://zaechus.github.io/kingslayer-web"
+homepage = "https://zaechus.github.io/kingslayer-web"
 documentation = "https://docs.rs/kingslayer"
 edition = "2021"
 
@@ -17,6 +17,7 @@ categories = [ "games", "game-engines", "game-development" ]
 bincode = "1.3"
 ron = "0.8"
 serde = { version = "1", features = ["derive"] }
+zstd = "0.11"
 
 [profile.release]
 panic = "abort"

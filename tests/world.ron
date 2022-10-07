@@ -1,10 +1,13 @@
-(player: (locations: ["CENTER ROOM"]), items: {
+(player: "PLAYER", items: {
+    "PLAYER": (
+        locations: ["CENTER ROOM"],
+    ),
     "CENTER ROOM": (
-        desc: "You are in the center room. To the north, a doorway leads into a closet.",
+        desc: "You are in the center room.",
         names: ["Center Room"],
     ),
     "CENTER ROOM NORTH": (
-        names: ["closet", "enter", "north"],
+        names: ["closet", "north", "enter"],
         locations: ["CENTER ROOM"],
         dest: "CLOSET",
     ),
@@ -31,7 +34,7 @@
         locations: ["CLOSET"],
     ),
     "RED BLOCK": (
-        desc: "There is an large red block here.",
+        desc: "There is a large red block here.",
         names: ["large red block"],
         locations: ["CLOSET"],
     ),

@@ -1,33 +1,13 @@
-(player: (locations: ["FIELD"]), items: {
-    "FIELD": (desc: "You are in a field.", names: ["Field"]),
-    "CAVE": (desc: "You are in a cave.", names: ["Cave"]),
-    "CAVE ENTRANCE": (
-        desc: "There is a cave to the north.",
-        names: ["cave", "north"],
-        locations: ["FIELD"],
-        dest: "CAVE",
+(player: "PLAYER", items: {
+    "PLAYER": (
+        locations: ["BRIG"],
     ),
-    "CAVE EXIT": (
-        locations: ["CAVE"],
-        names: ["field", "south"],
-        dest: "FIELD",
+    "BRIG": (
+        desc: "You are in a small wooden room with a wood pillar in the middle. The ground slowly creaks and rocks beneath you. A wooden pillar marks the center of the room.",
     ),
-    "IRON SWORD": (
-        desc: "There is an iron sword on the ground.",
-        names: ["iron sword"],
-        locations: ["CAVE"],
-        can_take: true,
-    ),
-    "CHEST": (
-        desc: "There is a chest here.",
-        names: ["chest"],
-        locations: ["CAVE"],
-        take_message: "It's way too large and heavy.",
-    ),
-    "RUBY": (
-        desc: "There is a shiny ruby here.",
-        names: ["ruby"],
-        locations: ["CHEST"],
-        can_take: true,
+    "STICK": (
+        desc: "There is a stick here.",
+        names: ["stick"],
+        locations: ["BRIG"],
     ),
 })
