@@ -9,5 +9,6 @@
         desc: "There is a stick here.",
         names: ["stick"],
         locations: ["BRIG"],
+        can_take: true,
     ),
 })

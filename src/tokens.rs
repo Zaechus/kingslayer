@@ -4,7 +4,7 @@ const USELESS_WORDS: [&str; 15] = [
 ];
 const PREPOSITIONS: [&str; 6] = ["in", "inside", "from", "on", "under", "with"];
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(crate) struct Tokens {
     verb: Option<String>,
     noun: Option<String>,
@@ -59,23 +59,26 @@ impl Tokens {
             }
         }
     }
-}
-
-impl Tokens {
-    pub(crate) fn verb(&self) -> Option<&str> {
-        self.verb.as_deref()
-    }
 
     pub(crate) fn noun(&self) -> Option<&str> {
         self.noun.as_deref()
+    }
+
+    pub(crate) fn obj(&self) -> Option<&str> {
+        self.obj.as_deref()
     }
 
     pub(crate) fn prep(&self) -> Option<&str> {
         self.prep.as_deref()
     }
 
-    pub(crate) fn obj(&self) -> Option<&str> {
-        self.obj.as_deref()
+    pub(crate) fn verb(&self) -> Option<&str> {
+        self.verb.as_deref()
+    }
+
+    pub(crate) fn with_verb(mut self, verb: &str) -> Self {
+        self.verb = Some(verb.to_owned());
+        self
     }
 }
 

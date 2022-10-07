@@ -3,6 +3,13 @@ mod tests {
     use kingslayer::Game;
 
     #[test]
+    fn test() {
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
+
+        game.ask("");
+    }
+
+    #[test]
     fn look() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
@@ -89,5 +96,13 @@ mod tests {
 
         // test open with no reveal
         assert_eq!(game.ask("open box"), "Opened.");
+    }
+
+    #[test]
+    fn take_all() {
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
+
+        game.ask("n");
+        game.ask("take all");
     }
 }

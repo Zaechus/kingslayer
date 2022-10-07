@@ -50,14 +50,32 @@ fn prompt(p: &str) -> io::Result<String> {
 }
 
 impl Game {
-    /// Parse a string into a game action and return the output.
+    /// Parse a string into game actions and return the output.
     /// ```
     /// # use kingslayer::Game;
     /// # let mut game: Game = include_str!("world.ron").parse().unwrap();
     /// println!("{}", game.ask("look around"));
     /// ```
     pub fn ask<S: Into<String>>(&mut self, input: S) -> String {
-        self.parse(Tokens::new(input.into()))
+        let input = input.into();
+        let commands: Vec<_> = input.split("and").map(str::trim).collect();
+        dbg!(&commands);
+
+        let first = Tokens::new(commands[0].to_string());
+        let mut res = self.parse(first.clone());
+
+        for c in commands.iter().skip(1) {
+            if !c.is_empty() {
+                let mut tokens = Tokens::new(c.to_string());
+                if !tokens.verb().is_some() {
+                    tokens = tokens.with_verb(first.verb().unwrap())
+                }
+
+                res = format!("{}\n\n{}", res, self.parse(tokens));
+            }
+        }
+
+        res
     }
 
     fn close(&mut self, verb: &str, tokens: &Tokens) -> String {
@@ -515,15 +533,24 @@ impl Game {
     }
 
     fn take_all(&mut self) -> String {
-        let message = self
-            .items
-            .values_mut()
-            .fold(String::new(), |acc, i| {
-                if i.is_in(&self.player) && !i.name().is_empty() && !i.desc().is_empty() {
-                    format!("{}\n{}: {}", acc, i.name().to_owned(), i.take(&self.player))
-                } else {
-                    acc
-                }
+        let items = self.items.iter().fold(Vec::new(), |mut acc, (loc, i)| {
+            if i.is_in(self.player_location()) && !i.name().is_empty() && !i.desc().is_empty() {
+                acc.push(loc.to_owned())
+            }
+            acc
+        });
+
+        let player = self.player.clone();
+        let message = items
+            .iter()
+            .fold(String::new(), |acc, loc| {
+                let item = self.item_mut(loc);
+                format!(
+                    "{}\n{}: {}",
+                    acc,
+                    item.name().to_owned(),
+                    item.take(&player)
+                )
             })
             .trim()
             .to_owned();

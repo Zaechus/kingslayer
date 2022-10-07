@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 #[serde(default)]
 pub(crate) struct Item {
     can_take: bool,
+    close_message: String,
     container: Container,
     desc: String,
     dest: String,
@@ -12,7 +13,6 @@ pub(crate) struct Item {
     locations: Vec<String>,
     names: Vec<String>,
     open_message: String,
-    close_message: String,
     take_message: String,
     what: String,
 }
