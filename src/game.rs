@@ -59,7 +59,6 @@ impl Game {
     pub fn ask<S: Into<String>>(&mut self, input: S) -> String {
         let input = input.into();
         let commands: Vec<_> = input.split("and").map(str::trim).collect();
-        dbg!(&commands);
 
         let first = Tokens::new(commands[0].to_string());
         let mut res = self.parse(first.clone());
