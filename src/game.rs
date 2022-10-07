@@ -9,6 +9,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    direction::Direction,
     item::{list_items, Container, Item},
     read_line,
     tokens::Tokens,
@@ -577,29 +578,6 @@ impl Game {
         } else {
             "Excuse me?".to_owned()
         }
-    }
-}
-
-trait Direction {
-    fn is_direction(&self) -> bool;
-}
-
-impl Direction for str {
-    fn is_direction(&self) -> bool {
-        matches!(
-            self,
-            "north"
-                | "south"
-                | "east"
-                | "west"
-                | "northeast"
-                | "northwest"
-                | "southeast"
-                | "southwest"
-                | "up"
-                | "down"
-                | "exit"
-        )
     }
 }
 
