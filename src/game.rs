@@ -531,26 +531,28 @@ impl Game {
     }
 
     fn walk(&mut self, direction: &str) -> String {
-        if let Some((_, exit)) = self
+        if let Some((_, exit)) = self.items.iter().find(|(loc, i)| {
+            self.is_visible(loc, i) && i.names_contains(direction) && !i.dest().is_empty()
+        }) {
+            let exit_dest = exit.dest().to_owned();
+
+            if let Some(door) = self.items.get(exit.door()) {
+                if door.is_open() {
+                    self.item_mut(&self.player.clone()).set_location(exit_dest);
+                    self.look()
+                } else {
+                    format!("The {} is closed.", door.name())
+                }
+            } else {
+                self.item_mut(&self.player.clone()).set_location(exit_dest);
+                self.look()
+            }
+        } else if let Some((_, exit)) = self
             .items
             .iter()
             .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(direction))
         {
-            if !exit.dest().is_empty() {
-                let exit_dest = exit.dest().to_owned();
-
-                if let Some(door) = self.items.get(exit.door()) {
-                    if door.is_open() {
-                        self.item_mut(&self.player.clone()).set_location(exit_dest);
-                        self.look()
-                    } else {
-                        format!("The {} is closed.", door.name())
-                    }
-                } else {
-                    self.item_mut(&self.player.clone()).set_location(exit_dest);
-                    self.look()
-                }
-            } else if !exit.go_message().is_empty() {
+            if !exit.go_message().is_empty() {
                 exit.go_message().to_owned()
             } else {
                 "Nice try.".to_owned()
