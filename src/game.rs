@@ -202,9 +202,9 @@ impl Game {
 
     fn examine(&self, noun: &str) -> String {
         if let Some((_, item)) = self.items.iter().find(|(loc, i)| {
-            self.is_visible(loc, i) && i.names_contains(noun) && !i.what().is_empty()
+            self.is_visible(loc, i) && i.names_contains(noun) && !i.details().is_empty()
         }) {
-            item.what().to_owned()
+            item.details().to_owned()
         } else if let Some((loc, item)) = self
             .items
             .iter()

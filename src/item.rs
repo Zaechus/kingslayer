@@ -8,13 +8,13 @@ pub(crate) struct Item {
     container: Container,
     desc: String,
     dest: String,
+    details: String,
     door: String,
     go_message: String,
     locations: Vec<String>,
     names: Vec<String>,
     open_message: String,
     take_message: String,
-    what: String,
 }
 
 impl Item {
@@ -128,8 +128,8 @@ impl Item {
         }
     }
 
-    pub(crate) fn what(&self) -> &str {
-        &self.what
+    pub(crate) fn details(&self) -> &str {
+        &self.details
     }
 }
 
