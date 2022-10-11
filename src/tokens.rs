@@ -213,6 +213,10 @@ impl Tokens {
         self.prep.as_ref()
     }
 
+    pub(crate) fn set_noun(&mut self, noun: String) {
+        self.noun = noun;
+    }
+
     pub(crate) fn verb(&self) -> &str {
         self.verb.as_ref()
     }

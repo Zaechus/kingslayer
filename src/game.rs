@@ -80,16 +80,7 @@ impl Game {
             .filter(|v| !v.is_empty())
             .collect();
 
-        let mut tokens = Tokens::new(commands.get(0).unwrap_or(&Vec::new()));
-
-        if tokens.noun() == "it" {
-            tokens = Tokens::new(&[
-                tokens.verb().to_string(),
-                self.last_command.noun().to_string(),
-                tokens.prep().to_string(),
-                tokens.obj().to_string(),
-            ])
-        }
+        let tokens = self.replace_it(commands.get(0).unwrap_or(&Vec::new()));
 
         if *tokens.command() != Command::Again {
             self.last_command = tokens;
@@ -98,14 +89,7 @@ impl Game {
 
         for words in commands.iter().skip(1) {
             if !words.is_empty() {
-                let mut tokens = Tokens::new(words);
-
-                if tokens.noun() == "it" {
-                    tokens = Tokens::new(&[
-                        tokens.verb().to_string(),
-                        self.last_command.noun().to_string(),
-                    ])
-                }
+                let mut tokens = self.replace_it(words);
 
                 let command = if let Command::Unknown(_) = tokens.command() {
                     let mut v = words.clone();
@@ -336,13 +320,15 @@ impl Game {
             return cant_see_any(noun);
         };
 
-        let reveals = list_items(
-            &self
-                .items
-                .values()
-                .filter(|i| i.is_in(&loc))
-                .collect::<Vec<_>>(),
-        );
+        let contents = self
+            .items
+            .values()
+            .filter(|i| i.is_in(&loc))
+            .collect::<Vec<_>>();
+        if contents.len() == 1 {
+            self.last_command.set_noun(contents[0].name().to_owned())
+        }
+        let reveals = list_items(&contents);
 
         self.item_mut(&loc).open(reveals)
     }
@@ -462,6 +448,26 @@ impl Game {
             Container::Closed => format!("The {} isn't open.", self.item(&container).name()),
             Container::False => "You can't do that.".to_owned(),
         }
+    }
+
+    fn replace_it(&self, v: &[String]) -> Tokens {
+        let mut tokens = Tokens::new(v);
+
+        if tokens.noun() == "it" {
+            let mut parts = vec![
+                tokens.verb().to_owned(),
+                self.last_command.noun().to_string(),
+            ];
+            if !tokens.prep().is_empty() {
+                parts.push(tokens.prep().to_owned())
+            }
+            if !tokens.obj().is_empty() {
+                parts.push(tokens.obj().to_owned())
+            }
+            tokens = Tokens::new(&parts);
+        }
+
+        tokens
     }
 
     /// Restore a Game from a file.
