@@ -1,99 +1,219 @@
+use serde::{Deserialize, Serialize};
+
+use crate::direction::Direction;
+
 const USELESS_WORDS: [&str; 15] = [
     "a", "am", "an", "across", "around", "at", "for", "is", "of", "my", "that", "the", "this",
     "through", "to",
 ];
 const PREPOSITIONS: [&str; 6] = ["in", "inside", "from", "on", "under", "with"];
 
-#[derive(Clone, Debug)]
+fn alias(s: &String) -> &str {
+    match s.as_str() {
+        "n" => "north",
+        "s" => "south",
+        "e" => "east",
+        "w" => "west",
+        "ne" => "northeast",
+        "nw" => "northwest",
+        "se" => "southeast",
+        "sw" => "southwest",
+        "u" => "up",
+        "d" => "down",
+        _ => s,
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+pub(crate) enum Command {
+    Again,
+    Attack,
+    Break,
+    Burn,
+    Climb,
+    Close(String),
+    Drop(String),
+    Put(String, String),
+    Eat,
+    Hello,
+    Help,
+    Inventory,
+    Look,
+    Move,
+    NoVerb,
+    Open(String),
+    Sleep,
+    Take(String),
+    Unknown(String),
+    Walk(String),
+    Wear(String),
+    Where(String),
+    Clarify(String),
+    Examine(String),
+}
+
+impl Default for Command {
+    fn default() -> Self {
+        Self::Look
+    }
+}
+
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub(crate) struct Tokens {
-    verb: Option<String>,
-    noun: Option<String>,
-    prep: Option<String>,
-    obj: Option<String>,
+    command: Command,
+    verb: String,
+    noun: String,
+    prep: String,
+    obj: String,
 }
 
 impl Tokens {
-    pub(crate) fn new(input: String) -> Self {
-        let mut words: Vec<_> = input
-            .split_whitespace()
-            .map(str::to_lowercase)
+    pub(crate) fn command(&self) -> &Command {
+        &self.command
+    }
+
+    pub(crate) fn new(words: &[String]) -> Self {
+        let words: Vec<_> = words
+            .iter()
             .map(alias)
-            .filter(|w| !USELESS_WORDS.contains(&w.as_str()))
+            .filter(|w| !USELESS_WORDS.contains(w))
             .collect();
 
-        if let Some(prep_pos) = words
-            .iter()
-            .position(|w| PREPOSITIONS.contains(&w.as_str()))
-        {
-            if prep_pos == 0 {
-                Self {
-                    verb: None,
-                    noun: None,
-                    prep: Some(words[0].to_owned()),
-                    obj: Some(words[1..].join(" ")),
+        let mut verb = String::new();
+        let mut noun = String::new();
+        let mut prep = String::new();
+        let mut obj = String::new();
+        let command = if let Some(v) = words.first() {
+            verb = v.to_string();
+
+            if let Some(prep_pos) = words.iter().position(|w| PREPOSITIONS.contains(w)) {
+                if prep_pos == 0 {
+                    prep = words[0].to_owned();
+                    obj = words[1..].join(" ");
+                } else {
+                    noun = words[1..prep_pos].join(" ");
+                    prep = words[prep_pos].to_owned();
+                    obj = words[prep_pos + 1..].join(" ");
                 }
             } else {
-                let noun = words[1..prep_pos].join(" ");
-                let obj = words[prep_pos + 1..].join(" ");
-
-                Self {
-                    verb: Some(words[0].to_owned()),
-                    noun: if noun.is_empty() { None } else { Some(noun) },
-                    prep: Some(words[prep_pos].to_owned()),
-                    obj: if obj.is_empty() { None } else { Some(obj) },
-                }
+                noun = words[1..].join(" ");
             }
-        } else if words.len() > 1 {
-            Self {
-                verb: Some(words[0].to_owned()),
-                noun: Some(words[1..].join(" ")),
-                prep: None,
-                obj: None,
+
+            match *v {
+                _ if words[0].is_direction() => Command::Walk(v.to_string()),
+                "again" | "g" => Command::Again,
+                "attack" | "cut" | "hit" | "hurt" | "kill" => Command::Attack,
+                "break" | "destroy" => Command::Break,
+                "burn" => Command::Burn,
+                "climb" => Command::Climb,
+                "close" | "shut" => {
+                    if noun.is_empty() {
+                        Command::Clarify(v.to_string())
+                    } else {
+                        Command::Close(noun.clone())
+                    }
+                }
+                // TODO: use code in put
+                "drop" | "place" | "throw" => {
+                    if noun.is_empty() {
+                        Command::Clarify(v.to_string())
+                    } else if obj.is_empty() {
+                        Command::Drop(noun.clone())
+                    } else {
+                        Command::Put(noun.clone(), obj.clone())
+                    }
+                }
+                "eat" | "consume" | "drink" | "quaff" => Command::Eat,
+                "examine" | "inspect" | "read" | "what" => {
+                    if noun.is_empty() {
+                        Command::Clarify(v.to_string())
+                    } else {
+                        Command::Examine(noun.clone())
+                    }
+                }
+                "hello" | "hi" => Command::Hello,
+                "help" => Command::Help,
+                "inventory" | "i" => Command::Inventory,
+                "go" | "enter" | "walk" => {
+                    if noun.is_empty() {
+                        Command::Clarify(v.to_string())
+                    } else {
+                        Command::Walk(noun.clone())
+                    }
+                }
+                "look" | "l" => {
+                    if noun.is_empty() {
+                        Command::Look
+                    } else {
+                        Command::Examine(noun.clone())
+                    }
+                }
+                "move" | "pull" | "push" => Command::Move,
+                "open" => {
+                    if noun.is_empty() {
+                        Command::Clarify(v.to_string())
+                    } else {
+                        Command::Open(noun.clone())
+                    }
+                }
+                "put" => {
+                    if prep == "on" {
+                        Command::Wear(obj.clone())
+                    } else if noun.is_empty() {
+                        Command::Clarify(v.to_string())
+                    } else if obj.is_empty() {
+                        if prep.is_empty() {
+                            Command::Clarify(format!("{} the {} in", verb, noun))
+                        } else {
+                            Command::Clarify(format!("{} the {} {}", verb, noun, prep))
+                        }
+                    } else {
+                        Command::Put(noun.clone(), obj.clone())
+                    }
+                }
+                "take" | "hold" | "get" | "pick" | "remove" => {
+                    if noun.is_empty() {
+                        Command::Clarify(v.to_string())
+                    } else {
+                        Command::Take(noun.clone())
+                    }
+                }
+                "wait" | "z" | "sleep" => Command::Sleep,
+                "where" | "find" | "see" => {
+                    if noun.is_empty() {
+                        Command::NoVerb
+                    } else {
+                        Command::Where(noun.clone())
+                    }
+                }
+                _ => Command::Unknown(v.to_string()),
             }
         } else {
-            Self {
-                verb: words.pop(),
-                noun: None,
-                prep: None,
-                obj: None,
-            }
+            Command::NoVerb
+        };
+
+        Self {
+            command,
+            verb,
+            noun,
+            prep,
+            obj,
         }
     }
 
-    pub(crate) fn noun(&self) -> Option<&str> {
-        self.noun.as_deref()
+    pub(crate) fn noun(&self) -> &str {
+        self.noun.as_ref()
     }
 
-    pub(crate) fn obj(&self) -> Option<&str> {
-        self.obj.as_deref()
+    pub(crate) fn obj(&self) -> &str {
+        self.obj.as_ref()
     }
 
-    pub(crate) fn prep(&self) -> Option<&str> {
-        self.prep.as_deref()
+    pub(crate) fn prep(&self) -> &str {
+        self.prep.as_ref()
     }
 
-    pub(crate) fn verb(&self) -> Option<&str> {
-        self.verb.as_deref()
-    }
-
-    pub(crate) fn with_verb(mut self, verb: &str) -> Self {
-        self.verb = Some(verb.to_owned());
-        self
-    }
-}
-
-fn alias(s: String) -> String {
-    match s.as_str() {
-        "n" => "north".to_owned(),
-        "s" => "south".to_owned(),
-        "e" => "east".to_owned(),
-        "w" => "west".to_owned(),
-        "ne" => "northeast".to_owned(),
-        "nw" => "northwest".to_owned(),
-        "se" => "southeast".to_owned(),
-        "sw" => "southwest".to_owned(),
-        "u" => "up".to_owned(),
-        "d" => "down".to_owned(),
-        _ => s,
+    pub(crate) fn verb(&self) -> &str {
+        self.verb.as_ref()
     }
 }
