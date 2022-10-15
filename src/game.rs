@@ -46,13 +46,20 @@ impl FromStr for Game {
     }
 }
 
-fn prompt(p: &str) -> io::Result<String> {
-    print!("{}", p);
-    io::stdout().flush()?;
-    read_line()
-}
-
 impl Game {
+    fn replace_it(&self, tokens: Tokens) -> Tokens {
+        if tokens.noun() == "it" {
+            Tokens::with(
+                tokens.verb(),
+                self.last_command.noun(),
+                tokens.prep(),
+                tokens.obj(),
+            )
+        } else {
+            tokens
+        }
+    }
+
     /// Parse a string into game actions and return the output.
     /// ```
     /// # use kingslayer::Game;
@@ -60,7 +67,6 @@ impl Game {
     /// println!("{}", game.ask("look around"));
     /// ```
     pub fn ask<S: Into<String>>(&mut self, input: S) -> String {
-        // TODO: clean this up :(
         let commands: Vec<_> = input
             .into()
             .replace(',', " and ")
@@ -80,37 +86,64 @@ impl Game {
             .filter(|v| !v.is_empty())
             .collect();
 
-        let tokens = self.replace_it(commands.get(0).unwrap_or(&Vec::new()));
+        let mut res = if let Some(first) = commands.first() {
+            let mut tokens = Tokens::new(first);
 
-        if *tokens.command() != Command::Again {
-            self.last_command = tokens;
-        }
-        let mut res = self.parse(&self.last_command.command().clone());
+            if let Command::Clarify(_) = self.last_command.command() {
+                if let Command::Unknown(_) = tokens.command() {
+                    let phrase = first.join(" ");
 
-        for words in commands.iter().skip(1) {
-            if !words.is_empty() {
-                let mut tokens = self.replace_it(words);
-
-                let command = if let Command::Unknown(_) = tokens.command() {
-                    let mut v = words.clone();
-                    v.insert(0, self.last_command.verb().to_string());
-                    tokens = Tokens::new(&v);
-                    tokens.command()
-                } else if let Command::Clarify(_) = tokens.command() {
-                    let mut v = words.clone();
-                    v.push(self.last_command.noun().to_string());
-                    tokens = Tokens::new(&v);
-                    tokens.command()
-                } else {
-                    self.last_command = tokens.clone();
-                    tokens.command()
-                };
-
-                if *command != Command::Again {
-                    self.last_command = tokens.clone();
+                    tokens = Tokens::with(
+                        self.last_command.verb(),
+                        if tokens.verb() == "it" {
+                            self.last_command.noun()
+                        } else {
+                            &phrase
+                        },
+                        self.last_command.prep(),
+                        self.last_command.obj(),
+                    );
                 }
 
-                res = format!("{}\n\n{}", res, self.parse(command));
+                self.last_command = tokens.clone();
+
+                self.parse(tokens.command())
+            } else {
+                let tokens = self.replace_it(tokens);
+
+                match tokens.command() {
+                    Command::Again | Command::Unknown(_) => (),
+                    Command::Clarify(_) => {
+                        self.last_command.set_verb(tokens.verb().to_owned());
+                        self.last_command.set_command(tokens.command().to_owned());
+                    }
+                    _ => self.last_command = tokens.clone(),
+                }
+
+                self.parse(tokens.command())
+            }
+        } else {
+            "Excuse me?".to_owned()
+        };
+
+        for words in commands.iter().skip(1) {
+            if let Command::Clarify(_) = self.last_command.command() {
+                break;
+            } else {
+                let mut tokens = self.replace_it(Tokens::new(words));
+
+                if let Command::Unknown(_) = tokens.command() {
+                    tokens = Tokens::with(
+                        self.last_command.verb(),
+                        &words.join(" "),
+                        self.last_command.prep(),
+                        self.last_command.obj(),
+                    );
+                }
+
+                self.last_command = tokens.clone();
+
+                res = format!("{}\n\n{}", res, self.parse(tokens.command()));
             }
         }
 
@@ -325,7 +358,7 @@ impl Game {
             .values()
             .filter(|i| i.is_in(&loc))
             .collect::<Vec<_>>();
-        if contents.len() == 1 {
+        if *self.item(&loc).container() == Container::Closed && contents.len() == 1 {
             self.last_command.set_noun(contents[0].name().to_owned())
         }
         let reveals = list_items(&contents);
@@ -336,28 +369,27 @@ impl Game {
     fn parse(&mut self, command: &Command) -> String {
         match command {
             Command::Again => self.parse(&self.last_command.command().clone()),
-            Command::Attack => todo!(),
-            Command::Break => todo!(),
-            Command::Burn => todo!(),
+            Command::Attack(_, _) => todo!(),
+            Command::Break(_) => todo!(),
+            Command::Burn(_, _) => todo!(),
             Command::Clarify(verb) => format!("What do you want to {}?", verb),
             Command::Climb => todo!(),
             Command::Close(noun) => self.close(noun),
             Command::Drop(noun) => self.drop(noun),
             Command::Put(noun, obj) => self.put(noun, obj),
-            Command::Eat => todo!(),
+            Command::Eat(_) => "You cannot eat that.".to_owned(),
             Command::Examine(noun) => self.examine(noun),
             Command::Hello => "Hello!".to_owned(),
             Command::Help => "That would be nice, wouldn't it?".to_owned(),
             Command::Inventory => self.inventory(),
             Command::Look => self.look(),
-            Command::Move => todo!(),
-            Command::NoVerb => "Excuse me?".to_owned(),
+            Command::Move(_) => todo!(),
             Command::Open(noun) => self.open(noun),
             Command::Sleep => "Time passes...".to_owned(),
             Command::Take(noun) => self.parse_take(noun),
             Command::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
             Command::Walk(direction) => self.walk(direction),
-            Command::Wear(_) => todo!(),
+            Command::Wear(noun) => format!("Put on: {}", noun),
             Command::Where(noun) => self.where_is(noun),
         }
     }
@@ -448,26 +480,6 @@ impl Game {
             Container::Closed => format!("The {} isn't open.", self.item(&container).name()),
             Container::False => "You can't do that.".to_owned(),
         }
-    }
-
-    fn replace_it(&self, v: &[String]) -> Tokens {
-        let mut tokens = Tokens::new(v);
-
-        if tokens.noun() == "it" {
-            let mut parts = vec![
-                tokens.verb().to_owned(),
-                self.last_command.noun().to_string(),
-            ];
-            if !tokens.prep().is_empty() {
-                parts.push(tokens.prep().to_owned())
-            }
-            if !tokens.obj().is_empty() {
-                parts.push(tokens.obj().to_owned())
-            }
-            tokens = Tokens::new(&parts);
-        }
-
-        tokens
     }
 
     /// Restore a Game from a file.
@@ -581,4 +593,10 @@ impl Game {
 
 fn cant_see_any(noun: &str) -> String {
     format!("You can't see any {} here.", noun)
+}
+
+fn prompt(p: &str) -> io::Result<String> {
+    print!("{}", p);
+    io::stdout().flush()?;
+    read_line()
 }

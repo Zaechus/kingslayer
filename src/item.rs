@@ -133,7 +133,7 @@ impl Item {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub(crate) enum Container {
     Open,
     Closed,
