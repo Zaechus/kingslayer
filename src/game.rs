@@ -22,6 +22,8 @@ pub struct Game {
     items: HashMap<String, Item>,
     #[serde(default)]
     last_command: Tokens,
+    #[serde(default)]
+    last_it: String,
 }
 
 impl Default for Game {
@@ -47,19 +49,6 @@ impl FromStr for Game {
 }
 
 impl Game {
-    fn replace_it(&self, tokens: Tokens) -> Tokens {
-        if tokens.noun() == "it" {
-            Tokens::with(
-                tokens.verb(),
-                self.last_command.noun(),
-                tokens.prep(),
-                tokens.obj(),
-            )
-        } else {
-            tokens
-        }
-    }
-
     /// Parse a string into game actions and return the output.
     /// ```
     /// # use kingslayer::Game;
@@ -91,21 +80,30 @@ impl Game {
 
             if let Command::Clarify(_) = self.last_command.command() {
                 if let Command::Unknown(_) = tokens.command() {
-                    let phrase = first.join(" ");
+                    let phrase = if tokens.verb() == "it" {
+                        self.last_it.clone()
+                    } else {
+                        first.join(" ")
+                    };
 
-                    tokens = Tokens::with(
-                        self.last_command.verb(),
-                        if tokens.verb() == "it" {
-                            self.last_command.noun()
-                        } else {
-                            &phrase
-                        },
-                        self.last_command.prep(),
-                        self.last_command.obj(),
-                    );
+                    if self.last_command.noun().is_empty() {
+                        tokens = Tokens::with(
+                            self.last_command.verb().to_owned(),
+                            phrase,
+                            self.last_command.prep().to_owned(),
+                            self.last_command.obj().to_owned(),
+                        );
+                    } else {
+                        tokens = Tokens::with(
+                            self.last_command.verb().to_owned(),
+                            self.last_command.noun().to_owned(),
+                            self.last_command.prep().to_owned(),
+                            phrase,
+                        );
+                    }
                 }
 
-                self.last_command = tokens.clone();
+                self.update_last(tokens.clone());
 
                 self.parse(tokens.command())
             } else {
@@ -113,11 +111,10 @@ impl Game {
 
                 match tokens.command() {
                     Command::Again | Command::Unknown(_) => (),
-                    Command::Clarify(_) => {
-                        self.last_command.set_verb(tokens.verb().to_owned());
-                        self.last_command.set_command(tokens.command().to_owned());
+                    Command::Clarify(_) => self.last_command = tokens.clone(),
+                    _ => {
+                        self.update_last(tokens.clone());
                     }
-                    _ => self.last_command = tokens.clone(),
                 }
 
                 self.parse(tokens.command())
@@ -134,14 +131,14 @@ impl Game {
 
                 if let Command::Unknown(_) = tokens.command() {
                     tokens = Tokens::with(
-                        self.last_command.verb(),
-                        &words.join(" "),
-                        self.last_command.prep(),
-                        self.last_command.obj(),
+                        self.last_command.verb().to_owned(),
+                        words.join(" "),
+                        self.last_command.prep().to_owned(),
+                        self.last_command.obj().to_owned(),
                     );
                 }
 
-                self.last_command = tokens.clone();
+                self.update_last(tokens.clone());
 
                 res = format!("{}\n\n{}", res, self.parse(tokens.command()));
             }
@@ -359,7 +356,7 @@ impl Game {
             .filter(|i| i.is_in(&loc))
             .collect::<Vec<_>>();
         if *self.item(&loc).container() == Container::Closed && contents.len() == 1 {
-            self.last_command.set_noun(contents[0].name().to_owned())
+            self.last_it = contents[0].name().to_owned();
         }
         let reveals = list_items(&contents);
 
@@ -482,6 +479,19 @@ impl Game {
         }
     }
 
+    fn replace_it(&self, tokens: Tokens) -> Tokens {
+        if tokens.noun() == "it" {
+            Tokens::with(
+                tokens.verb().to_owned(),
+                self.last_it.clone(),
+                tokens.prep().to_owned(),
+                tokens.obj().to_owned(),
+            )
+        } else {
+            tokens
+        }
+    }
+
     /// Restore a Game from a file.
     /// ```
     /// # use kingslayer::Game;
@@ -539,6 +549,13 @@ impl Game {
             "You can't see anything you can take.".to_owned()
         } else {
             message
+        }
+    }
+
+    fn update_last(&mut self, tokens: Tokens) {
+        self.last_command = tokens;
+        if !self.last_command.noun().is_empty() {
+            self.last_it = self.last_command.noun().to_owned()
         }
     }
 

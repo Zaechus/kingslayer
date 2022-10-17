@@ -94,7 +94,7 @@ impl Tokens {
         }
 
         Self {
-            command: Self::parse(verb, &noun, &prep, &obj),
+            command: Self::parse(verb, &noun, &mut prep, &obj),
             verb: verb.to_owned(),
             noun,
             prep,
@@ -110,7 +110,7 @@ impl Tokens {
         self.obj.as_ref()
     }
 
-    fn parse(verb: &str, noun: &str, prep: &str, obj: &str) -> Command {
+    fn parse(verb: &str, noun: &str, prep: &mut String, obj: &str) -> Command {
         match verb {
             _ if verb.is_direction() => Command::Walk(verb.to_string()),
             "again" | "g" => Command::Again,
@@ -143,6 +143,13 @@ impl Tokens {
                     Command::Eat(noun.to_string())
                 }
             }
+            "enter" => {
+                if noun.is_empty() {
+                    Command::Walk(verb.to_string())
+                } else {
+                    Command::Walk(noun.to_string())
+                }
+            }
             "examine" | "inspect" | "read" | "what" => {
                 if noun.is_empty() {
                     Command::Clarify(verb.to_string())
@@ -153,7 +160,7 @@ impl Tokens {
             "hello" | "hi" => Command::Hello,
             "help" => Command::Help,
             "inventory" | "i" => Command::Inventory,
-            "go" | "enter" | "walk" => {
+            "go" | "walk" => {
                 if noun.is_empty() {
                     // TODO: "Where do you want to {}?"
                     Command::Clarify(verb.to_string())
@@ -186,9 +193,9 @@ impl Tokens {
                 } else if noun.is_empty() {
                     Command::Clarify(verb.to_string())
                 } else if obj.is_empty() {
-                    // if prep.is_empty() {
-                    //     prep = "in".to_owned();
-                    // }
+                    if prep.is_empty() {
+                        prep.push_str("in");
+                    }
                     Command::Clarify(format!("{} the {} {}", verb, noun, prep))
                 } else {
                     Command::Put(noun.to_string(), obj.to_string())
@@ -217,29 +224,17 @@ impl Tokens {
         self.prep.as_ref()
     }
 
-    pub(crate) fn set_noun(&mut self, noun: String) {
-        self.noun = noun;
-    }
-
     pub(crate) fn verb(&self) -> &str {
         self.verb.as_ref()
     }
 
-    pub(crate) fn with(verb: &str, noun: &str, prep: &str, obj: &str) -> Self {
+    pub(crate) fn with(verb: String, noun: String, mut prep: String, obj: String) -> Self {
         Self {
-            command: Self::parse(verb, noun, prep, obj),
-            verb: verb.to_owned(),
-            noun: noun.to_owned(),
-            prep: prep.to_owned(),
-            obj: obj.to_owned(),
+            command: Self::parse(&verb, &noun, &mut prep, &obj),
+            verb,
+            noun,
+            prep,
+            obj,
         }
-    }
-
-    pub(crate) fn set_verb(&mut self, verb: String) {
-        self.verb = verb;
-    }
-
-    pub(crate) fn set_command(&mut self, command: Command) {
-        self.command = command;
     }
 }
