@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::container::Container;
+
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub(crate) struct Item {
@@ -35,25 +37,6 @@ impl Item {
         }
     }
 
-    pub(crate) fn open(&mut self, reveals: String) -> String {
-        match self.container {
-            Container::Open => {
-                format!("The {} is already open.", self.name())
-            }
-            Container::Closed => {
-                self.container = Container::Open;
-                if !self.open_message.is_empty() {
-                    self.open_message.clone()
-                } else if !reveals.is_empty() {
-                    format!("Opening the {} reveals {}.", self.name(), reveals)
-                } else {
-                    "Opened.".to_owned()
-                }
-            }
-            _ => format!("You cannot do that to a {}.", self.name()),
-        }
-    }
-
     pub(crate) const fn container(&self) -> &Container {
         &self.container
     }
@@ -66,12 +49,20 @@ impl Item {
         &self.dest
     }
 
+    pub(crate) fn details(&self) -> &str {
+        &self.details
+    }
+
     pub(crate) fn door(&self) -> &str {
         &self.door
     }
 
     pub(crate) fn go_message(&self) -> &str {
         &self.go_message
+    }
+
+    pub(crate) fn is_closed(&self) -> bool {
+        matches!(self.container, Container::Closed)
     }
 
     pub(crate) const fn is_container(&self) -> bool {
@@ -113,6 +104,25 @@ impl Item {
         })
     }
 
+    pub(crate) fn open(&mut self, reveals: String) -> String {
+        match self.container {
+            Container::Open => {
+                format!("The {} is already open.", self.name())
+            }
+            Container::Closed => {
+                self.container = Container::Open;
+                if !self.open_message.is_empty() {
+                    self.open_message.clone()
+                } else if !reveals.is_empty() {
+                    format!("Opening the {} reveals {}.", self.name(), reveals)
+                } else {
+                    "Opened.".to_owned()
+                }
+            }
+            _ => format!("You cannot do that to a {}.", self.name()),
+        }
+    }
+
     pub(crate) fn set_location(&mut self, location: String) {
         self.locations = vec![location];
     }
@@ -121,29 +131,11 @@ impl Item {
         if self.can_take {
             self.locations = vec![location.to_owned()];
             "Taken."
-        } else if self.take_message.is_empty() {
-            "Nice try."
-        } else {
+        } else if !self.take_message.is_empty() {
             &self.take_message
+        } else {
+            "Nice try."
         }
-    }
-
-    pub(crate) fn details(&self) -> &str {
-        &self.details
-    }
-}
-
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
-pub(crate) enum Container {
-    Open,
-    Closed,
-    True,
-    False,
-}
-
-impl Default for Container {
-    fn default() -> Self {
-        Self::False
     }
 }
 

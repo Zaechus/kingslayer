@@ -6,8 +6,13 @@ mod tests {
     fn test() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
+        // no input
         game.ask("");
+
+        // no verb or noun
         game.ask("a");
+
+        // and with no clauses
         game.ask("and");
     }
 
@@ -51,11 +56,11 @@ mod tests {
     fn names() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        // test moving rooms
+        // moving rooms
         assert!(game.ask("l").starts_with("Center Room"));
         assert!(game.ask("enter closet").starts_with("Closet"));
 
-        // test name matching
+        // name matching
 
         let expected = "It's here.";
 
@@ -84,19 +89,22 @@ mod tests {
     fn open_close_container() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        // test reveal message
+        // reveal message
         assert_eq!(game.ask("open box"), "Opening the box reveals a apple.");
 
-        // test already open
+        // already open
         assert_eq!(game.ask("open box"), "The box is already open.");
 
-        game.ask("take apple");
+        // take object from unspecified open container
+        assert_eq!(game.ask("take apple"), "Taken.");
 
-        // test close
+        // close
         assert_eq!(game.ask("close box"), "Closed.");
+
+        // already closed
         assert_eq!(game.ask("close box"), "The box is already closed.");
 
-        // test open with no reveal
+        // open with no reveal
         assert_eq!(game.ask("open box"), "Opened.");
     }
 

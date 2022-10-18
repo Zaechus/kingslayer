@@ -2,6 +2,7 @@ use std::io;
 
 pub use game::Game;
 
+mod container;
 mod direction;
 mod game;
 mod item;

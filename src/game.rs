@@ -9,8 +9,9 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    container::Container,
     direction::Direction,
-    item::{list_items, Container, Item},
+    item::{list_items, Item},
     read_line,
     tokens::{Command, Tokens},
 };
@@ -355,7 +356,7 @@ impl Game {
             .values()
             .filter(|i| i.is_in(&loc))
             .collect::<Vec<_>>();
-        if *self.item(&loc).container() == Container::Closed && contents.len() == 1 {
+        if self.item(&loc).is_closed() && contents.len() == 1 {
             self.last_it = contents[0].name().to_owned();
         }
         let reveals = list_items(&contents);

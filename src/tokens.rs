@@ -82,7 +82,7 @@ impl Tokens {
         let mut noun = String::new();
         let mut prep = String::new();
         let mut obj = String::new();
-        let verb = if let Some(verb) = words.get(0) {
+        let verb = if let Some(verb) = words.first() {
             if let Some(prep_pos) = words.iter().position(|w| PREPOSITIONS.contains(w)) {
                 if prep_pos != 0 {
                     noun = words[1..prep_pos].join(" ");
