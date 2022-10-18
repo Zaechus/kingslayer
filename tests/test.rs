@@ -7,6 +7,8 @@ mod tests {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
         game.ask("");
+        game.ask("a");
+        game.ask("and");
     }
 
     #[test]
@@ -102,7 +104,6 @@ mod tests {
     fn take_all() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        game.ask("n");
-        game.ask("take all");
+        game.ask("n and take all");
     }
 }

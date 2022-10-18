@@ -381,6 +381,7 @@ impl Game {
             Command::Inventory => self.inventory(),
             Command::Look => self.look(),
             Command::Move(_) => todo!(),
+            Command::NoVerb => "Excuse me?".to_owned(),
             Command::Open(noun) => self.open(noun),
             Command::Sleep => "Time passes...".to_owned(),
             Command::Take(noun) => self.parse_take(noun),

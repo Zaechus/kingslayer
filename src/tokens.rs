@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::direction::Direction;
 
-const USELESS_WORDS: [&str; 15] = [
-    "a", "am", "an", "across", "around", "at", "for", "is", "of", "my", "that", "the", "this",
-    "through", "to",
+const USELESS_WORDS: [&str; 17] = [
+    "a", "am", "an", "across", "around", "at", "for", "is", "of", "my", "no", "that", "the",
+    "this", "through", "to", "yes",
 ];
 const PREPOSITIONS: [&str; 6] = ["in", "inside", "from", "on", "under", "with"];
 
@@ -41,6 +41,7 @@ pub(crate) enum Command {
     Inventory,
     Look,
     Move(String),
+    NoVerb,
     Open(String),
     Put(String, String),
     Sleep,
@@ -78,24 +79,27 @@ impl Tokens {
             .filter(|w| !USELESS_WORDS.contains(w))
             .collect();
 
-        let verb = words[0];
         let mut noun = String::new();
         let mut prep = String::new();
         let mut obj = String::new();
-
-        if let Some(prep_pos) = words.iter().position(|w| PREPOSITIONS.contains(w)) {
-            if prep_pos != 0 {
-                noun = words[1..prep_pos].join(" ");
+        let verb = if let Some(verb) = words.get(0) {
+            if let Some(prep_pos) = words.iter().position(|w| PREPOSITIONS.contains(w)) {
+                if prep_pos != 0 {
+                    noun = words[1..prep_pos].join(" ");
+                }
+                prep = words[prep_pos].to_owned();
+                obj = words[prep_pos + 1..].join(" ");
+            } else {
+                noun = words[1..].join(" ");
             }
-            prep = words[prep_pos].to_owned();
-            obj = words[prep_pos + 1..].join(" ");
+            verb
         } else {
-            noun = words[1..].join(" ");
-        }
+            ""
+        };
 
         Self {
             command: Self::parse(verb, &noun, &mut prep, &obj),
-            verb: verb.to_owned(),
+            verb: verb.to_string(),
             noun,
             prep,
             obj,
@@ -211,11 +215,12 @@ impl Tokens {
             "wait" | "z" | "sleep" => Command::Sleep,
             "where" | "find" | "see" => {
                 if noun.is_empty() {
-                    Command::Clarify(verb.to_string())
+                    Command::NoVerb
                 } else {
                     Command::Where(noun.to_string())
                 }
             }
+            "" => Command::NoVerb,
             _ => Command::Unknown(verb.to_string()),
         }
     }
