@@ -367,11 +367,11 @@ impl Game {
     fn parse(&mut self, command: &Command) -> String {
         match command {
             Command::Again => self.parse(&self.last_command.command().clone()),
-            Command::Attack(_, _) => todo!(),
-            Command::Break(_) => todo!(),
-            Command::Burn(_, _) => todo!(),
+            Command::Attack(_, _) => "You can't do that yet.".to_owned(),
+            Command::Break(_) => "You can't do that yet.".to_owned(),
+            Command::Burn(_, _) => "You can't do that yet.".to_owned(),
             Command::Clarify(verb) => format!("What do you want to {}?", verb),
-            Command::Climb => todo!(),
+            Command::Climb => "You can't do that yet.".to_owned(),
             Command::Close(noun) => self.close(noun),
             Command::Drop(noun) => self.drop(noun),
             Command::Put(noun, obj) => self.put(noun, obj),
@@ -381,14 +381,14 @@ impl Game {
             Command::Help => "That would be nice, wouldn't it?".to_owned(),
             Command::Inventory => self.inventory(),
             Command::Look => self.look(),
-            Command::Move(_) => todo!(),
+            Command::Move(_) => "You can't do that yet.".to_owned(),
             Command::NoVerb => "Excuse me?".to_owned(),
             Command::Open(noun) => self.open(noun),
             Command::Sleep => "Time passes...".to_owned(),
             Command::Take(noun) => self.parse_take(noun),
             Command::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
             Command::Walk(direction) => self.walk(direction),
-            Command::Wear(noun) => format!("Put on: {}", noun),
+            Command::Wear(_) => "You can't do that yet.".to_owned(),
             Command::Where(noun) => self.where_is(noun),
         }
     }
@@ -517,7 +517,7 @@ impl Game {
     pub fn save(&self, filename: &str) -> Result<String, Box<dyn error::Error>> {
         match File::create(filename) {
             Ok(file) => {
-                zstd::stream::copy_encode(&*bincode::serialize(&self)?, file, 3).unwrap();
+                zstd::stream::copy_encode(&*bincode::serialize(&self)?, file, 3)?;
                 Ok("Saved.".to_owned())
             }
             Err(e) => Ok(e.to_string()),
