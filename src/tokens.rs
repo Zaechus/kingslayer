@@ -131,7 +131,7 @@ impl Tokens {
                     Command::Close(noun.to_string())
                 }
             }
-            "drop" | "place" | "throw" => {
+            "drop" | "throw" => {
                 if noun.is_empty() {
                     Command::Clarify(verb.to_string())
                 } else if obj.is_empty() {
@@ -187,22 +187,18 @@ impl Tokens {
                     Command::Open(noun.to_string())
                 }
             }
-            "put" => {
-                if prep == "on" {
-                    if obj.is_empty() {
-                        Command::Clarify("put on".to_owned())
-                    } else {
-                        Command::Wear(obj.to_string())
-                    }
-                } else if noun.is_empty() {
-                    Command::Clarify(verb.to_string())
-                } else if obj.is_empty() {
-                    if prep.is_empty() {
-                        prep.push_str("in");
-                    }
-                    Command::Clarify(format!("{} the {} {}", verb, noun, prep))
-                } else {
-                    Command::Put(noun.to_string(), obj.to_string())
+            "put" | "place" => {
+                if prep.is_empty() {
+                    prep.push_str("in");
+                }
+                match (noun.is_empty(), prep.as_str(), obj.is_empty()) {
+                    (false, "on", true) => Command::Wear(noun.to_owned()),
+                    (true, "on", false) => Command::Wear(obj.to_owned()),
+                    (true, "on", true) => Command::Clarify("put on".to_owned()),
+                    (false, _, false) => Command::Put(noun.to_owned(), obj.to_owned()),
+                    (true, _, false) => Command::Clarify(format!("{} the {}", prep, obj)),
+                    (false, _, true) => Command::Clarify(format!("the {} {}", noun, prep)),
+                    (true, _, true) => Command::Clarify(verb.to_owned()),
                 }
             }
             "take" | "hold" | "get" | "pick" | "remove" => {

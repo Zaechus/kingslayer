@@ -461,23 +461,24 @@ impl Game {
             return cant_see_any(noun);
         };
 
-        match self.item(&container).container() {
-            Container::Open | Container::True => {
-                if container == item {
-                    "Impossible.".to_owned()
-                } else if self.item(&item).location() == container {
-                    format!(
-                        "The {} is already in the {}.",
-                        self.item(&item).name(),
-                        self.item(&container).name()
-                    )
-                } else {
-                    self.item_mut(&item).set_location(container);
-                    "Done.".to_owned()
+        if self.item(&item).location() == self.player {
+            if container == item {
+                "Impossible.".to_owned()
+            } else {
+                match self.item(&container).container() {
+                    Container::Open | Container::True => {
+                        self.item_mut(&item).set_location(container);
+                        "Done.".to_owned()
+                    }
+                    Container::Closed => {
+                        self.last_it = self.item(&container).name().to_owned();
+                        format!("The {} isn't open.", self.item(&container).name())
+                    }
+                    Container::False => "You can't do that.".to_owned(),
                 }
             }
-            Container::Closed => format!("The {} isn't open.", self.item(&container).name()),
-            Container::False => "You can't do that.".to_owned(),
+        } else {
+            format!("You do not have the {}.", noun)
         }
     }
 
@@ -524,6 +525,7 @@ impl Game {
         }
     }
 
+    // TODO: use all in other commands somehow?
     fn take_all(&mut self) -> String {
         let items = self.items.iter().fold(Vec::new(), |mut acc, (loc, i)| {
             if i.is_in(self.player_location()) && !i.name().is_empty() && !i.desc().is_empty() {
