@@ -2,6 +2,31 @@ use serde::{Deserialize, Serialize};
 
 use crate::container::Container;
 
+#[derive(Debug, Deserialize, Serialize)]
+enum Food {
+    Edible,
+    Poisonous,
+    No,
+}
+
+impl Default for Food {
+    fn default() -> Self {
+        Self::No
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+enum Opacity {
+    Opaque,
+    Transparent,
+}
+
+impl Default for Opacity {
+    fn default() -> Self {
+        Self::Opaque
+    }
+}
+
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub(crate) struct Item {
@@ -9,10 +34,12 @@ pub(crate) struct Item {
     close_message: String,
     container: Container,
     covering: Vec<String>,
+    opacity: Opacity,
     desc: String,
     dest: String,
     details: String,
     door: String,
+    food: Food,
     go_message: String,
     locations: Vec<String>,
     move_message: String,
@@ -23,6 +50,10 @@ pub(crate) struct Item {
 }
 
 impl Item {
+    pub(crate) fn can_eat(&self) -> bool {
+        !matches!(self.food, Food::No)
+    }
+
     pub(crate) fn can_take(&self) -> bool {
         self.can_take
     }
@@ -66,6 +97,11 @@ impl Item {
 
     pub(crate) fn go_message(&self) -> &str {
         &self.go_message
+    }
+
+    pub(crate) const fn is_clear(&self) -> bool {
+        matches!(self.container, Container::Open | Container::True)
+            || matches!(self.opacity, Opacity::Transparent)
     }
 
     pub(crate) fn is_closed(&self) -> bool {

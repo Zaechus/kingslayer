@@ -84,7 +84,7 @@ impl Tokens {
         match verb {
             _ if verb.is_direction() => Action::Walk(verb.to_owned()),
             "again" | "g" => Action::Again,
-            "attack" | "cut" | "hit" | "hurt" | "kill" => {
+            "attack" | "cut" | "hit" | "hurt" | "kill" | "murder" | "slay" => {
                 Action::Attack(String::new(), String::new())
             }
             "break" | "destroy" | "smash" => Action::Break(String::new()),
@@ -106,7 +106,7 @@ impl Tokens {
                     Action::Put(noun.to_owned(), obj.to_owned())
                 }
             }
-            "eat" | "consume" | "drink" | "quaff" => {
+            "eat" | "consume" | "devour" | "drink" | "quaff" => {
                 if noun.is_empty() {
                     Action::what_do(verb)
                 } else {
@@ -127,9 +127,6 @@ impl Tokens {
                     Action::Examine(noun.to_owned())
                 }
             }
-            "hello" | "hi" => Action::Hello,
-            "help" => Action::Help,
-            "inventory" | "i" => Action::Inventory,
             "go" | "walk" => {
                 if noun.is_empty() {
                     Action::Clarify(format!("Where do you want to {}?", verb))
@@ -137,6 +134,11 @@ impl Tokens {
                     Action::Walk(noun.to_owned())
                 }
             }
+            "give" => todo!(),
+            "hello" | "hi" => Action::Hello,
+            "help" => Action::Help,
+            "inventory" | "i" => Action::Inventory,
+            "light" => todo!(),
             "look" | "l" => {
                 if noun.is_empty() {
                     Action::Look
@@ -179,6 +181,7 @@ impl Tokens {
                     Action::Take(noun.to_owned())
                 }
             }
+            "version" => Action::Version,
             "wait" | "z" | "sleep" => Action::Sleep,
             "where" | "find" | "see" => {
                 if noun.is_empty() {

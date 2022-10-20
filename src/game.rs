@@ -170,7 +170,7 @@ impl Game {
     }
 
     fn contents(&self, location: &str, item: &Item) -> String {
-        if item.is_open() {
+        if item.is_clear() {
             let contents = self.items.values().fold(String::new(), |acc, i| {
                 if i.is_in(location) && !i.name().is_empty() {
                     format!("{}\n  a {}", acc, i.name())
@@ -250,11 +250,18 @@ impl Game {
         }
     }
 
+    // is the item accessible in the room but not held by the player
     fn in_room(&self, loc: &str, i: &Item) -> bool {
         loc == self.player
             || i.is_in(self.player_location())
             || if let Some(parent) = self.items.get(i.location()) {
-                parent.is_open() && parent.is_in(self.player_location())
+                parent.is_open()
+                    && (parent.is_in(self.player_location())
+                        || if let Some(super_parent) = self.items.get(parent.location()) {
+                            super_parent.is_open() && super_parent.is_in(self.player_location())
+                        } else {
+                            false
+                        })
             } else {
                 false
             }
@@ -276,6 +283,7 @@ impl Game {
         }
     }
 
+    // is the item visible in the room or held by the player
     fn is_visible(&self, loc: &str, i: &Item) -> bool {
         i.is_in(&self.player) || self.in_room(loc, i)
     }
@@ -376,7 +384,7 @@ impl Game {
             Action::Close(noun) => self.close(noun),
             Action::Drop(noun) => self.drop(noun),
             Action::Put(noun, obj) => self.put(noun, obj),
-            Action::Eat(_) => "You cannot eat that.".to_owned(),
+            Action::Eat(noun) => self.eat(noun),
             Action::Examine(noun) => self.examine(noun),
             Action::Hello => "Hello!".to_owned(),
             Action::Help => "That would be nice, wouldn't it?".to_owned(),
@@ -388,9 +396,28 @@ impl Game {
             Action::Sleep => "Time passes...".to_owned(),
             Action::Take(noun) => self.parse_take(noun),
             Action::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
+            Action::Version => format!("Kingslayer {}", env!("CARGO_PKG_VERSION")),
             Action::Walk(direction) => self.walk(direction),
             Action::Wear(_) => "You can't do that yet.".to_owned(),
             Action::Where(noun) => self.where_is(noun),
+        }
+    }
+
+    fn eat(&mut self, noun: &str) -> String {
+        if let Some((loc, _)) = self
+            .items
+            .iter()
+            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+        {
+            let loc = loc.clone();
+            if self.item(&loc).can_eat() {
+                self.items.remove(&loc);
+                "Delicious.".to_owned()
+            } else {
+                "You cannot eat that.".to_owned()
+            }
+        } else {
+            cant_see_any(noun)
         }
     }
 

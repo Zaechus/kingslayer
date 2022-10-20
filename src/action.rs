@@ -6,6 +6,7 @@ pub(crate) enum Action {
     Attack(String, String),
     Break(String),
     Burn(String, String),
+    Version,
     Clarify(String),
     Climb,
     Close(String),
