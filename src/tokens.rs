@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::direction::Direction;
+use crate::{action::Action, direction::Direction};
 
 const USELESS_WORDS: [&str; 17] = [
     "a", "am", "an", "across", "around", "at", "for", "is", "of", "my", "no", "that", "the",
@@ -24,43 +24,9 @@ fn alias(s: &String) -> &str {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub(crate) enum Command {
-    Again,
-    Attack(String, String),
-    Break(String),
-    Burn(String, String),
-    Clarify(String),
-    Climb,
-    Close(String),
-    Drop(String),
-    Eat(String),
-    Examine(String),
-    Hello,
-    Help,
-    Inventory,
-    Look,
-    Move(String),
-    NoVerb,
-    Open(String),
-    Put(String, String),
-    Sleep,
-    Take(String),
-    Unknown(String),
-    Walk(String),
-    Wear(String),
-    Where(String),
-}
-
-impl Default for Command {
-    fn default() -> Self {
-        Self::Look
-    }
-}
-
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub(crate) struct Tokens {
-    command: Command,
+    action: Action,
     verb: String,
     noun: String,
     prep: String,
@@ -68,8 +34,8 @@ pub(crate) struct Tokens {
 }
 
 impl Tokens {
-    pub(crate) fn command(&self) -> &Command {
-        &self.command
+    pub(crate) fn action(&self) -> &Action {
+        &self.action
     }
 
     pub(crate) fn new(words: &[String]) -> Self {
@@ -98,7 +64,7 @@ impl Tokens {
         };
 
         Self {
-            command: Self::parse(verb, &noun, &mut prep, &obj),
+            action: Self::parse(verb, &noun, &mut prep, &obj),
             verb: verb.to_string(),
             noun,
             prep,
@@ -114,77 +80,76 @@ impl Tokens {
         self.obj.as_ref()
     }
 
-    fn parse(verb: &str, noun: &str, prep: &mut String, obj: &str) -> Command {
+    fn parse(verb: &str, noun: &str, prep: &mut String, obj: &str) -> Action {
         match verb {
-            _ if verb.is_direction() => Command::Walk(verb.to_string()),
-            "again" | "g" => Command::Again,
+            _ if verb.is_direction() => Action::Walk(verb.to_string()),
+            "again" | "g" => Action::Again,
             "attack" | "cut" | "hit" | "hurt" | "kill" => {
-                Command::Attack("".to_owned(), "".to_owned())
+                Action::Attack("".to_owned(), "".to_owned())
             }
-            "break" | "destroy" => Command::Break("".to_owned()),
-            "burn" => Command::Burn("".to_owned(), "".to_owned()),
-            "climb" => Command::Climb,
+            "break" | "destroy" => Action::Break("".to_owned()),
+            "burn" => Action::Burn("".to_owned(), "".to_owned()),
+            "climb" => Action::Climb,
             "close" | "shut" => {
                 if noun.is_empty() {
-                    Command::Clarify(verb.to_string())
+                    Action::what_do(verb)
                 } else {
-                    Command::Close(noun.to_string())
+                    Action::Close(noun.to_string())
                 }
             }
             "drop" | "throw" => {
                 if noun.is_empty() {
-                    Command::Clarify(verb.to_string())
+                    Action::what_do(verb)
                 } else if obj.is_empty() {
-                    Command::Drop(noun.to_string())
+                    Action::Drop(noun.to_string())
                 } else {
-                    Command::Put(noun.to_string(), obj.to_string())
+                    Action::Put(noun.to_string(), obj.to_string())
                 }
             }
             "eat" | "consume" | "drink" | "quaff" => {
                 if noun.is_empty() {
-                    Command::Clarify(verb.to_string())
+                    Action::what_do(verb)
                 } else {
-                    Command::Eat(noun.to_string())
+                    Action::Eat(noun.to_string())
                 }
             }
             "enter" => {
                 if noun.is_empty() {
-                    Command::Walk(verb.to_string())
+                    Action::Walk(verb.to_string())
                 } else {
-                    Command::Walk(noun.to_string())
+                    Action::Walk(noun.to_string())
                 }
             }
             "examine" | "inspect" | "read" | "what" => {
                 if noun.is_empty() {
-                    Command::Clarify(verb.to_string())
+                    Action::what_do(verb)
                 } else {
-                    Command::Examine(noun.to_string())
+                    Action::Examine(noun.to_string())
                 }
             }
-            "hello" | "hi" => Command::Hello,
-            "help" => Command::Help,
-            "inventory" | "i" => Command::Inventory,
+            "hello" | "hi" => Action::Hello,
+            "help" => Action::Help,
+            "inventory" | "i" => Action::Inventory,
             "go" | "walk" => {
                 if noun.is_empty() {
-                    // TODO: "Where do you want to {}?"
-                    Command::Clarify(verb.to_string())
+                    Action::Clarify(format!("Where do you want to {}?", verb))
                 } else {
-                    Command::Walk(noun.to_string())
+                    Action::Walk(noun.to_string())
                 }
             }
             "look" | "l" => {
                 if noun.is_empty() {
-                    Command::Look
+                    Action::Look
                 } else {
-                    Command::Examine(noun.to_string())
+                    Action::Examine(noun.to_string())
                 }
             }
-            "move" | "pull" | "push" => Command::Move("".to_owned()),
+            "move" | "pull" | "push" => Action::Move("".to_owned()),
             "open" => {
                 if noun.is_empty() {
-                    Command::Clarify(verb.to_string())
+                    Action::what_do(verb)
                 } else {
-                    Command::Open(noun.to_string())
+                    Action::Open(noun.to_string())
                 }
             }
             "put" | "place" => {
@@ -192,32 +157,32 @@ impl Tokens {
                     prep.push_str("in");
                 }
                 match (noun.is_empty(), prep.as_str(), obj.is_empty()) {
-                    (false, "on", true) => Command::Wear(noun.to_owned()),
-                    (true, "on", false) => Command::Wear(obj.to_owned()),
-                    (true, "on", true) => Command::Clarify("put on".to_owned()),
-                    (false, _, false) => Command::Put(noun.to_owned(), obj.to_owned()),
-                    (true, _, false) => Command::Clarify(format!("{} the {}", prep, obj)),
-                    (false, _, true) => Command::Clarify(format!("the {} {}", noun, prep)),
-                    (true, _, true) => Command::Clarify(verb.to_owned()),
+                    (false, "on", true) => Action::Wear(noun.to_owned()),
+                    (true, "on", false) => Action::Wear(obj.to_owned()),
+                    (true, "on", true) => Action::what_do("put on"),
+                    (false, _, false) => Action::Put(noun.to_owned(), obj.to_owned()),
+                    (true, _, false) => Action::what_do(&format!("{} {} the {}", verb, prep, obj)),
+                    (false, _, true) => Action::what_do(&format!("{} the {} {}", verb, noun, prep)),
+                    (true, _, true) => Action::what_do(verb),
                 }
             }
             "take" | "hold" | "get" | "pick" | "remove" => {
                 if noun.is_empty() {
-                    Command::Clarify(verb.to_string())
+                    Action::what_do(verb)
                 } else {
-                    Command::Take(noun.to_string())
+                    Action::Take(noun.to_string())
                 }
             }
-            "wait" | "z" | "sleep" => Command::Sleep,
+            "wait" | "z" | "sleep" => Action::Sleep,
             "where" | "find" | "see" => {
                 if noun.is_empty() {
-                    Command::NoVerb
+                    Action::NoVerb
                 } else {
-                    Command::Where(noun.to_string())
+                    Action::Where(noun.to_string())
                 }
             }
-            "" => Command::NoVerb,
-            _ => Command::Unknown(verb.to_string()),
+            "" => Action::NoVerb,
+            _ => Action::Unknown(verb.to_string()),
         }
     }
 
@@ -231,7 +196,7 @@ impl Tokens {
 
     pub(crate) fn with(verb: String, noun: String, mut prep: String, obj: String) -> Self {
         Self {
-            command: Self::parse(&verb, &noun, &mut prep, &obj),
+            action: Self::parse(&verb, &noun, &mut prep, &obj),
             verb,
             noun,
             prep,

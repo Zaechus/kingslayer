@@ -9,11 +9,12 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    action::Action,
     container::Container,
     direction::Direction,
     item::{list_items, Item},
     read_line,
-    tokens::{Command, Tokens},
+    tokens::Tokens,
 };
 
 /// A Kingslayer game
@@ -79,8 +80,8 @@ impl Game {
         let mut res = if let Some(first) = commands.first() {
             let mut tokens = Tokens::new(first);
 
-            if let Command::Clarify(_) = self.last_command.command() {
-                if let Command::Unknown(_) = tokens.command() {
+            if let Action::Clarify(_) = self.last_command.action() {
+                if let Action::Unknown(_) = tokens.action() {
                     let phrase = if tokens.verb() == "it" {
                         self.last_it.clone()
                     } else {
@@ -106,31 +107,31 @@ impl Game {
 
                 self.update_last(tokens.clone());
 
-                self.parse(tokens.command())
+                self.parse(tokens.action())
             } else {
                 let tokens = self.replace_it(tokens);
 
-                match tokens.command() {
-                    Command::Again | Command::Unknown(_) => (),
-                    Command::Clarify(_) => self.last_command = tokens.clone(),
+                match tokens.action() {
+                    Action::Again | Action::Unknown(_) => (),
+                    Action::Clarify(_) => self.last_command = tokens.clone(),
                     _ => {
                         self.update_last(tokens.clone());
                     }
                 }
 
-                self.parse(tokens.command())
+                self.parse(tokens.action())
             }
         } else {
             "Excuse me?".to_owned()
         };
 
         for words in commands.iter().skip(1) {
-            if let Command::Clarify(_) = self.last_command.command() {
+            if let Action::Clarify(_) = self.last_command.action() {
                 break;
             } else {
                 let mut tokens = self.replace_it(Tokens::new(words));
 
-                if let Command::Unknown(_) = tokens.command() {
+                if let Action::Unknown(_) = tokens.action() {
                     tokens = Tokens::with(
                         self.last_command.verb().to_owned(),
                         words.join(" "),
@@ -141,7 +142,7 @@ impl Game {
 
                 self.update_last(tokens.clone());
 
-                res = format!("{}\n\n{}", res, self.parse(tokens.command()));
+                res = format!("{}\n\n{}", res, self.parse(tokens.action()));
             }
         }
 
@@ -364,32 +365,32 @@ impl Game {
         self.item_mut(&loc).open(reveals)
     }
 
-    fn parse(&mut self, command: &Command) -> String {
-        match command {
-            Command::Again => self.parse(&self.last_command.command().clone()),
-            Command::Attack(_, _) => "You can't do that yet.".to_owned(),
-            Command::Break(_) => "You can't do that yet.".to_owned(),
-            Command::Burn(_, _) => "You can't do that yet.".to_owned(),
-            Command::Clarify(verb) => format!("What do you want to {}?", verb),
-            Command::Climb => "You can't do that yet.".to_owned(),
-            Command::Close(noun) => self.close(noun),
-            Command::Drop(noun) => self.drop(noun),
-            Command::Put(noun, obj) => self.put(noun, obj),
-            Command::Eat(_) => "You cannot eat that.".to_owned(),
-            Command::Examine(noun) => self.examine(noun),
-            Command::Hello => "Hello!".to_owned(),
-            Command::Help => "That would be nice, wouldn't it?".to_owned(),
-            Command::Inventory => self.inventory(),
-            Command::Look => self.look(),
-            Command::Move(_) => "You can't do that yet.".to_owned(),
-            Command::NoVerb => "Excuse me?".to_owned(),
-            Command::Open(noun) => self.open(noun),
-            Command::Sleep => "Time passes...".to_owned(),
-            Command::Take(noun) => self.parse_take(noun),
-            Command::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
-            Command::Walk(direction) => self.walk(direction),
-            Command::Wear(_) => "You can't do that yet.".to_owned(),
-            Command::Where(noun) => self.where_is(noun),
+    fn parse(&mut self, action: &Action) -> String {
+        match action {
+            Action::Again => self.parse(&self.last_command.action().clone()),
+            Action::Attack(_, _) => "You can't do that yet.".to_owned(),
+            Action::Break(_) => "You can't do that yet.".to_owned(),
+            Action::Burn(_, _) => "You can't do that yet.".to_owned(),
+            Action::Clarify(message) => message.to_owned(),
+            Action::Climb => "You can't do that yet.".to_owned(),
+            Action::Close(noun) => self.close(noun),
+            Action::Drop(noun) => self.drop(noun),
+            Action::Put(noun, obj) => self.put(noun, obj),
+            Action::Eat(_) => "You cannot eat that.".to_owned(),
+            Action::Examine(noun) => self.examine(noun),
+            Action::Hello => "Hello!".to_owned(),
+            Action::Help => "That would be nice, wouldn't it?".to_owned(),
+            Action::Inventory => self.inventory(),
+            Action::Look => self.look(),
+            Action::Move(_) => "You can't do that yet.".to_owned(),
+            Action::NoVerb => "Excuse me?".to_owned(),
+            Action::Open(noun) => self.open(noun),
+            Action::Sleep => "Time passes...".to_owned(),
+            Action::Take(noun) => self.parse_take(noun),
+            Action::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
+            Action::Walk(direction) => self.walk(direction),
+            Action::Wear(_) => "You can't do that yet.".to_owned(),
+            Action::Where(noun) => self.where_is(noun),
         }
     }
 
