@@ -8,23 +8,27 @@ pub(crate) struct Item {
     can_take: bool,
     close_message: String,
     container: Container,
+    covering: Vec<String>,
     desc: String,
     dest: String,
     details: String,
     door: String,
     go_message: String,
     locations: Vec<String>,
+    move_message: String,
+    moved_message: String,
     names: Vec<String>,
     open_message: String,
     take_message: String,
 }
 
 impl Item {
+    pub(crate) fn can_take(&self) -> bool {
+        self.can_take
+    }
+
     pub(crate) fn close(&mut self) -> String {
         match self.container {
-            Container::Closed => {
-                format!("The {} is already closed.", self.name())
-            }
             Container::Open => {
                 self.container = Container::Closed;
                 if self.close_message.is_empty() {
@@ -32,6 +36,9 @@ impl Item {
                 } else {
                     self.close_message.clone()
                 }
+            }
+            Container::Closed => {
+                format!("The {} is already closed.", self.name())
             }
             _ => format!("You cannot do that to a {}.", self.name()),
         }
@@ -82,6 +89,25 @@ impl Item {
             location
         } else {
             ""
+        }
+    }
+
+    pub(crate) fn move_self(&mut self) -> Result<(String, Vec<String>), String> {
+        if !self.covering.is_empty() {
+            Ok((
+                if self.move_message.is_empty() {
+                    "Done.".to_owned()
+                } else {
+                    self.move_message.clone()
+                },
+                self.covering.drain(..).collect(),
+            ))
+        } else {
+            Err(if self.moved_message.is_empty() {
+                format!("You cannot move the {}.", self.name())
+            } else {
+                self.moved_message.clone()
+            })
         }
     }
 
@@ -136,6 +162,10 @@ impl Item {
         } else {
             "Nice try."
         }
+    }
+
+    pub(crate) fn take_message(&self) -> &str {
+        &self.take_message
     }
 }
 

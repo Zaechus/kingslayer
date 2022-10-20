@@ -382,7 +382,7 @@ impl Game {
             Action::Help => "That would be nice, wouldn't it?".to_owned(),
             Action::Inventory => self.inventory(),
             Action::Look => self.look(),
-            Action::Move(_) => "You can't do that yet.".to_owned(),
+            Action::Move(noun) => self.parse_move(noun),
             Action::NoVerb => "Excuse me?".to_owned(),
             Action::Open(noun) => self.open(noun),
             Action::Sleep => "Time passes...".to_owned(),
@@ -391,6 +391,30 @@ impl Game {
             Action::Walk(direction) => self.walk(direction),
             Action::Wear(_) => "You can't do that yet.".to_owned(),
             Action::Where(noun) => self.where_is(noun),
+        }
+    }
+
+    fn parse_move(&mut self, noun: &str) -> String {
+        if let Some((loc, _)) = self
+            .items
+            .iter()
+            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+        {
+            let room = self.item(&loc.to_owned()).location().to_owned();
+            match self.item_mut(&loc.to_owned()).move_self() {
+                Ok((message, reveals)) => {
+                    if reveals.len() == 1 {
+                        self.last_it = self.item(&reveals[0]).name().to_owned();
+                    }
+                    for x in reveals {
+                        self.item_mut(&x).set_location(room.clone());
+                    }
+                    message
+                }
+                Err(err) => err,
+            }
+        } else {
+            cant_see_any(noun)
         }
     }
 
@@ -526,10 +550,12 @@ impl Game {
         }
     }
 
-    // TODO: use all in other commands somehow?
     fn take_all(&mut self) -> String {
         let items = self.items.iter().fold(Vec::new(), |mut acc, (loc, i)| {
-            if i.is_in(self.player_location()) && !i.name().is_empty() && !i.desc().is_empty() {
+            if i.is_in(self.player_location())
+                && !i.name().is_empty()
+                && (i.can_take() || !i.take_message().is_empty())
+            {
                 acc.push(loc.to_owned())
             }
             acc

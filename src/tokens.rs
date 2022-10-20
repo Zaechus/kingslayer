@@ -65,7 +65,7 @@ impl Tokens {
 
         Self {
             action: Self::parse(verb, &noun, &mut prep, &obj),
-            verb: verb.to_string(),
+            verb: verb.to_owned(),
             noun,
             prep,
             obj,
@@ -82,49 +82,49 @@ impl Tokens {
 
     fn parse(verb: &str, noun: &str, prep: &mut String, obj: &str) -> Action {
         match verb {
-            _ if verb.is_direction() => Action::Walk(verb.to_string()),
+            _ if verb.is_direction() => Action::Walk(verb.to_owned()),
             "again" | "g" => Action::Again,
             "attack" | "cut" | "hit" | "hurt" | "kill" => {
-                Action::Attack("".to_owned(), "".to_owned())
+                Action::Attack(String::new(), String::new())
             }
-            "break" | "destroy" => Action::Break("".to_owned()),
-            "burn" => Action::Burn("".to_owned(), "".to_owned()),
+            "break" | "destroy" | "smash" => Action::Break(String::new()),
+            "burn" => Action::Burn(String::new(), String::new()),
             "climb" => Action::Climb,
             "close" | "shut" => {
                 if noun.is_empty() {
                     Action::what_do(verb)
                 } else {
-                    Action::Close(noun.to_string())
+                    Action::Close(noun.to_owned())
                 }
             }
             "drop" | "throw" => {
                 if noun.is_empty() {
                     Action::what_do(verb)
                 } else if obj.is_empty() {
-                    Action::Drop(noun.to_string())
+                    Action::Drop(noun.to_owned())
                 } else {
-                    Action::Put(noun.to_string(), obj.to_string())
+                    Action::Put(noun.to_owned(), obj.to_owned())
                 }
             }
             "eat" | "consume" | "drink" | "quaff" => {
                 if noun.is_empty() {
                     Action::what_do(verb)
                 } else {
-                    Action::Eat(noun.to_string())
+                    Action::Eat(noun.to_owned())
                 }
             }
             "enter" => {
                 if noun.is_empty() {
-                    Action::Walk(verb.to_string())
+                    Action::Walk(verb.to_owned())
                 } else {
-                    Action::Walk(noun.to_string())
+                    Action::Walk(noun.to_owned())
                 }
             }
             "examine" | "inspect" | "read" | "what" => {
                 if noun.is_empty() {
                     Action::what_do(verb)
                 } else {
-                    Action::Examine(noun.to_string())
+                    Action::Examine(noun.to_owned())
                 }
             }
             "hello" | "hi" => Action::Hello,
@@ -134,22 +134,28 @@ impl Tokens {
                 if noun.is_empty() {
                     Action::Clarify(format!("Where do you want to {}?", verb))
                 } else {
-                    Action::Walk(noun.to_string())
+                    Action::Walk(noun.to_owned())
                 }
             }
             "look" | "l" => {
                 if noun.is_empty() {
                     Action::Look
                 } else {
-                    Action::Examine(noun.to_string())
+                    Action::Examine(noun.to_owned())
                 }
             }
-            "move" | "pull" | "push" => Action::Move("".to_owned()),
+            "move" | "pull" | "push" => {
+                if noun.is_empty() {
+                    Action::what_do(verb)
+                } else {
+                    Action::Move(noun.to_owned())
+                }
+            }
             "open" => {
                 if noun.is_empty() {
                     Action::what_do(verb)
                 } else {
-                    Action::Open(noun.to_string())
+                    Action::Open(noun.to_owned())
                 }
             }
             "put" | "place" => {
@@ -170,7 +176,7 @@ impl Tokens {
                 if noun.is_empty() {
                     Action::what_do(verb)
                 } else {
-                    Action::Take(noun.to_string())
+                    Action::Take(noun.to_owned())
                 }
             }
             "wait" | "z" | "sleep" => Action::Sleep,
@@ -178,11 +184,11 @@ impl Tokens {
                 if noun.is_empty() {
                     Action::NoVerb
                 } else {
-                    Action::Where(noun.to_string())
+                    Action::Where(noun.to_owned())
                 }
             }
             "" => Action::NoVerb,
-            _ => Action::Unknown(verb.to_string()),
+            _ => Action::Unknown(verb.to_owned()),
         }
     }
 
