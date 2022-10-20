@@ -169,11 +169,27 @@ impl Game {
         item.close()
     }
 
-    fn contents(&self, location: &str, item: &Item) -> String {
+    fn contents(&self, location: &str, item: &Item, depth: usize) -> String {
         if item.is_clear() {
-            let contents = self.items.values().fold(String::new(), |acc, i| {
+            let contents = self.items.iter().fold(String::new(), |acc, (loc, i)| {
                 if i.is_in(location) && !i.name().is_empty() {
-                    format!("{}\n  a {}", acc, i.name())
+                    let contents = if i.is_container() {
+                        self.contents(loc, i, depth + 1)
+                    } else {
+                        String::new()
+                    };
+
+                    if contents.is_empty() {
+                        format!("{}\n{}a {}", acc, "  ".repeat(depth), i.name())
+                    } else {
+                        format!(
+                            "{}\n{}a {}\n{}",
+                            acc,
+                            "  ".repeat(depth),
+                            i.name(),
+                            contents
+                        )
+                    }
                 } else {
                     acc
                 }
@@ -182,7 +198,12 @@ impl Game {
             if contents.is_empty() {
                 String::new()
             } else {
-                format!("The {} contains:{}", item.name(), contents)
+                format!(
+                    "{}The {} contains:{}",
+                    "  ".repeat(depth - 1),
+                    item.name(),
+                    contents
+                )
             }
         } else {
             String::new()
@@ -190,7 +211,7 @@ impl Game {
     }
 
     fn desc_contents(&self, location: &str, item: &Item) -> String {
-        let contents = self.contents(location, item);
+        let contents = self.contents(location, item, 1);
 
         if contents.is_empty() {
             item.desc().to_owned()
@@ -228,7 +249,7 @@ impl Game {
         {
             match item.container() {
                 Container::Open | Container::True => {
-                    let contents = self.contents(loc, item);
+                    let contents = self.contents(loc, item, 1);
 
                     if contents.is_empty() {
                         format!("The {} is empty.", item.name())
