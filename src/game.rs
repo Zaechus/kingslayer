@@ -82,7 +82,7 @@ impl Game {
 
             if let Action::Clarify(_) = self.last_command.action() {
                 if let Action::Unknown(_) = tokens.action() {
-                    let phrase = if tokens.verb() == "it" {
+                    let words = if tokens.verb() == "it" {
                         self.last_it.clone()
                     } else {
                         first.join(" ")
@@ -91,7 +91,7 @@ impl Game {
                     if self.last_command.noun().is_empty() {
                         tokens = Tokens::with(
                             self.last_command.verb().to_owned(),
-                            phrase,
+                            words,
                             self.last_command.prep().to_owned(),
                             self.last_command.obj().to_owned(),
                         );
@@ -100,7 +100,7 @@ impl Game {
                             self.last_command.verb().to_owned(),
                             self.last_command.noun().to_owned(),
                             self.last_command.prep().to_owned(),
-                            phrase,
+                            words,
                         );
                     }
                 }
@@ -146,7 +146,21 @@ impl Game {
             }
         }
 
-        res
+        let mut chunks: Vec<String> = Vec::new();
+        for mut l in res.lines().map(str::to_owned) {
+            loop {
+                if l.len() < 80 {
+                    chunks.push(l.drain(..).collect());
+                } else {
+                    let x = &l[..80].rfind(' ').unwrap_or(l.len() - 1);
+                    chunks.push(l.drain(..x + 1).collect());
+                };
+                if l.is_empty() {
+                    break;
+                }
+            }
+        }
+        chunks.join("\n")
     }
 
     fn close(&mut self, noun: &str) -> String {
