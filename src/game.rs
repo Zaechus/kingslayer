@@ -663,6 +663,7 @@ impl Game {
                     self.item_mut(&self.player.clone()).set_location(exit_dest);
                     self.look()
                 } else {
+                    self.last_it = door.name().to_owned();
                     format!("The {} is closed.", door.name())
                 }
             } else {

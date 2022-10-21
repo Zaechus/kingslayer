@@ -6,7 +6,7 @@ const USELESS_WORDS: [&str; 17] = [
     "a", "am", "an", "across", "around", "at", "for", "is", "of", "my", "no", "that", "the",
     "this", "through", "to", "yes",
 ];
-const PREPOSITIONS: [&str; 6] = ["in", "inside", "from", "on", "under", "with"];
+const PREPOSITIONS: [&str; 6] = ["in", "from", "on", "out", "under", "with"];
 
 fn alias(s: &String) -> &str {
     match s.as_str() {
@@ -20,6 +20,8 @@ fn alias(s: &String) -> &str {
         "sw" => "southwest",
         "u" => "up",
         "d" => "down",
+        "inside" => "in",
+        "outside" => "out",
         _ => s,
     }
 }
@@ -129,7 +131,11 @@ impl Tokens {
             }
             "go" | "walk" => {
                 if noun.is_empty() {
-                    Action::Clarify(format!("Where do you want to {}?", verb))
+                    match prep.as_str() {
+                        "in" => Action::Walk("enter".to_owned()),
+                        "out" => Action::Walk("exit".to_owned()),
+                        _ => Action::Clarify(format!("Where do you want to {}?", verb)),
+                    }
                 } else {
                     Action::Walk(noun.to_owned())
                 }
@@ -137,6 +143,7 @@ impl Tokens {
             "give" => todo!(),
             "hello" | "hi" => Action::Hello,
             "help" => Action::Help,
+            "in" => Action::Walk("enter".to_owned()),
             "inventory" | "i" => Action::Inventory,
             "light" => todo!(),
             "look" | "l" => {
@@ -160,6 +167,7 @@ impl Tokens {
                     Action::Open(noun.to_owned())
                 }
             }
+            "out" => Action::Walk("exit".to_owned()),
             "put" | "place" => {
                 if prep.is_empty() {
                     prep.push_str("in");

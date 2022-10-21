@@ -14,6 +14,9 @@ mod tests {
 
         // and with no clauses
         game.ask("and");
+
+        // unknown verb
+        assert_eq!(game.ask("jump"), "I do not know the verb \"jump\".")
     }
 
     #[test]
