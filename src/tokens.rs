@@ -22,8 +22,19 @@ fn alias(s: &String) -> &str {
         "d" => "down",
         "inside" => "in",
         "outside" => "out",
+        "everything" => "all",
         _ => s,
     }
+}
+
+macro_rules! do_or_ask {
+    ($action:ident, $noun:ident, $verb:ident) => {
+        if $noun.is_empty() {
+            Action::what_do($verb)
+        } else {
+            Action::$action($noun.to_owned())
+        }
+    };
 }
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
@@ -92,13 +103,7 @@ impl Tokens {
             "break" | "destroy" | "smash" => Action::Break(String::new()),
             "burn" => Action::Burn(String::new(), String::new()),
             "climb" => Action::Climb,
-            "close" | "shut" => {
-                if noun.is_empty() {
-                    Action::what_do(verb)
-                } else {
-                    Action::Close(noun.to_owned())
-                }
-            }
+            "close" | "shut" => do_or_ask!(Close, noun, verb),
             "drop" | "throw" => {
                 if noun.is_empty() {
                     Action::what_do(verb)
@@ -108,13 +113,7 @@ impl Tokens {
                     Action::Put(noun.to_owned(), obj.to_owned())
                 }
             }
-            "eat" | "consume" | "devour" | "drink" | "quaff" => {
-                if noun.is_empty() {
-                    Action::what_do(verb)
-                } else {
-                    Action::Eat(noun.to_owned())
-                }
-            }
+            "eat" | "consume" | "devour" | "drink" | "quaff" => do_or_ask!(Eat, noun, verb),
             "enter" => {
                 if noun.is_empty() {
                     Action::Walk(verb.to_owned())
@@ -122,13 +121,7 @@ impl Tokens {
                     Action::Walk(noun.to_owned())
                 }
             }
-            "examine" | "inspect" | "read" | "what" => {
-                if noun.is_empty() {
-                    Action::what_do(verb)
-                } else {
-                    Action::Examine(noun.to_owned())
-                }
-            }
+            "examine" | "inspect" | "read" | "what" => do_or_ask!(Examine, noun, verb),
             "go" | "walk" => {
                 if noun.is_empty() {
                     match prep.as_str() {
@@ -160,13 +153,7 @@ impl Tokens {
                     Action::Move(noun.to_owned())
                 }
             }
-            "open" => {
-                if noun.is_empty() {
-                    Action::what_do(verb)
-                } else {
-                    Action::Open(noun.to_owned())
-                }
-            }
+            "open" => do_or_ask!(Open, noun, verb),
             "out" => Action::Walk("exit".to_owned()),
             "put" | "place" => {
                 if prep.is_empty() {
@@ -182,13 +169,7 @@ impl Tokens {
                     (true, _, true) => Action::what_do(verb),
                 }
             }
-            "take" | "hold" | "get" | "pick" | "remove" => {
-                if noun.is_empty() {
-                    Action::what_do(verb)
-                } else {
-                    Action::Take(noun.to_owned())
-                }
-            }
+            "take" | "hold" | "get" | "pick" | "remove" => do_or_ask!(Take, noun, verb),
             "version" => Action::Version,
             "wait" | "z" | "sleep" => Action::Sleep,
             "where" | "find" | "see" => {

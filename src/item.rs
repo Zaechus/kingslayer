@@ -50,11 +50,11 @@ pub(crate) struct Item {
 }
 
 impl Item {
-    pub(crate) fn can_eat(&self) -> bool {
+    pub(crate) const fn can_eat(&self) -> bool {
         !matches!(self.food, Food::No)
     }
 
-    pub(crate) fn can_take(&self) -> bool {
+    pub(crate) const fn can_take(&self) -> bool {
         self.can_take
     }
 
@@ -104,7 +104,7 @@ impl Item {
             || matches!(self.opacity, Opacity::Transparent)
     }
 
-    pub(crate) fn is_closed(&self) -> bool {
+    pub(crate) const fn is_closed(&self) -> bool {
         matches!(self.container, Container::Closed)
     }
 
@@ -205,14 +205,16 @@ impl Item {
     }
 }
 
-pub(crate) fn list_items(items: &[&Item]) -> String {
+pub(crate) fn list_items(items: &[&Item], sep: &str) -> String {
+    let a = if sep == "or" { "the" } else { "a" };
+
     match items.len() {
         0 => String::new(),
-        1 => format!("a {}", items[0].name()),
-        2 => format!("a {} and a {}", items[0].name(), items[1].name()),
+        1 => format!("{a} {}", items[0].name()),
+        2 => format!("{a} {} {sep} {a} {}", items[0].name(), items[1].name()),
         _ => {
             format!(
-                "a {}, and a {}",
+                "{a} {}, {sep} {a} {}",
                 items[1..items.len() - 1].iter().fold(
                     items[0].name().to_owned(),
                     |acc, i| format!("{}, a {}", acc, i.name())

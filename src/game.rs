@@ -17,6 +17,74 @@ use crate::{
     tokens::Tokens,
 };
 
+macro_rules! visible_matches {
+    ($self:ident, $noun:ident) => {
+        $self
+            .items
+            .iter()
+            .filter(|(_, i)| $self.is_visible(i) && i.names_contains($noun))
+            .collect::<Vec<(&String, &Item)>>()
+    };
+}
+
+macro_rules! find_visible {
+    ($self:ident, $noun:ident, $verb:expr) => {{
+        let items_in_room: Vec<_> = visible_matches!($self, $noun);
+
+        match items_in_room.len() {
+            0 => return cant_see_any($noun),
+            1 => items_in_room[0],
+            _ => {
+                $self.last_command = Tokens::with(
+                    $verb.to_owned(),
+                    String::new(),
+                    String::new(),
+                    String::new(),
+                );
+                return format!(
+                    "Which {}, {}?",
+                    $noun,
+                    list_items(
+                        &items_in_room.iter().map(|(_, i)| *i).collect::<Vec<_>>(),
+                        "or"
+                    )
+                );
+            }
+        }
+    }};
+}
+
+// TODO
+macro_rules! do_all {
+    ($self:ident, $f:ident, $in:ident, $verb:expr) => {{
+        let items = $self
+            .items
+            .iter()
+            .filter(|(_, i)| {
+                $self.$in(i)
+                    && !i.name().is_empty()
+                    && (i.can_take() || !i.take_message().is_empty())
+            })
+            .map(|(loc, _)| loc.to_owned())
+            .collect::<Vec<String>>();
+
+        let message = items
+            .iter()
+            .fold(String::new(), |acc, loc| {
+                let name = $self.item(loc).name().to_owned();
+                format!("{}\n{}: {}", acc, name, $self.$f(&name))
+            })
+            .trim()
+            .to_owned();
+
+        if message.is_empty() {
+            format!("You can't see anything you can {}.", $verb)
+        } else {
+            message
+        }
+    }};
+}
+
 /// A Kingslayer game
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Game {
@@ -164,23 +232,15 @@ impl Game {
     }
 
     fn close(&mut self, noun: &str) -> String {
-        let loc = if let Some((loc, item)) = self
-            .items
-            .iter()
-            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
-        {
-            if !item.door().is_empty() {
-                item.door().to_owned()
-            } else {
-                loc.to_owned()
-            }
+        let (location, item) = find_visible!(self, noun, "close");
+
+        let location = if !item.door().is_empty() {
+            item.door().to_owned()
         } else {
-            return cant_see_any(noun);
+            location.to_owned()
         };
 
-        let item = self.item_mut(&loc);
-
-        item.close()
+        self.item_mut(&location).close()
     }
 
     fn contents(&self, location: &str, item: &Item, depth: usize) -> String {
@@ -236,30 +296,58 @@ impl Game {
         }
     }
 
-    fn drop(&mut self, noun: &str) -> String {
-        let player_location = self.player_location().to_owned();
-
-        if let Some(item) = self
-            .items
-            .values_mut()
-            .find(|i| i.is_in(&self.player) && i.names_contains(noun))
-        {
-            item.set_location(player_location);
-            "Dropped.".to_owned()
+    fn parse_drop(&mut self, noun: &str) -> String {
+        if noun == "all" {
+            do_all!(self, parse_drop, in_inventory, "drop")
         } else {
-            format!("You do not have the {}.", noun)
+            let player_location = self.player_location().to_owned();
+
+            let location = if let Some((loc, _)) = self
+                .items
+                .iter()
+                .find(|(_, i)| self.in_inventory(i) && i.names_contains(noun))
+            {
+                loc.to_owned()
+            } else {
+                return format!("You do not have the {}.", noun);
+            };
+
+            self.item_mut(&location).set_location(player_location);
+            "Dropped.".to_owned()
+        }
+    }
+
+    fn eat(&mut self, noun: &str) -> String {
+        if noun == "all" {
+            do_all!(self, eat, is_visible, "eat")
+        } else if let Some((loc, _)) = self
+            .items
+            .iter()
+            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun))
+        {
+            let loc = loc.clone();
+            if self.item(&loc).can_eat() {
+                self.items.remove(&loc);
+                "Delicious.".to_owned()
+            } else {
+                "You cannot eat that.".to_owned()
+            }
+        } else {
+            cant_see_any(noun)
         }
     }
 
     fn examine(&self, noun: &str) -> String {
-        if let Some((_, item)) = self.items.iter().find(|(loc, i)| {
-            self.is_visible(loc, i) && i.names_contains(noun) && !i.details().is_empty()
-        }) {
+        if let Some((_, item)) = self
+            .items
+            .iter()
+            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun) && !i.details().is_empty())
+        {
             item.details().to_owned()
         } else if let Some((loc, item)) = self
             .items
             .iter()
-            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun))
         {
             match item.container() {
                 Container::Open | Container::True => {
@@ -285,15 +373,17 @@ impl Game {
         }
     }
 
-    // is the item accessible in the room but not held by the player
-    fn in_room(&self, loc: &str, i: &Item) -> bool {
-        loc == self.player
-            || i.is_in(self.player_location())
-            || if let Some(parent) = self.items.get(i.location()) {
+    fn holding(&self, item: &Item) -> bool {
+        item.is_in(&self.player)
+    }
+
+    fn item_in(&self, item: &Item, location: &str) -> bool {
+        item.is_in(location)
+            || if let Some(parent) = self.items.get(item.location()) {
                 parent.is_open()
-                    && (parent.is_in(self.player_location())
+                    && (parent.is_in(location)
                         || if let Some(super_parent) = self.items.get(parent.location()) {
-                            super_parent.is_open() && super_parent.is_in(self.player_location())
+                            super_parent.is_open() && super_parent.is_in(location)
                         } else {
                             false
                         })
@@ -302,10 +392,28 @@ impl Game {
             }
     }
 
+    fn in_inventory(&self, item: &Item) -> bool {
+        self.item_in(item, &self.player)
+    }
+
+    fn in_room(&self, item: &Item) -> bool {
+        self.item_in(item, self.player_location())
+    }
+
     fn inventory(&self) -> String {
-        let inv = self.items.values().fold(String::new(), |acc, item| {
-            if item.is_in(&self.player) {
-                format!("{}\n  a {}", acc, item.name())
+        let inv = self.items.iter().fold(String::new(), |acc, (loc, i)| {
+            if i.is_in(&self.player) {
+                let contents = if i.is_container() {
+                    self.contents(loc, i, 2)
+                } else {
+                    String::new()
+                };
+
+                if contents.is_empty() {
+                    format!("{}\n  a {}", acc, i.name())
+                } else {
+                    format!("{}\n  a {}\n{}", acc, i.name(), contents)
+                }
             } else {
                 acc
             }
@@ -314,13 +422,18 @@ impl Game {
         if inv.is_empty() {
             "Your inventory is empty.".to_owned()
         } else {
-            format!("You are carring:{}", inv)
+            format!("You are carrying:{}", inv)
         }
     }
 
     // is the item visible in the room or held by the player
-    fn is_visible(&self, loc: &str, i: &Item) -> bool {
-        i.is_in(&self.player) || self.in_room(loc, i)
+    fn is_visible(&self, item: &Item) -> bool {
+        self.in_inventory(item) || self.in_room(item)
+    }
+
+    // is the item visible in the room or held by the player
+    fn is_visible_not_holding(&self, item: &Item) -> bool {
+        (self.in_inventory(item) || self.in_room(item)) && !self.holding(item)
     }
 
     fn item(&self, key: &str) -> &Item {
@@ -380,87 +493,11 @@ impl Game {
         )
     }
 
-    fn open(&mut self, noun: &str) -> String {
-        let loc = if let Some((loc, item)) = self
-            .items
-            .iter()
-            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
-        {
-            if !item.door().is_empty() {
-                item.door().to_owned()
-            } else {
-                loc.to_owned()
-            }
-        } else {
-            return cant_see_any(noun);
-        };
-
-        let contents = self
-            .items
-            .values()
-            .filter(|i| i.is_in(&loc))
-            .collect::<Vec<_>>();
-        if self.item(&loc).is_closed() && contents.len() == 1 {
-            self.last_it = contents[0].name().to_owned();
-        }
-        let reveals = list_items(&contents);
-
-        self.item_mut(&loc).open(reveals)
-    }
-
-    fn parse(&mut self, action: &Action) -> String {
-        match action {
-            Action::Again => self.parse(&self.last_command.action().clone()),
-            Action::Attack(_, _) => "You can't do that yet.".to_owned(),
-            Action::Break(_) => "You can't do that yet.".to_owned(),
-            Action::Burn(_, _) => "You can't do that yet.".to_owned(),
-            Action::Clarify(message) => message.to_owned(),
-            Action::Climb => "You can't do that yet.".to_owned(),
-            Action::Close(noun) => self.close(noun),
-            Action::Drop(noun) => self.drop(noun),
-            Action::Put(noun, obj) => self.put(noun, obj),
-            Action::Eat(noun) => self.eat(noun),
-            Action::Examine(noun) => self.examine(noun),
-            Action::Hello => "Hello!".to_owned(),
-            Action::Help => "That would be nice, wouldn't it?".to_owned(),
-            Action::Inventory => self.inventory(),
-            Action::Look => self.look(),
-            Action::Move(noun) => self.parse_move(noun),
-            Action::NoVerb => "Excuse me?".to_owned(),
-            Action::Open(noun) => self.open(noun),
-            Action::Sleep => "Time passes...".to_owned(),
-            Action::Take(noun) => self.parse_take(noun),
-            Action::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
-            Action::Version => format!("Kingslayer {}", env!("CARGO_PKG_VERSION")),
-            Action::Walk(direction) => self.walk(direction),
-            Action::Wear(_) => "You can't do that yet.".to_owned(),
-            Action::Where(noun) => self.where_is(noun),
-        }
-    }
-
-    fn eat(&mut self, noun: &str) -> String {
+    fn move_item(&mut self, noun: &str) -> String {
         if let Some((loc, _)) = self
             .items
             .iter()
-            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
-        {
-            let loc = loc.clone();
-            if self.item(&loc).can_eat() {
-                self.items.remove(&loc);
-                "Delicious.".to_owned()
-            } else {
-                "You cannot eat that.".to_owned()
-            }
-        } else {
-            cant_see_any(noun)
-        }
-    }
-
-    fn parse_move(&mut self, noun: &str) -> String {
-        if let Some((loc, _)) = self
-            .items
-            .iter()
-            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun))
         {
             let room = self.item(&loc.to_owned()).location().to_owned();
             match self.item_mut(&loc.to_owned()).move_self() {
@@ -480,13 +517,66 @@ impl Game {
         }
     }
 
+    fn open(&mut self, noun: &str) -> String {
+        let (location, item) = find_visible!(self, noun, "open");
+
+        let location = if !item.door().is_empty() {
+            item.door().to_owned()
+        } else {
+            location.to_owned()
+        };
+
+        let contents = self
+            .items
+            .values()
+            .filter(|i| i.is_in(&location))
+            .collect::<Vec<_>>();
+
+        if self.item(&location).is_closed() && contents.len() == 1 {
+            self.last_it = contents[0].name().to_owned();
+        }
+        let reveals = list_items(&contents, "and");
+
+        self.item_mut(&location).open(reveals)
+    }
+
+    fn parse(&mut self, action: &Action) -> String {
+        match action {
+            Action::Again => self.parse(&self.last_command.action().clone()),
+            Action::Attack(_, _) => "You can't do that yet.".to_owned(),
+            Action::Break(_) => "You can't do that yet.".to_owned(),
+            Action::Burn(_, _) => "You can't do that yet.".to_owned(),
+            Action::Clarify(message) => message.to_owned(),
+            Action::Climb => "You can't do that yet.".to_owned(),
+            Action::Close(noun) => self.close(noun),
+            Action::Drop(noun) => self.parse_drop(noun),
+            Action::Put(noun, obj) => self.put(noun, obj),
+            Action::Eat(noun) => self.eat(noun),
+            Action::Examine(noun) => self.examine(noun),
+            Action::Hello => "Hello!".to_owned(),
+            Action::Help => "That would be nice, wouldn't it?".to_owned(),
+            Action::Inventory => self.inventory(),
+            Action::Look => self.look(),
+            Action::Move(noun) => self.move_item(noun),
+            Action::NoVerb => "Excuse me?".to_owned(),
+            Action::Open(noun) => self.open(noun),
+            Action::Sleep => "Time passes...".to_owned(),
+            Action::Take(noun) => self.parse_take(noun),
+            Action::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
+            Action::Version => format!("Kingslayer {}", env!("CARGO_PKG_VERSION")),
+            Action::Walk(direction) => self.walk(direction),
+            Action::Wear(_) => "You can't do that yet.".to_owned(),
+            Action::Where(noun) => self.where_is(noun),
+        }
+    }
+
     fn parse_take(&mut self, noun: &str) -> String {
-        if noun == "all" || noun == "everything" {
-            self.take_all()
+        if noun == "all" {
+            do_all!(self, parse_take, in_room, "take")
         } else if let Some((loc, _)) = self
             .items
             .iter()
-            .find(|(loc, i)| self.in_room(loc, i) && i.names_contains(noun))
+            .find(|(_, i)| self.is_visible_not_holding(i) && i.names_contains(noun))
         {
             self.items
                 .get_mut(&loc.to_owned())
@@ -496,7 +586,7 @@ impl Game {
         } else if self
             .items
             .values()
-            .any(|i| i.location() == self.player && i.names_contains(noun))
+            .any(|i| self.holding(i) && i.names_contains(noun))
         {
             "You already have that!".to_owned()
         } else {
@@ -531,7 +621,7 @@ impl Game {
         let container = if let Some((loc, _)) = self
             .items
             .iter()
-            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(obj))
+            .find(|(_, i)| self.is_visible(i) && i.names_contains(obj))
         {
             loc.to_owned()
         } else {
@@ -541,14 +631,14 @@ impl Game {
         let item = if let Some((loc, _)) = self
             .items
             .iter()
-            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun))
         {
             loc.to_owned()
         } else {
             return cant_see_any(noun);
         };
 
-        if self.item(&item).location() == self.player {
+        if self.in_inventory(self.item(&item)) {
             if container == item {
                 "Impossible.".to_owned()
             } else {
@@ -612,39 +702,6 @@ impl Game {
         }
     }
 
-    fn take_all(&mut self) -> String {
-        let items = self.items.iter().fold(Vec::new(), |mut acc, (loc, i)| {
-            if i.is_in(self.player_location())
-                && !i.name().is_empty()
-                && (i.can_take() || !i.take_message().is_empty())
-            {
-                acc.push(loc.to_owned())
-            }
-            acc
-        });
-
-        let player = self.player.clone();
-        let message = items
-            .iter()
-            .fold(String::new(), |acc, loc| {
-                let item = self.item_mut(loc);
-                format!(
-                    "{}\n{}: {}",
-                    acc,
-                    item.name().to_owned(),
-                    item.take(&player)
-                )
-            })
-            .trim()
-            .to_owned();
-
-        if message.is_empty() {
-            "You can't see anything you can take.".to_owned()
-        } else {
-            message
-        }
-    }
-
     fn update_last(&mut self, tokens: Tokens) {
         self.last_command = tokens;
         if !self.last_command.noun().is_empty() {
@@ -653,8 +710,8 @@ impl Game {
     }
 
     fn walk(&mut self, direction: &str) -> String {
-        if let Some((_, exit)) = self.items.iter().find(|(loc, i)| {
-            self.is_visible(loc, i) && i.names_contains(direction) && !i.dest().is_empty()
+        if let Some((_, exit)) = self.items.iter().find(|(_, i)| {
+            self.is_visible(i) && i.names_contains(direction) && !i.dest().is_empty()
         }) {
             let exit_dest = exit.dest().to_owned();
 
@@ -673,7 +730,7 @@ impl Game {
         } else if let Some((_, exit)) = self
             .items
             .iter()
-            .find(|(loc, i)| self.is_visible(loc, i) && i.names_contains(direction))
+            .find(|(_, i)| self.is_visible(i) && i.names_contains(direction))
         {
             if !exit.go_message().is_empty() {
                 exit.go_message().to_owned()
@@ -693,7 +750,7 @@ impl Game {
         } else if self
             .items
             .iter()
-            .any(|(loc, i)| self.is_visible(loc, i) && i.names_contains(noun))
+            .any(|(_, i)| self.is_visible(i) && i.names_contains(noun))
         {
             "It's here.".to_owned()
         } else {
