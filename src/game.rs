@@ -23,17 +23,17 @@ macro_rules! visible_matches {
             .items
             .iter()
             .filter(|(_, i)| $self.is_visible(i) && i.names_contains($noun))
-            .collect::<Vec<(&String, &Item)>>()
+            .collect::<Vec<_>>()
     };
 }
 
 macro_rules! find_visible {
     ($self:ident, $noun:ident, $verb:expr) => {{
-        let items_in_room: Vec<_> = visible_matches!($self, $noun);
+        let items = visible_matches!($self, $noun);
 
-        match items_in_room.len() {
+        match items.len() {
             0 => return cant_see_any($noun),
-            1 => items_in_room[0],
+            1 => items[0],
             _ => {
                 $self.last_command = Tokens::with(
                     $verb.to_owned(),
@@ -44,10 +44,7 @@ macro_rules! find_visible {
                 return format!(
                     "Which {}, {}?",
                     $noun,
-                    list_items(
-                        &items_in_room.iter().map(|(_, i)| *i).collect::<Vec<_>>(),
-                        "or"
-                    )
+                    list_items(&items.into_iter().map(|(_, i)| i).collect::<Vec<_>>(), "or")
                 );
             }
         }
@@ -337,6 +334,7 @@ impl Game {
         }
     }
 
+    // TODO: priority: details -> door -> other
     fn examine(&self, noun: &str) -> String {
         if let Some((_, item)) = self
             .items
@@ -494,26 +492,20 @@ impl Game {
     }
 
     fn move_item(&mut self, noun: &str) -> String {
-        if let Some((loc, _)) = self
-            .items
-            .iter()
-            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun))
-        {
-            let room = self.item(&loc.to_owned()).location().to_owned();
-            match self.item_mut(&loc.to_owned()).move_self() {
-                Ok((message, reveals)) => {
-                    if reveals.len() == 1 {
-                        self.last_it = self.item(&reveals[0]).name().to_owned();
-                    }
-                    for x in reveals {
-                        self.item_mut(&x).set_location(room.clone());
-                    }
-                    message
+        let location = find_visible!(self, noun, "move").0.to_owned();
+
+        let room = self.item(&location).location().to_owned();
+        match self.item_mut(&location).move_self() {
+            Ok((message, reveals)) => {
+                if reveals.len() == 1 {
+                    self.last_it = self.item(&reveals[0]).name().to_owned();
                 }
-                Err(err) => err,
+                for x in reveals {
+                    self.item_mut(&x).set_location(room.clone());
+                }
+                message
             }
-        } else {
-            cant_see_any(noun)
+            Err(err) => err,
         }
     }
 

@@ -23,6 +23,7 @@ fn alias(s: &String) -> &str {
         "inside" => "in",
         "outside" => "out",
         "everything" => "all",
+        "them" => "it",
         _ => s,
     }
 }
@@ -155,6 +156,11 @@ impl Tokens {
             }
             "open" => do_or_ask!(Open, noun, verb),
             "out" => Action::Walk("exit".to_owned()),
+            "pick" => match noun {
+                "" => Action::what_do("pick"),
+                noun if noun.starts_with("up ") => Action::Take(noun[2..].to_string()),
+                _ => Action::Take(noun.to_owned()),
+            },
             "put" | "place" => {
                 if prep.is_empty() {
                     prep.push_str("in");
@@ -169,7 +175,7 @@ impl Tokens {
                     (true, _, true) => Action::what_do(verb),
                 }
             }
-            "take" | "hold" | "get" | "pick" | "remove" => do_or_ask!(Take, noun, verb),
+            "take" | "hold" | "get" | "remove" => do_or_ask!(Take, noun, verb),
             "version" => Action::Version,
             "wait" | "z" | "sleep" => Action::Sleep,
             "where" | "find" | "see" => {

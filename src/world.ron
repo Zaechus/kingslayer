@@ -3,6 +3,7 @@
         locations: ["BRIG"],
     ),
     "BRIG": (
+        names: ["Brig"],
         desc: "You are in a small wooden room with a wood pillar in the middle. The ground slowly creaks and rocks beneath you. A wooden pillar marks the center of the room.",
     ),
     "STICK": (
@@ -10,5 +11,51 @@
         names: ["stick"],
         locations: ["BRIG"],
         can_take: true,
+    ),
+    "BRIG DOOR": (
+        names: ["door"],
+        container: Closed,
+    ),
+    "BRIG DOOR BRIG": (
+        desc: "There is a door on the north side.",
+        names: ["door", "north"],
+        locations: ["BRIG"],
+        dest: "HOLD 1",
+        door: "BRIG DOOR",
+    ),
+    "BRIG DOOR HOLD": (
+        desc: "There is a door at the south end of the hold.",
+        names: ["door", "south"],
+        locations: ["HOLD 1"],
+        dest: "BRIG",
+        door: "BRIG DOOR",
+    ),
+    "ROOT BEER BARRELS": (
+        desc: "You can detect the slight scent of root beer.",
+        names: ["barrels", "root beer", "crates"],
+        locations: ["HOLD 1", "HOLD 2"],
+        details: "You can find no way to open the barrels, but there is definitely root beer inside.",
+        open_message: "You can find no way to open the barrels, but there is definitely root beer inside.",
+        take_message: "They're far too heavy.",
+    ),
+    "HOLD 1": (
+        names: ["Hold"],
+        desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.",
+    ),
+    "HOLD 1 NORTH": (
+        names: ["north"],
+        desc: "The hold continues to the north.",
+        locations: ["HOLD 1"],
+        dest: "HOLD 2",
+    ),
+    "HOLD 2": (
+        names: ["Hold"],
+        desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.",
+    ),
+    "HOLD 2 SOUTH": (
+        desc: "The hold continues to the south.",
+        names: ["south"],
+        locations: ["HOLD 2"],
+        dest: "HOLD 1",
     ),
 })
