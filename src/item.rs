@@ -139,10 +139,12 @@ impl Item {
                 self.covering.drain(..).collect(),
             ))
         } else {
-            Err(if self.moved_message.is_empty() {
-                format!("You cannot move the {}.", self.name())
-            } else {
+            Err(if !self.moved_message.is_empty() {
                 self.moved_message.clone()
+            } else if self.can_take {
+                format!("Moving the {} doesn't do anything.", self.name())
+            } else {
+                format!("You cannot move the {}.", self.name())
             })
         }
     }

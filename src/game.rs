@@ -375,6 +375,7 @@ impl Game {
         item.is_in(&self.player)
     }
 
+    // TODO: recursion?
     fn item_in(&self, item: &Item, location: &str) -> bool {
         item.is_in(location)
             || if let Some(parent) = self.items.get(item.location()) {
@@ -424,7 +425,7 @@ impl Game {
         }
     }
 
-    // is the item visible in the room or held by the player
+    // is the item visible in the room or in inventory
     fn is_visible(&self, item: &Item) -> bool {
         self.in_inventory(item) || self.in_room(item)
     }
@@ -741,8 +742,8 @@ impl Game {
             self.item(self.player_location()).desc().to_owned()
         } else if self
             .items
-            .iter()
-            .any(|(_, i)| self.is_visible(i) && i.names_contains(noun))
+            .values()
+            .any(|i| self.is_visible(i) && i.names_contains(noun))
         {
             "It's here.".to_owned()
         } else {
