@@ -211,14 +211,18 @@ impl Game {
             }
         }
 
+        // wrap text
         let mut chunks: Vec<String> = Vec::new();
         for mut l in res.lines().map(str::to_owned) {
             loop {
                 if l.len() < 80 {
                     chunks.push(l.drain(..).collect());
-                } else {
-                    let x = &l[..80].rfind(' ').unwrap_or(l.len() - 1);
+                } else if let Some(x) = l[..80].rfind(' ') {
                     chunks.push(l.drain(..x + 1).collect());
+                } else if let Some(x) = l[80..].find(' ') {
+                    chunks.push(l.drain(..x + 81).collect());
+                } else {
+                    chunks.push(l.drain(..).collect());
                 };
                 if l.is_empty() {
                     break;
