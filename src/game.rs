@@ -32,12 +32,29 @@ macro_rules! which {
         $self.last_command = Tokens::with(
             $verb.to_owned(),
             String::new(),
-            String::new(),
-            String::new(),
+            $self.last_command.prep().to_owned(),
+            $self.last_command.obj().to_owned(),
         );
         return format!(
             "Which {}, {}?",
             $noun,
+            list_items(
+                &$items.into_iter().map(|(_, i)| i).collect::<Vec<_>>(),
+                "or"
+            )
+        );
+    }};
+
+    ($self:ident, $verb:expr, $noun:expr, $obj:expr, $items:expr) => {{
+        $self.last_command = Tokens::with(
+            $verb.to_owned(),
+            $noun.to_owned(),
+            $self.last_command.prep().to_owned(),
+            String::new(),
+        );
+        return format!(
+            "Which {}, {}?",
+            $obj,
             list_items(
                 &$items.into_iter().map(|(_, i)| i).collect::<Vec<_>>(),
                 "or"
@@ -66,7 +83,7 @@ macro_rules! find {
             1 => match obj_matches.len() {
                 0 => cant_see_any($obj),
                 1 => $self.$f(&noun_matches[0].0.to_owned(), &obj_matches[0].0.to_owned()),
-                _ => which!($self, $verb, $obj, obj_matches),
+                _ => which!($self, $verb, $noun, $obj, obj_matches),
             },
             _ => which!($self, $verb, $noun, noun_matches),
         }
@@ -79,23 +96,6 @@ macro_rules! find {
             0 => cant_see_any($noun),
             1 => $message.to_owned(),
             _ => which!($self, $verb, $noun, items),
-        }
-    }};
-}
-
-macro_rules! find_fail {
-    ($self:ident, $verb:expr, $noun:ident, $obj:ident, $f:ident) => {{
-        let noun_matches = find_matches!($self, $noun, is_visible);
-        let obj_matches = find_matches!($self, $obj, is_visible);
-
-        match noun_matches.len() {
-            0 => cant_see_any($noun),
-            1 => match obj_matches.len() {
-                0 => return cant_see_any($obj),
-                1 => return $self.$f($noun),
-                _ => which!($self, $verb, $obj, obj_matches),
-            },
-            _ => which!($self, $verb, $noun, noun_matches),
         }
     }};
 }
@@ -120,7 +120,7 @@ macro_rules! try_find {
             1 => match obj_matches.len() {
                 0 => return cant_see_any($obj),
                 1 => return $self.$f(&noun_matches[0].0.to_owned(), &obj_matches[0].0.to_owned()),
-                _ => which!($self, $verb, $obj, obj_matches),
+                _ => which!($self, $verb, $noun, $obj, obj_matches),
             },
             _ => which!($self, $verb, $noun, noun_matches),
         }
@@ -436,6 +436,10 @@ impl Game {
         }
     }
 
+    fn have_already(&self, location: &str) -> String {
+        format!("You already have the {}.", self.item(location).name())
+    }
+
     fn holding(&self, item: &Item) -> bool {
         item.is_in(&self.player)
     }
@@ -586,8 +590,12 @@ impl Game {
         }
     }
 
-    fn not_have(&self, name: &str) -> String {
-        format!("You do not have the {}.", name)
+    fn not_have(&self, location: &str) -> String {
+        format!("You do not have the {}.", self.item(location).name())
+    }
+
+    fn not_have_one(&self, location: &str, _: &str) -> String {
+        self.not_have(location)
     }
 
     fn open(&mut self, location: &str) -> String {
@@ -651,7 +659,7 @@ impl Game {
 
         try_find!(self, "drop", noun, in_inventory, drop_item);
 
-        find!(self, "drop", noun, "You do not have that.")
+        find!(self, "drop", noun, not_have)
     }
 
     fn parse_eat(&mut self, noun: &str) -> String {
@@ -676,7 +684,7 @@ impl Game {
     fn parse_put(&mut self, noun: &str, obj: &str) -> String {
         try_find!(self, "put", noun, in_inventory, obj, put);
 
-        find_fail!(self, "put", noun, obj, not_have)
+        find!(self, "put", noun, obj, not_have_one)
     }
 
     fn parse_take(&mut self, noun: &str) -> String {
@@ -684,7 +692,7 @@ impl Game {
 
         try_find!(self, "take", noun, in_room, take_item);
         try_find!(self, "take", noun, is_visible_not_holding, take_item);
-        try_find!(self, "take", noun, in_inventory, "You already have that!");
+        try_find!(self, "take", noun, in_inventory, have_already);
 
         find!(self, "take", noun, take_item)
     }
