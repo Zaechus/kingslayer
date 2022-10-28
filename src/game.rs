@@ -74,21 +74,6 @@ macro_rules! find {
         }
     }};
 
-    ($self:ident, $verb:expr, $noun:ident, $obj:ident, $f:ident) => {{
-        let noun_matches = find_matches!($self, $noun, is_visible);
-        let obj_matches = find_matches!($self, $obj, is_visible);
-
-        match noun_matches.len() {
-            0 => cant_see_any($noun),
-            1 => match obj_matches.len() {
-                0 => cant_see_any($obj),
-                1 => $self.$f(&noun_matches[0].0.to_owned(), &obj_matches[0].0.to_owned()),
-                _ => which!($self, $verb, $noun, $obj, obj_matches),
-            },
-            _ => which!($self, $verb, $noun, noun_matches),
-        }
-    }};
-
     ($self:ident, $verb:expr, $noun:ident, $message:expr) => {{
         let items = find_matches!($self, $noun, is_visible);
 
@@ -123,16 +108,6 @@ macro_rules! try_find {
                 _ => which!($self, $verb, $noun, $obj, obj_matches),
             },
             _ => which!($self, $verb, $noun, noun_matches),
-        }
-    }};
-
-    ($self:ident, $verb:expr, $noun:ident, $in:ident, $message:expr) => {{
-        let items = find_matches!($self, $noun, $in);
-
-        match items.len() {
-            0 => (),
-            1 => return $message.to_owned(),
-            _ => which!($self, $verb, $noun, items),
         }
     }};
 }
@@ -594,10 +569,6 @@ impl Game {
         format!("You do not have the {}.", self.item(location).name())
     }
 
-    fn not_have_one(&self, location: &str, _: &str) -> String {
-        self.not_have(location)
-    }
-
     fn open(&mut self, location: &str) -> String {
         let item = self.item(location);
         let location = if !item.door().is_empty() {
@@ -646,7 +617,7 @@ impl Game {
             Action::Version => format!("Kingslayer {}", env!("CARGO_PKG_VERSION")),
             Action::Walk(direction) => self.parse_walk(direction),
             Action::Wear(_) => "You can't do that yet.".to_owned(),
-            Action::Where(noun) => self.where_is(noun),
+            Action::Where(noun) => self.parse_where(noun),
         }
     }
 
@@ -684,7 +655,7 @@ impl Game {
     fn parse_put(&mut self, noun: &str, obj: &str) -> String {
         try_find!(self, "put", noun, in_inventory, obj, put);
 
-        find!(self, "put", noun, obj, not_have_one)
+        find!(self, "put", noun, not_have)
     }
 
     fn parse_take(&mut self, noun: &str) -> String {
@@ -847,7 +818,7 @@ impl Game {
         }
     }
 
-    fn where_is(&mut self, noun: &str) -> String {
+    fn parse_where(&mut self, noun: &str) -> String {
         if noun == "i" {
             self.item(self.player_location()).desc().to_owned()
         } else {
