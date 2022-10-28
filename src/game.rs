@@ -17,67 +17,103 @@ use crate::{
     tokens::Tokens,
 };
 
-macro_rules! visible_matches {
-    ($self:ident, $noun:ident) => {
+macro_rules! find_matches {
+    ($self:ident, $noun:ident, $in:ident) => {
         $self
             .items
             .iter()
-            .filter(|(_, i)| $self.is_visible(i) && i.names_contains($noun))
+            .filter(|(_, i)| $self.$in(i) && i.names_contains($noun))
             .collect::<Vec<_>>()
     };
 }
 
-macro_rules! find_visible {
-    ($self:ident, $noun:ident, $verb:expr) => {{
-        let items = visible_matches!($self, $noun);
+macro_rules! which {
+    ($self:ident, $verb:expr, $noun:expr, $items:expr) => {{
+        $self.last_command = Tokens::with(
+            $verb.to_owned(),
+            String::new(),
+            String::new(),
+            String::new(),
+        );
+        return format!(
+            "Which {}, {}?",
+            $noun,
+            list_items(
+                &$items.into_iter().map(|(_, i)| i).collect::<Vec<_>>(),
+                "or"
+            )
+        );
+    }};
+}
+
+macro_rules! find {
+    ($self:ident, $verb:expr, $noun:ident, $f:ident) => {{
+        let items = find_matches!($self, $noun, is_visible);
 
         match items.len() {
-            0 => return cant_see_any($noun),
-            1 => items[0],
-            _ => {
-                $self.last_command = Tokens::with(
-                    $verb.to_owned(),
-                    String::new(),
-                    String::new(),
-                    String::new(),
-                );
-                return format!(
-                    "Which {}, {}?",
-                    $noun,
-                    list_items(&items.into_iter().map(|(_, i)| i).collect::<Vec<_>>(), "or")
-                );
-            }
+            0 => cant_see_any($noun),
+            1 => $self.$f(&items[0].0.to_owned()),
+            _ => which!($self, $verb, $noun, items),
+        }
+    }};
+
+    ($self:ident, $verb:expr, $noun:ident, $message:expr) => {{
+        let items = find_matches!($self, $noun, is_visible);
+
+        match items.len() {
+            0 => cant_see_any($noun),
+            1 => $message.to_owned(),
+            _ => which!($self, $verb, $noun, items),
         }
     }};
 }
 
-// TODO
+macro_rules! try_find {
+    ($self:ident, $verb:expr, $noun:ident, $in:ident, $f:ident) => {{
+        let items = find_matches!($self, $noun, $in);
+
+        match items.len() {
+            0 => (),
+            1 => return $self.$f(&items[0].0.to_owned()),
+            _ => which!($self, $verb, $noun, items),
+        }
+    }};
+
+    ($self:ident, $verb:expr, $noun:ident, $in:ident, $message:expr) => {{
+        let items = find_matches!($self, $noun, $in);
+
+        match items.len() {
+            0 => (),
+            1 => return $message.to_owned(),
+            _ => which!($self, $verb, $noun, items),
+        }
+    }};
+}
+
 macro_rules! do_all {
-    ($self:ident, $f:ident, $in:ident, $verb:expr) => {{
-        let items = $self
-            .items
-            .iter()
-            .filter(|(_, i)| {
-                $self.$in(i)
-                    && !i.name().is_empty()
-                    && (i.can_take() || !i.take_message().is_empty())
-            })
-            .map(|(loc, _)| loc.to_owned())
-            .collect::<Vec<String>>();
+    ($self:ident, $verb:expr, $noun:expr, $in:ident, $f:ident) => {{
+        if $noun == "all" {
+            let items = $self
+                .items
+                .iter()
+                .filter(|(_, i)| $self.$in(i) && !i.name().is_empty() && i.try_take())
+                .map(|(loc, _)| loc.to_owned())
+                .collect::<Vec<_>>();
 
-        let message = items
-            .iter()
-            .fold(String::new(), |acc, loc| {
-                let name = $self.item(loc).name().to_owned();
-                format!("{}\n{}: {}", acc, name, $self.$f(&name))
-            })
-            .trim()
-            .to_owned();
+            let message = items
+                .iter()
+                .fold(String::new(), |acc, loc| {
+                    let name = $self.item(loc).name().to_owned();
+                    format!("{}\n{}: {}", acc, name, $self.$f(loc))
+                })
+                .trim()
+                .to_owned();
 
-        if message.is_empty() {
-            format!("You can't see anything you can {}.", $verb)
-        } else {
-            message
+            return if message.is_empty() {
+                format!("You can't see anything you can {}.", $verb)
+            } else {
+                message
+            };
         }
     }};
 }
@@ -146,6 +182,7 @@ impl Game {
             let mut tokens = Tokens::new(first);
 
             if let Action::Clarify(_) = self.last_command.action() {
+                // answer question unless issuing a known command
                 if let Action::Unknown(_) = tokens.action() {
                     let words = if tokens.verb() == "it" {
                         self.last_it.clone()
@@ -153,6 +190,7 @@ impl Game {
                         first.join(" ")
                     };
 
+                    // attempt to fill noun and then obj
                     if self.last_command.noun().is_empty() {
                         tokens = Tokens::with(
                             self.last_command.verb().to_owned(),
@@ -176,6 +214,7 @@ impl Game {
             } else {
                 let tokens = self.replace_it(tokens);
 
+                // don't update last_it if current action is a question
                 match tokens.action() {
                     Action::Again | Action::Unknown(_) => (),
                     Action::Clarify(_) => self.last_command = tokens.clone(),
@@ -190,12 +229,16 @@ impl Game {
             "Excuse me?".to_owned()
         };
 
+        // all secondary commands
         for words in commands.iter().skip(1) {
+            // do not continue if last parsed command was a question
             if let Action::Clarify(_) = self.last_command.action() {
                 break;
             } else {
                 let mut tokens = self.replace_it(Tokens::new(words));
 
+                // if the verb isn't recognized, try to use the verb of the previous command
+                // i.e.: "take apple and orange" would try "take apple and take orange"
                 if let Action::Unknown(_) = tokens.action() {
                     tokens = Tokens::with(
                         self.last_command.verb().to_owned(),
@@ -232,9 +275,8 @@ impl Game {
         chunks.join("\n")
     }
 
-    fn close(&mut self, noun: &str) -> String {
-        let (location, item) = find_visible!(self, noun, "close");
-
+    fn close(&mut self, location: &str) -> String {
+        let item = self.item(location);
         let location = if !item.door().is_empty() {
             item.door().to_owned()
         } else {
@@ -244,6 +286,7 @@ impl Game {
         self.item_mut(&location).close()
     }
 
+    // print the contents of an item
     fn contents(&self, location: &str, item: &Item, depth: usize) -> String {
         if item.is_clear() {
             let contents = self.items.iter().fold(String::new(), |acc, (loc, i)| {
@@ -285,6 +328,7 @@ impl Game {
         }
     }
 
+    // print self.contents(...) with the item desc
     fn desc_contents(&self, location: &str, item: &Item) -> String {
         let contents = self.contents(location, item, 1);
 
@@ -297,102 +341,52 @@ impl Game {
         }
     }
 
-    fn parse_drop(&mut self, noun: &str) -> String {
-        if noun == "all" {
-            do_all!(self, parse_drop, in_inventory, "drop")
+    fn drop_item(&mut self, location: &str) -> String {
+        let player_location = self.player_location().to_owned();
+
+        self.item_mut(&location).set_location(player_location);
+        "Dropped.".to_owned()
+    }
+
+    fn eat(&mut self, location: &str) -> String {
+        if self.item(location).can_eat() {
+            self.items.remove(location);
+            "Delicious.".to_owned()
         } else {
-            let player_location = self.player_location().to_owned();
-
-            let location = if let Some((loc, _)) = self
-                .items
-                .iter()
-                .find(|(_, i)| self.in_inventory(i) && i.names_contains(noun))
-            {
-                loc.to_owned()
-            } else {
-                return format!("You do not have the {}.", noun);
-            };
-
-            self.item_mut(&location).set_location(player_location);
-            "Dropped.".to_owned()
+            "You cannot eat that.".to_owned()
         }
     }
 
-    fn eat(&mut self, noun: &str) -> String {
-        if noun == "all" {
-            do_all!(self, eat, is_visible, "eat")
-        } else if let Some((loc, _)) = self
-            .items
-            .iter()
-            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun))
-        {
-            let loc = loc.clone();
-            if self.item(&loc).can_eat() {
-                self.items.remove(&loc);
-                "Delicious.".to_owned()
-            } else {
-                "You cannot eat that.".to_owned()
-            }
-        } else {
-            cant_see_any(noun)
-        }
+    fn examine(&self, location: &str) -> String {
+        self.item(location).details().to_owned()
     }
 
-    // TODO: priority: details -> door -> other
-    fn examine(&self, noun: &str) -> String {
-        if let Some((_, item)) = self
-            .items
-            .iter()
-            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun) && !i.details().is_empty())
-        {
-            item.details().to_owned()
-        } else if let Some((loc, item)) = self
-            .items
-            .iter()
-            .find(|(_, i)| self.is_visible(i) && i.names_contains(noun))
-        {
-            match item.container() {
-                Container::Open | Container::True => {
-                    let contents = self.contents(loc, item, 1);
+    fn examine_container(&self, location: &str) -> String {
+        let item = self.item(location);
 
-                    if contents.is_empty() {
-                        format!("The {} is empty.", item.name())
-                    } else {
-                        contents
-                    }
-                }
-                Container::Closed => format!("The {} is closed.", item.name()),
-                _ => {
-                    if item.location().is_empty() {
-                        self.look()
-                    } else {
-                        format!("There is nothing remarkable about the {}.", item.name())
-                    }
+        match item.container() {
+            Container::Open | Container::True => {
+                let contents = self.contents(location, item, 1);
+
+                if contents.is_empty() {
+                    format!("The {} is empty.", item.name())
+                } else {
+                    contents
                 }
             }
-        } else {
-            cant_see_any(noun)
+            Container::Closed => format!("The {} is closed.", item.name()),
+            _ => {
+                if item.location().is_empty() {
+                    self.look()
+                } else {
+                    format!("There is nothing remarkable about the {}.", item.name())
+                }
+            }
         }
     }
 
     fn holding(&self, item: &Item) -> bool {
         item.is_in(&self.player)
-    }
-
-    // TODO: recursion?
-    fn item_in(&self, item: &Item, location: &str) -> bool {
-        item.is_in(location)
-            || if let Some(parent) = self.items.get(item.location()) {
-                parent.is_open()
-                    && (parent.is_in(location)
-                        || if let Some(super_parent) = self.items.get(parent.location()) {
-                            super_parent.is_open() && super_parent.is_in(location)
-                        } else {
-                            false
-                        })
-            } else {
-                false
-            }
     }
 
     fn in_inventory(&self, item: &Item) -> bool {
@@ -434,6 +428,10 @@ impl Game {
         self.in_inventory(item) || self.in_room(item)
     }
 
+    fn is_visible_has_details(&self, item: &Item) -> bool {
+        self.is_visible(item) && !item.details().is_empty()
+    }
+
     // is the item visible in the room or held by the player
     fn is_visible_not_holding(&self, item: &Item) -> bool {
         (self.in_inventory(item) || self.in_room(item)) && !self.holding(item)
@@ -441,6 +439,22 @@ impl Game {
 
     fn item(&self, key: &str) -> &Item {
         self.items.get(key).unwrap()
+    }
+
+    // TODO: recursion?
+    fn item_in(&self, item: &Item, location: &str) -> bool {
+        item.is_in(location)
+            || if let Some(parent) = self.items.get(item.location()) {
+                parent.is_open()
+                    && (parent.is_in(location)
+                        || if let Some(super_parent) = self.items.get(parent.location()) {
+                            super_parent.is_open() && super_parent.is_in(location)
+                        } else {
+                            false
+                        })
+            } else {
+                false
+            }
     }
 
     fn item_mut(&mut self, key: &str) -> &mut Item {
@@ -496,11 +510,10 @@ impl Game {
         )
     }
 
-    fn move_item(&mut self, noun: &str) -> String {
-        let location = find_visible!(self, noun, "move").0.to_owned();
+    fn move_item(&mut self, location: &str) -> String {
+        let room = self.item(location).location().to_owned();
 
-        let room = self.item(&location).location().to_owned();
-        match self.item_mut(&location).move_self() {
+        match self.item_mut(location).move_self() {
             Ok((message, reveals)) => {
                 if reveals.len() == 1 {
                     self.last_it = self.item(&reveals[0]).name().to_owned();
@@ -514,9 +527,8 @@ impl Game {
         }
     }
 
-    fn open(&mut self, noun: &str) -> String {
-        let (location, item) = find_visible!(self, noun, "open");
-
+    fn open(&mut self, location: &str) -> String {
+        let item = self.item(location);
         let location = if !item.door().is_empty() {
             item.door().to_owned()
         } else {
@@ -545,18 +557,18 @@ impl Game {
             Action::Burn(_, _) => "You can't do that yet.".to_owned(),
             Action::Clarify(message) => message.to_owned(),
             Action::Climb => "You can't do that yet.".to_owned(),
-            Action::Close(noun) => self.close(noun),
+            Action::Close(noun) => self.parse_close(noun),
             Action::Drop(noun) => self.parse_drop(noun),
             Action::Put(noun, obj) => self.put(noun, obj),
-            Action::Eat(noun) => self.eat(noun),
-            Action::Examine(noun) => self.examine(noun),
+            Action::Eat(noun) => self.parse_eat(noun),
+            Action::Examine(noun) => self.parse_examine(noun),
             Action::Hello => "Hello!".to_owned(),
             Action::Help => "That would be nice, wouldn't it?".to_owned(),
             Action::Inventory => self.inventory(),
             Action::Look => self.look(),
-            Action::Move(noun) => self.move_item(noun),
+            Action::Move(noun) => self.parse_move(noun),
             Action::NoVerb => "Excuse me?".to_owned(),
-            Action::Open(noun) => self.open(noun),
+            Action::Open(noun) => self.parse_open(noun),
             Action::Sleep => "Time passes...".to_owned(),
             Action::Take(noun) => self.parse_take(noun),
             Action::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
@@ -567,28 +579,45 @@ impl Game {
         }
     }
 
+    fn parse_close(&mut self, noun: &str) -> String {
+        find!(self, "close", noun, close)
+    }
+
+    fn parse_drop(&mut self, noun: &str) -> String {
+        do_all!(self, "drop", noun, in_inventory, drop_item);
+
+        try_find!(self, "drop", noun, in_inventory, drop_item);
+
+        find!(self, "drop", noun, "You do not have that.")
+    }
+
+    fn parse_eat(&mut self, noun: &str) -> String {
+        find!(self, "eat", noun, eat)
+    }
+
+    // TODO: priority: details -> door -> other
+    fn parse_examine(&mut self, noun: &str) -> String {
+        try_find!(self, "examine", noun, is_visible_has_details, examine);
+
+        find!(self, "examine", noun, examine_container)
+    }
+
+    fn parse_move(&mut self, noun: &str) -> String {
+        find!(self, "move", noun, move_item)
+    }
+
+    fn parse_open(&mut self, noun: &str) -> String {
+        find!(self, "open", noun, open)
+    }
+
     fn parse_take(&mut self, noun: &str) -> String {
-        if noun == "all" {
-            do_all!(self, parse_take, in_room, "take")
-        } else if let Some((loc, _)) = self
-            .items
-            .iter()
-            .find(|(_, i)| self.is_visible_not_holding(i) && i.names_contains(noun))
-        {
-            self.items
-                .get_mut(&loc.to_owned())
-                .unwrap()
-                .take(&self.player)
-                .to_owned()
-        } else if self
-            .items
-            .values()
-            .any(|i| self.holding(i) && i.names_contains(noun))
-        {
-            "You already have that!".to_owned()
-        } else {
-            cant_see_any(noun)
-        }
+        do_all!(self, "take", noun, is_visible_not_holding, take_item);
+
+        try_find!(self, "take", noun, in_room, take_item);
+        try_find!(self, "take", noun, is_visible_not_holding, take_item);
+        try_find!(self, "take", noun, in_inventory, "You already have that!");
+
+        find!(self, "take", noun, take_item)
     }
 
     /// Start the Game in a command line setting where `print` macros are expected to work
@@ -622,7 +651,7 @@ impl Game {
         {
             loc.to_owned()
         } else {
-            return cant_see_any(noun);
+            return cant_see_any(obj);
         };
 
         let item = if let Some((loc, _)) = self
@@ -656,16 +685,28 @@ impl Game {
         }
     }
 
+    // replace the noun "it" (or "them") in a Tokens with the last referenced object
     fn replace_it(&self, tokens: Tokens) -> Tokens {
-        if tokens.noun() == "it" {
-            Tokens::with(
+        match (tokens.noun(), tokens.obj()) {
+            ("it", "it") => Tokens::with(
+                tokens.verb().to_owned(),
+                self.last_it.clone(),
+                tokens.prep().to_owned(),
+                self.last_it.clone(),
+            ),
+            ("it", _) => Tokens::with(
                 tokens.verb().to_owned(),
                 self.last_it.clone(),
                 tokens.prep().to_owned(),
                 tokens.obj().to_owned(),
-            )
-        } else {
-            tokens
+            ),
+            (_, "it") => Tokens::with(
+                tokens.verb().to_owned(),
+                tokens.noun().to_owned(),
+                tokens.prep().to_owned(),
+                self.last_it.clone(),
+            ),
+            _ => tokens,
         }
     }
 
@@ -697,6 +738,14 @@ impl Game {
             }
             Err(e) => Ok(e.to_string()),
         }
+    }
+
+    fn take_item(&mut self, location: &str) -> String {
+        self.items
+            .get_mut(location)
+            .unwrap()
+            .take(&self.player)
+            .to_owned()
     }
 
     fn update_last(&mut self, tokens: Tokens) {
@@ -741,17 +790,11 @@ impl Game {
         }
     }
 
-    fn where_is(&self, noun: &str) -> String {
+    fn where_is(&mut self, noun: &str) -> String {
         if noun == "i" {
             self.item(self.player_location()).desc().to_owned()
-        } else if self
-            .items
-            .values()
-            .any(|i| self.is_visible(i) && i.names_contains(noun))
-        {
-            "It's here.".to_owned()
         } else {
-            cant_see_any(noun)
+            find!(self, "where", noun, "It's here.")
         }
     }
 }

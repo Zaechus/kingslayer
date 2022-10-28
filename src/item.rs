@@ -54,8 +54,8 @@ impl Item {
         !matches!(self.food, Food::No)
     }
 
-    pub(crate) const fn can_take(&self) -> bool {
-        self.can_take
+    pub(crate) fn try_take(&self) -> bool {
+        self.can_take || !self.take_message().is_empty()
     }
 
     pub(crate) fn close(&mut self) -> String {
