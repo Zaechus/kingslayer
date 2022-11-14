@@ -1,9 +1,10 @@
+use std::{collections::HashMap, str::FromStr};
+
+#[cfg(not(target_arch = "wasm32"))]
 use std::{
-    collections::HashMap,
     error,
     fs::File,
     io::{self, Write},
-    str::FromStr,
 };
 
 use serde::{Deserialize, Serialize};
@@ -13,9 +14,11 @@ use crate::{
     container::Container,
     direction::Direction,
     item::{list_items, Item},
-    read_line,
     tokens::Tokens,
 };
+
+#[cfg(not(target_arch = "wasm32"))]
+use crate::read_line;
 
 macro_rules! find_matches {
     ($self:ident, $noun:ident, $in:ident) => {
@@ -366,7 +369,7 @@ impl Game {
     fn drop_item(&mut self, location: &str) -> String {
         let player_location = self.player_location().to_owned();
 
-        self.item_mut(&location).set_location(player_location);
+        self.item_mut(location).set_location(player_location);
         "Dropped.".to_owned()
     }
 
@@ -506,6 +509,7 @@ impl Game {
     /// # game.save("kingslayer.save");
     /// Game::load("kingslayer.save");
     /// ```
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn load(filename: &str) -> Result<Self, Box<dyn error::Error>> {
         let mut bytes = Vec::new();
         zstd::stream::copy_decode(File::open(filename)?, &mut bytes)?;
@@ -680,6 +684,7 @@ impl Game {
     }
 
     /// Start the Game in a command line setting where `print` macros are expected to work
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn play(&mut self) -> Result<(), Box<dyn error::Error>> {
         println!("{}", self.ask("l"));
 
@@ -706,14 +711,14 @@ impl Game {
         if container == item {
             "Impossible.".to_owned()
         } else {
-            match self.item(&container).container() {
+            match self.item(container).container() {
                 Container::Open | Container::True => {
-                    self.item_mut(&item).set_location(container.to_owned());
+                    self.item_mut(item).set_location(container.to_owned());
                     "Done.".to_owned()
                 }
                 Container::Closed => {
-                    self.last_it = self.item(&container).name().to_owned();
-                    format!("The {} isn't open.", self.item(&container).name())
+                    self.last_it = self.item(container).name().to_owned();
+                    format!("The {} isn't open.", self.item(container).name())
                 }
                 Container::False => "You can't do that.".to_owned(),
             }
@@ -751,6 +756,7 @@ impl Game {
     /// # let mut game = Game::default();
     /// game.restore("kingslayer.save");
     /// ```
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn restore(&mut self, filename: &str) -> Result<String, Box<dyn error::Error>> {
         let game = Game::load(filename)?;
         self.player = game.player;
@@ -765,6 +771,7 @@ impl Game {
     /// # let game = Game::default();
     /// game.save("kingslayer.save");
     /// ```
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn save(&self, filename: &str) -> Result<String, Box<dyn error::Error>> {
         match File::create(filename) {
             Ok(file) => {
@@ -831,6 +838,7 @@ fn cant_see_any(noun: &str) -> String {
     format!("You can't see any {} here.", noun)
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn prompt(p: &str) -> io::Result<String> {
     print!("{}", p);
     io::stdout().flush()?;

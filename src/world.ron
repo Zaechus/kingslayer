@@ -58,4 +58,12 @@
         locations: ["HOLD 2"],
         dest: "HOLD 1",
     ),
+    "CREW DECK 1": (
+        desc: "You are on a deck with dirty hammocks hanging everywhere.",
+        names: ["Crew Deck"],
+    ),
+    "CREW DECK 2": (
+        desc: "You are on a deck with dirty hammocks hanging everywhere.",
+        names: ["Crew Deck"],
+    ),
 })

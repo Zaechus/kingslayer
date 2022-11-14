@@ -17,6 +17,8 @@ categories = [ "games", "game-engines", "game-development" ]
 bincode = "1.3"
 ron = "0.8"
 serde = { version = "1", features = ["derive"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 zstd = "0.11"
 
 [profile.release]
