@@ -4,7 +4,7 @@ use kingslayer::*;
 
 fn main() {
     if let Err(err) = try_main() {
-        println!("{}", err);
+        eprintln!("{}", err);
         process::exit(1);
     }
 }
