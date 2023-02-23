@@ -122,7 +122,7 @@ impl Tokens {
                     Action::Walk(noun.to_owned())
                 }
             }
-            "examine" | "inspect" | "read" | "what" => do_or_ask!(Examine, noun, verb),
+            "examine" | "inspect" | "read" | "what" | "x" => do_or_ask!(Examine, noun, verb),
             "go" | "walk" => {
                 if noun.is_empty() {
                     match prep.as_str() {

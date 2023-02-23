@@ -186,9 +186,7 @@ impl Game {
     pub fn ask<S: Into<String>>(&mut self, input: S) -> String {
         let commands: Vec<_> = input
             .into()
-            .replace(',', " and ")
-            .replace('.', " and ")
-            .replace(';', " and ")
+            .replace([',', ';', '.'], " and ")
             .split_whitespace()
             .map(str::to_lowercase)
             .fold(vec![Vec::new()], |mut acc, w| {
