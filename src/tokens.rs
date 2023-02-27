@@ -99,7 +99,15 @@ impl Tokens {
             _ if verb.is_direction() => Action::Walk(verb.to_owned()),
             "again" | "g" => Action::Again,
             "attack" | "cut" | "hit" | "hurt" | "kill" | "murder" | "slay" => {
-                Action::Attack(String::new(), String::new())
+                if prep.is_empty() {
+                    prep.push_str("with");
+                }
+                match (noun.is_empty(), prep.as_str(), obj.is_empty()) {
+                    (false, _, false) => Action::Attack(noun.to_owned(), obj.to_owned()),
+                    (true, _, false) => Action::what_do(&format!("{} {} the {}", verb, prep, obj)),
+                    (false, _, true) => Action::what_do(&format!("{} the {} {}", verb, noun, prep)),
+                    (true, _, true) => Action::what_do(verb),
+                }
             }
             "break" | "destroy" | "smash" => Action::Break(String::new()),
             "burn" => Action::Burn(String::new(), String::new()),
