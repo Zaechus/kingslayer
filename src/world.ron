@@ -11,6 +11,7 @@
         names: ["stick"],
         locations: ["BRIG"],
         can_take: true,
+        damage: 1,
     ),
     "BRIG DOOR": (
         names: ["door"],
@@ -47,6 +48,12 @@
         desc: "The hold continues to the north.",
         locations: ["HOLD 1"],
         dest: "HOLD 2",
+    ),
+    "SLEEPING PIRATE": (
+        names: ["pirate"],
+        desc: "There is a pirate lying in a chair, asleep.",
+        locations: ["HOLD 1"],
+        hp: 1,
     ),
     "HOLD 2": (
         names: ["Hold"],

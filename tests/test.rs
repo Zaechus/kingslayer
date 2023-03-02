@@ -6,14 +6,10 @@ mod tests {
     fn test() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        // no input
-        game.ask("");
-
-        // no verb or noun
-        game.ask("a");
-
-        // and with no clauses
-        game.ask("and");
+        let excuse_me = ["", "a", "and", "a and", "and a"];
+        for s in excuse_me {
+            assert_eq!(game.ask(s), "Excuse me?");
+        }
 
         // unknown verb
         assert_eq!(game.ask("jump"), "I do not know the verb \"jump\".")
@@ -31,28 +27,6 @@ mod tests {
         ] {
             assert_eq!(game.ask(s), expected);
         }
-    }
-
-    #[test]
-    fn examine() {
-        let mut game: Game = include_str!("world.ron").parse().unwrap();
-
-        // examining a closed item without a special desc should explain the item is closed
-        assert_eq!(game.ask("examine box"), "The box is closed.");
-
-        // examining an open item with contents should return the contents
-        game.ask("open box");
-        assert_eq!(game.ask("examine box"), "The box contains:\n  a apple");
-
-        // examining an open item with no contents should return that the item is empty
-        game.ask("take apple");
-        assert_eq!(game.ask("examine box"), "The box is empty.");
-
-        // item with nothing special
-        assert_eq!(
-            game.ask("examine apple"),
-            "There is nothing remarkable about the apple."
-        );
     }
 
     #[test]
@@ -89,7 +63,29 @@ mod tests {
     }
 
     #[test]
-    fn open_close_container() {
+    fn examine() {
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
+
+        // examining a closed item without a special desc should explain the item is closed
+        assert_eq!(game.ask("examine box"), "The box is closed.");
+
+        // examining an open item with contents should return the contents
+        assert_eq!(game.ask("open box"), "Opening the box reveals a apple.");
+        assert_eq!(game.ask("examine box"), "The box contains:\n  a apple");
+
+        // examining an open item with no contents should return that the item is empty
+        assert_eq!(game.ask("take apple"), "Taken.");
+        assert_eq!(game.ask("examine box"), "The box is empty.");
+
+        // item with nothing special
+        assert_eq!(
+            game.ask("examine apple"),
+            "There is nothing remarkable about the apple."
+        );
+    }
+
+    #[test]
+    fn containers() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
         // reveal message
@@ -101,6 +97,10 @@ mod tests {
         // take object from unspecified open container
         assert_eq!(game.ask("take apple"), "Taken.");
 
+        // try to put item inside itself
+        assert_eq!(game.ask("put apple in apple"), "Impossible.");
+        assert_eq!(game.ask("put box in box"), "Impossible.");
+
         // close
         assert_eq!(game.ask("close box"), "Closed.");
 
@@ -109,12 +109,42 @@ mod tests {
 
         // open with no reveal
         assert_eq!(game.ask("open box"), "Opened.");
+
+        // trying to put an item into a closed container
+        assert_eq!(game.ask("close box"), "Closed.");
+        assert_eq!(game.ask("put apple in box"), "The box isn't open.");
+
+        // try to put an item that is not in inventory
+        assert_eq!(game.ask("drop apple"), "Dropped.");
+        assert_eq!(game.ask("put apple in box"), "You do not have the apple.");
+
+        // put item in container
+        assert_eq!(game.ask("open box"), "Opened.");
+        assert_eq!(game.ask("take apple"), "Taken.");
+        assert_eq!(game.ask("put apple in box"), "Done.");
+        assert_eq!(game.ask("inventory"), "Your inventory is empty.");
+        assert_eq!(game.ask("examine box"), "The box contains:\n  a apple");
+        assert_eq!(game.ask("put apple in box"), "You do not have the apple.");
     }
 
     #[test]
-    fn take_all() {
+    fn do_all() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        game.ask("n and take all");
+        let res = game.ask("n and take all");
+        assert!(["large red block: Taken.", "iron sword: Taken."]
+            .iter()
+            .all(|p| res.contains(p)))
+    }
+
+    #[test]
+    fn attack() {
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
+
+        game.ask("enter arena and take spear");
+        assert_eq!(
+            game.ask("kill goblin with spear"),
+            "You hit the goblin with your spear. It dies."
+        );
     }
 }

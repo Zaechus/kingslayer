@@ -11,6 +11,11 @@
         locations: ["CENTER ROOM"],
         dest: "CLOSET",
     ),
+    "CENTER ROOM SOUTH": (
+        names: ["arena", "south"],
+        locations: ["CENTER ROOM"],
+        dest: "ARENA",
+    ),
     "BOX": (
         desc: "There is a box here.",
         names: ["box"],
@@ -32,10 +37,27 @@
         desc: "There is an iron sword here.",
         names: ["iron sword"],
         locations: ["CLOSET"],
+        can_take: true,
     ),
     "RED BLOCK": (
         desc: "There is a large red block here.",
         names: ["large red block"],
         locations: ["CLOSET"],
+        can_take: true,
+    ),
+    "ARENA": (
+        names: ["Arena"],
+        desc: "You are in a circular arena with a dirt floor.",
+    ),
+    "GOBLIN": (
+        names: ["goblin"],
+        locations: ["ARENA"],
+        hp: 1,
+    ),
+    "SPEAR": (
+        names: ["spear"],
+        locations: ["ARENA"],
+        can_take: true,
+        damage: 2,
     ),
 })

@@ -34,17 +34,19 @@ pub(crate) struct Item {
     close_message: String,
     container: Container,
     covering: Vec<String>,
-    opacity: Opacity,
+    damage: i8,
     desc: String,
     dest: String,
     details: String,
     door: String,
     food: Food,
     go_message: String,
+    hp: i8,
     locations: Vec<String>,
     move_message: String,
     moved_message: String,
     names: Vec<String>,
+    opacity: Opacity,
     open_message: String,
     take_message: String,
 }
@@ -52,10 +54,6 @@ pub(crate) struct Item {
 impl Item {
     pub(crate) const fn can_eat(&self) -> bool {
         !matches!(self.food, Food::No)
-    }
-
-    pub(crate) fn try_take(&self) -> bool {
-        self.can_take || !self.take_message().is_empty()
     }
 
     pub(crate) fn close(&mut self) -> String {
@@ -79,6 +77,10 @@ impl Item {
         &self.container
     }
 
+    pub(crate) const fn damage(&self) -> i8 {
+        self.damage
+    }
+
     pub(crate) fn desc(&self) -> &str {
         &self.desc
     }
@@ -96,7 +98,19 @@ impl Item {
     }
 
     pub(crate) fn go_message(&self) -> &str {
-        &self.go_message
+        if self.go_message.is_empty() {
+            "Nice try."
+        } else {
+            &self.go_message
+        }
+    }
+
+    pub(crate) fn hp(&self) -> i8 {
+        self.hp
+    }
+
+    pub(crate) fn hurt(&mut self, damage: i8) {
+        self.hp = self.hp.saturating_sub(damage)
     }
 
     pub(crate) const fn is_clear(&self) -> bool {
@@ -205,6 +219,10 @@ impl Item {
     pub(crate) fn take_message(&self) -> &str {
         &self.take_message
     }
+
+    pub(crate) fn try_take(&self) -> bool {
+        self.can_take || !self.take_message().is_empty()
+    }
 }
 
 pub(crate) fn list_items(items: &[&Item], sep: &str) -> String {
@@ -219,7 +237,7 @@ pub(crate) fn list_items(items: &[&Item], sep: &str) -> String {
                 "{a} {}, {sep} {a} {}",
                 items[1..items.len() - 1].iter().fold(
                     items[0].name().to_owned(),
-                    |acc, i| format!("{}, a {}", acc, i.name())
+                    |acc, i| format!("{}, {a} {}", acc, i.name())
                 ),
                 items[items.len() - 1].name()
             )

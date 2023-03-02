@@ -98,7 +98,7 @@ impl Tokens {
         match verb {
             _ if verb.is_direction() => Action::Walk(verb.to_owned()),
             "again" | "g" => Action::Again,
-            "attack" | "cut" | "hit" | "hurt" | "kill" | "murder" | "slay" => {
+            "attack" | "cut" | "hit" | "hurt" | "kill" | "murder" | "slash" | "slay" | "stab" => {
                 if prep.is_empty() {
                     prep.push_str("with");
                 }
