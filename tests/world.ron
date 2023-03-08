@@ -1,6 +1,7 @@
 (player: "PLAYER", items: {
     "PLAYER": (
         locations: ["CENTER ROOM"],
+        hp: 10,
     ),
     "CENTER ROOM": (
         desc: "You are in the center room.",
@@ -52,7 +53,13 @@
     "GOBLIN": (
         names: ["goblin"],
         locations: ["ARENA"],
-        hp: 1,
+        hp: 3,
+        disposition: Aggressive,
+    ),
+    "DAGGER": (
+        names: ["dagger"],
+        locations: ["GOBLIN"],
+        damage: 1,
     ),
     "SPEAR": (
         names: ["spear"],

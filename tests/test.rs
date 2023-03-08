@@ -144,6 +144,10 @@ mod tests {
         game.ask("enter arena and take spear");
         assert_eq!(
             game.ask("kill goblin with spear"),
+            "You hit the goblin with your spear.\n\nThe goblin hits you."
+        );
+        assert_eq!(
+            game.ask("kill goblin with spear"),
             "You hit the goblin with your spear. It dies."
         );
     }

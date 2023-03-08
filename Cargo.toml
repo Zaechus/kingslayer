@@ -1,6 +1,6 @@
 [package]
 name = "kingslayer"
-version = "0.5.6"
+version = "0.6.0"
 authors = ["Maxwell Anderson <zaechus@proton.me>"]
 description = "A text adventure game and library"
 readme = "README.md"

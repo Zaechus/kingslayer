@@ -65,6 +65,14 @@
         locations: ["HOLD 2"],
         dest: "HOLD 1",
     ),
+    "RATS": (
+        desc: "A swarm of rats raves on the floor.",
+        names: ["swarm of rats"],
+        locations: ["HOLD 2"],
+        disposition: Aggressive,
+        hp: 1,
+        damage: 1,
+    ),
     "CREW DECK 1": (
         desc: "You are on a deck with dirty hammocks hanging everywhere.",
         names: ["Crew Deck"],

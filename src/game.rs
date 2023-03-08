@@ -241,7 +241,7 @@ impl Game {
                     }
                 }
 
-                self.parse(tokens.action())
+                format!("{}{}", self.parse(tokens.action()), self.combat())
             }
         } else {
             "Excuse me?".to_owned()
@@ -268,7 +268,12 @@ impl Game {
 
                 self.update_last(tokens.clone());
 
-                res = format!("{}\n\n{}", res, self.parse(tokens.action()));
+                res = format!(
+                    "{}\n\n{}{}",
+                    res,
+                    self.parse(tokens.action()),
+                    self.combat()
+                );
             }
         }
 
@@ -291,6 +296,21 @@ impl Game {
             }
         }
         chunks.join("\n")
+    }
+
+    // TODO: only call this sometimes (not on questions, etc.)
+    fn combat(&mut self) -> String {
+        let mut damage = 0;
+        let res = self.items.iter().fold(String::new(), |acc, (_, i)| {
+            if i.is_in(self.player_location()) && i.is_aggressive() {
+                damage += i.damage();
+                format!("{}\n\nThe {} hits you.", acc, i.name()) // TODO: random different messages
+            } else {
+                acc
+            }
+        });
+        self.item_mut(&self.player.to_owned()).hurt(damage);
+        res
     }
 
     fn attack(&mut self, enemy: &str, weapon: &str) -> String {
@@ -689,13 +709,13 @@ impl Game {
     }
 
     fn parse_take(&mut self, noun: &str) -> String {
-        do_all!(self, "take", noun, is_visible_not_holding, take_item);
+        do_all!(self, "take", noun, is_visible_not_holding, take);
 
-        find!(self, "take", noun, in_room, take_item);
-        find!(self, "take", noun, is_visible_not_holding, take_item);
+        find!(self, "take", noun, in_room, take);
+        find!(self, "take", noun, is_visible_not_holding, take);
         find!(self, "take", noun, in_inventory, have_already);
 
-        find!(self, "take", noun, is_visible, take_item)
+        find!(self, "take", noun, is_visible, take)
     }
 
     fn parse_walk(&mut self, direction: &str) -> String {
@@ -726,7 +746,7 @@ impl Game {
             println!(
                 "{}",
                 match prompt("\n> ")?.trim() {
-                    "quit" | "q" => break,
+                    "quit" | "q" => break, // TODO: prompt y/n
                     "restore" => self.restore("kingslayer.save")?,
                     "save" => self.save("kingslayer.save")?,
                     s => self.ask(s),
@@ -803,16 +823,16 @@ impl Game {
     /// ```
     #[cfg(not(target_arch = "wasm32"))]
     pub fn save(&self, filename: &str) -> Result<String, Box<dyn error::Error>> {
-        match File::create(filename) {
+        Ok(match File::create(filename) {
             Ok(file) => {
                 zstd::stream::copy_encode(&*bincode::serialize(&self)?, file, 3)?;
-                Ok("Saved.".to_owned())
+                "Saved.".to_owned()
             }
-            Err(e) => Ok(e.to_string()),
-        }
+            Err(e) => e.to_string(),
+        })
     }
 
-    fn take_item(&mut self, location: &str) -> String {
+    fn take(&mut self, location: &str) -> String {
         self.items
             .get_mut(location)
             .unwrap()

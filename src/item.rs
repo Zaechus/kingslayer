@@ -3,6 +3,19 @@ use serde::{Deserialize, Serialize};
 use crate::container::Container;
 
 #[derive(Debug, Deserialize, Serialize)]
+enum Disposition {
+    Aggressive,
+    Inanimate,
+    Passive,
+}
+
+impl Default for Disposition {
+    fn default() -> Self {
+        Self::Inanimate
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 enum Food {
     Edible,
     Poisonous,
@@ -30,6 +43,7 @@ impl Default for Opacity {
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub(crate) struct Item {
+    disposition: Disposition,
     can_take: bool,
     close_message: String,
     container: Container,
@@ -52,6 +66,10 @@ pub(crate) struct Item {
 }
 
 impl Item {
+    pub(crate) const fn is_aggressive(&self) -> bool {
+        matches!(self.disposition, Disposition::Aggressive)
+    }
+
     pub(crate) const fn can_eat(&self) -> bool {
         !matches!(self.food, Food::No)
     }

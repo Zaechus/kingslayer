@@ -1,4 +1,4 @@
-use std::{env, error, process};
+use std::{env, error, fs, process};
 
 use kingslayer::*;
 
@@ -10,8 +10,8 @@ fn main() {
 }
 
 fn try_main() -> Result<(), Box<dyn error::Error>> {
-    let mut game = if let Some(filename) = env::args().nth(1) {
-        Game::load(&filename)?
+    let mut game: Game = if let Some(filename) = env::args().nth(1) {
+        fs::read_to_string(filename)?.parse()?
     } else {
         include_str!("world.ron").parse()?
     };
