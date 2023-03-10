@@ -128,6 +128,9 @@ impl Item {
     }
 
     pub(crate) fn hurt(&mut self, damage: i8) {
+        if matches!(self.disposition, Disposition::Passive) {
+            self.disposition = Disposition::Aggressive;
+        }
         self.hp = self.hp.saturating_sub(damage)
     }
 

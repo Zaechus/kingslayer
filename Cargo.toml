@@ -2,16 +2,16 @@
 name = "kingslayer"
 version = "0.6.0"
 authors = ["Maxwell Anderson <zaechus@proton.me>"]
-description = "A text adventure game and library"
-readme = "README.md"
-license = "MIT"
-repository = "https://github.com/Zaechus/kingslayer"
-homepage = "https://zaechus.github.io/kingslayer-web"
-documentation = "https://docs.rs/kingslayer"
 edition = "2021"
 
-keywords = [ "text", "adventure", "dungeon", "crawler", "game" ]
-categories = [ "games", "game-engines", "game-development" ]
+description = "A text adventure game and library"
+documentation = "https://docs.rs/kingslayer"
+readme = "README.md"
+homepage = "https://zaechus.github.io/kingslayer-web"
+repository = "https://github.com/Zaechus/kingslayer"
+license = "MIT"
+keywords = ["text", "adventure", "dungeon", "crawler", "game"]
+categories = ["games", "game-engines", "game-development"]
 
 [dependencies]
 bincode = "1.3"

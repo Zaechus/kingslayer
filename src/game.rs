@@ -555,6 +555,7 @@ impl Game {
         Ok(bincode::deserialize(&bytes)?)
     }
 
+    // TODO: specific order?
     fn look(&self) -> String {
         let room = self.item(self.player_location());
 

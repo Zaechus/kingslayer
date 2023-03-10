@@ -1,6 +1,7 @@
 (player: "PLAYER", items: {
     "PLAYER": (
         locations: ["BRIG"],
+        hp: 10,
     ),
     "BRIG": (
         names: ["Brig"],
@@ -80,5 +81,58 @@
     "CREW DECK 2": (
         desc: "You are on a deck with dirty hammocks hanging everywhere.",
         names: ["Crew Deck"],
+    ),
+    "CANNON DECK 1": (
+        desc: "This deck has cannons lining each side.",
+        names: ["Cannon Deck"],
+    ),
+    "CANNON DECK 2": (
+        desc: "This deck has cannons lining each side.",
+        names: ["Cannon Deck"],
+    ),
+    "EMPTY ROOM": (
+        desc: "The room is dark and emptpy.",
+        names: ["Empty Room"],
+    ),
+    "MAIN DECK": (
+        desc: "The vast open sea surrounds the ship you stand on.",
+        names: ["Main Deck"],
+    ),
+    "STERNCASTLE": (
+        desc: "You are on the sterncastle of the ship. There is another mast in the center and the ships wheel.",
+        names: ["Sterncastle"],
+    ),
+    "GREAT CABIN": (
+        desc: "You stand in a large cabin with the captains belongings littering the ground and hanging on the walls.",
+        names: ["Great Cabin"],
+    ),
+    "PLATFORM": (
+        desc: "You stand on a platform several feet above the main deck.",
+        names: ["Platform"],
+    ),
+    "PLATFORM DOWN": (
+        desc: "The main deck is below you.",
+        names: ["main deck", "down"],
+        locations: ["PLATFORM"],
+        dest: "MAIN DECK",
+        details: "The main deck is several feet below.",
+    ),
+    "PLATFORM UP": (
+        desc: "There is a crows nest above you on the central mast.",
+        names: ["crows nest", "mast", "up"],
+        locations: ["PLATFORM"],
+        dest: "CROWS NEST",
+        details: "The crows nest can be reached through holds and rigging on the mast.",
+    ),
+    "CROWS NEST": (
+        desc: "You are in a crows nest overlooking the entire ship and sea.",
+        names: ["Crow's Nest"],
+    ),
+    "CROWS NEST DOWN": (
+        desc: "There is a platform below you on the central mast.",
+        names: ["platform", "mast", "down"],
+        locatations: ["CROWS NEST"],
+        dest: "PLATFORM",
+        details: "The platform can be reached through holds on the mast.",
     ),
 })
