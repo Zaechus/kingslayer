@@ -1,15 +1,15 @@
 [package]
 name = "kingslayer"
 version = "0.6.0"
-authors = ["Maxwell Anderson <zaechus@proton.me>"]
+authors = ["Maxwell Anderson <zaechus@pm.me>"]
 edition = "2021"
 
 description = "A text adventure game and library"
-documentation = "https://docs.rs/kingslayer"
-readme = "README.md"
 homepage = "https://zaechus.github.io/kingslayer-web"
 repository = "https://github.com/Zaechus/kingslayer"
+documentation = "https://docs.rs/kingslayer"
 license = "MIT"
+exclude = [".github"]
 keywords = ["text", "adventure", "dungeon", "crawler", "game"]
 categories = ["games", "game-engines", "game-development"]
 
