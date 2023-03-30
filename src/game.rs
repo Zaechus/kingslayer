@@ -567,27 +567,23 @@ impl Game {
                 String::new()
             },
             room.desc(),
-            {
-                let contents = self.items.iter().fold(String::new(), |acc, (loc, i)| {
-                    if i.is_in(self.player_location()) {
-                        let desc = if i.is_container() {
-                            self.desc_contents(loc, i)
-                        } else {
-                            i.desc().to_owned()
-                        };
-
-                        if desc.is_empty() {
-                            acc
-                        } else {
-                            format!("{}\n{}", acc, desc)
-                        }
+            self.items.iter().fold(String::new(), |acc, (loc, i)| {
+                if i.is_in(self.player_location()) {
+                    let desc = if i.is_container() {
+                        self.desc_contents(loc, i)
                     } else {
-                        acc
-                    }
-                });
+                        i.desc().to_owned()
+                    };
 
-                contents
-            }
+                    if desc.is_empty() {
+                        acc
+                    } else {
+                        format!("{}\n{}", acc, desc)
+                    }
+                } else {
+                    acc
+                }
+            })
         )
     }
 
@@ -878,7 +874,7 @@ fn cant_see_any(noun: &str) -> String {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn prompt(p: &str) -> io::Result<String> {
-    print!("{}", p);
+    print!("{p}");
     io::stdout().flush()?;
     read_line()
 }
