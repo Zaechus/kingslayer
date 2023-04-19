@@ -742,8 +742,13 @@ impl Game {
         loop {
             println!(
                 "{}",
-                match prompt("\n> ")?.trim() {
-                    "quit" | "q" => break, // TODO: prompt y/n
+                match prompt("\n> ")?.trim_end() {
+                    "quit" | "q" =>
+                        if quit()? {
+                            break;
+                        } else {
+                            "Ok.".to_owned()
+                        },
                     "restore" => self.restore("kingslayer.save")?,
                     "save" => self.save("kingslayer.save")?,
                     s => self.ask(s),
@@ -877,4 +882,13 @@ fn prompt(p: &str) -> io::Result<String> {
     print!("{p}");
     io::stdout().flush()?;
     read_line()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn quit() -> io::Result<bool> {
+    let res = prompt("Are you sure you want to quit? (y/n): ")?
+        .trim_end()
+        .to_lowercase();
+
+    Ok(res == "y" || res == "yes" || res.starts_with("y ") || res.starts_with("yes "))
 }
