@@ -60,6 +60,7 @@
         names: ["dagger"],
         locations: ["GOBLIN"],
         damage: 1,
+        can_take: true,
     ),
     "SPEAR": (
         names: ["spear"],

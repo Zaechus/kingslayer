@@ -10,10 +10,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    action::Action,
-    container::Container,
-    direction::Direction,
-    item::{list_items, Item},
+    action::Action, container::Container, direction::Direction, item::Item, list_names,
     tokens::Tokens,
 };
 
@@ -41,8 +38,11 @@ macro_rules! which {
         return format!(
             "Which {}, {}?",
             $noun,
-            list_items(
-                &$items.into_iter().map(|(_, i)| i).collect::<Vec<_>>(),
+            list_names(
+                &$items
+                    .into_iter()
+                    .map(|(_, i)| i.name())
+                    .collect::<Vec<_>>(),
                 "or"
             )
         );
@@ -58,8 +58,11 @@ macro_rules! which {
         return format!(
             "Which {}, {}?",
             $obj,
-            list_items(
-                &$items.into_iter().map(|(_, i)| i).collect::<Vec<_>>(),
+            list_names(
+                &$items
+                    .into_iter()
+                    .map(|(_, i)| i.name())
+                    .collect::<Vec<_>>(),
                 "or"
             )
         );
@@ -323,10 +326,25 @@ impl Game {
             let enemy_name = enemy_item.name().to_owned();
             let dies = if self.item(enemy).hp() <= 0 {
                 self.items.remove(enemy);
-                // TODO: drop loot
-                " It dies."
+
+                let player_location = self.player_location().to_owned();
+                let loot = self
+                    .items
+                    .values_mut()
+                    .filter(|i| i.is_in(enemy))
+                    .map(|i| {
+                        i.set_location(player_location.clone());
+                        i.name()
+                    })
+                    .collect::<Vec<_>>();
+
+                if loot.is_empty() {
+                    " It dies.".to_owned()
+                } else {
+                    format!(" It dies. It drops {}.", list_names(&loot, "and"))
+                }
             } else {
-                ""
+                String::new()
             };
             format!(
                 "You hit the {} with your {}.{}",
@@ -621,12 +639,13 @@ impl Game {
             .items
             .values()
             .filter(|i| i.is_in(&location))
+            .map(|i| i.name())
             .collect::<Vec<_>>();
 
         if self.item(&location).is_closed() && contents.len() == 1 {
-            self.last_it = contents[0].name().to_owned();
+            self.last_it = contents[0].to_owned();
         }
-        let reveals = list_items(&contents, "and");
+        let reveals = list_names(&contents, "and");
 
         self.item_mut(&location).open(reveals)
     }

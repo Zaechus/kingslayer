@@ -147,8 +147,9 @@ mod tests {
             "You hit the goblin with your spear.\n\nThe goblin hits you."
         );
         assert_eq!(
-            game.ask("kill goblin with spear"),
-            "You hit the goblin with your spear. It dies."
+            game.ask("hit goblin with spear"),
+            "You hit the goblin with your spear. It dies. It drops a dagger."
         );
+        assert_eq!(game.ask("take dagger"), "Taken.");
     }
 }

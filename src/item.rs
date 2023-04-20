@@ -245,23 +245,3 @@ impl Item {
         self.can_take || !self.take_message().is_empty()
     }
 }
-
-pub(crate) fn list_items(items: &[&Item], sep: &str) -> String {
-    let a = if sep == "or" { "the" } else { "a" };
-
-    match items.len() {
-        0 => String::new(),
-        1 => format!("{a} {}", items[0].name()),
-        2 => format!("{a} {} {sep} {a} {}", items[0].name(), items[1].name()),
-        _ => {
-            format!(
-                "{a} {}, {sep} {a} {}",
-                items[1..items.len() - 1].iter().fold(
-                    items[0].name().to_owned(),
-                    |acc, i| format!("{}, {a} {}", acc, i.name())
-                ),
-                items[items.len() - 1].name()
-            )
-        }
-    }
-}

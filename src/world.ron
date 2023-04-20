@@ -56,6 +56,12 @@
         locations: ["HOLD 1"],
         hp: 1,
     ),
+    "BANANA": (
+        names: ["banana"],
+        desc: "There is a banana here.",
+        locations: ["SLEEPING PIRATE"],
+        can_take: true,
+    ),
     "HOLD 2": (
         names: ["Hold"],
         desc: "You are in the middle of a spacious hold. Crates and barrels array the sides.",
