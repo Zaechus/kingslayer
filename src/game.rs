@@ -10,12 +10,8 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    action::Action, container::Container, direction::Direction, item::Item, list_names,
-    tokens::Tokens,
+    action::Action, container::Container, direction::Direction, item::Item, tokens::Tokens,
 };
-
-#[cfg(not(target_arch = "wasm32"))]
-use crate::read_line;
 
 macro_rules! find_matches {
     ($self:ident, $noun:ident, $in:ident) => {
@@ -126,10 +122,14 @@ macro_rules! do_all {
             let message = items
                 .iter()
                 .fold(String::new(), |acc, loc| {
-                    let name = $self.item(loc).name().to_owned();
-                    format!("{}\n{}: {}", acc, name, $self.$f(loc))
+                    format!(
+                        "{}\n{}: {}",
+                        acc,
+                        $self.item(loc).name().to_owned(),
+                        $self.$f(loc)
+                    )
                 })
-                .trim()
+                .trim_start()
                 .to_owned();
 
             return if message.is_empty() {
@@ -761,9 +761,9 @@ impl Game {
         loop {
             println!(
                 "{}",
-                match prompt("\n> ")?.trim_end() {
+                match prompt("\n> ")?.trim() {
                     "quit" | "q" =>
-                        if quit()? {
+                        if confirm_quit()? {
                             break;
                         } else {
                             "Ok.".to_owned()
@@ -896,17 +896,39 @@ fn cant_see_any(noun: &str) -> String {
     format!("You can't see any {} here.", noun)
 }
 
+fn list_names(names: &[&str], sep: &str) -> String {
+    let a = if sep == "or" { "the" } else { "a" };
+
+    match names.len() {
+        0 => String::new(),
+        1 => format!("{a} {}", names[0]),
+        2 => format!("{a} {} {sep} {a} {}", names[0], names[1]),
+        _ => {
+            format!(
+                "{a} {}, {sep} {a} {}",
+                names[1..names.len() - 1]
+                    .iter()
+                    .fold(names[0].to_owned(), |acc, i| format!("{}, {a} {}", acc, i)),
+                names[names.len() - 1]
+            )
+        }
+    }
+}
+
 #[cfg(not(target_arch = "wasm32"))]
 fn prompt(p: &str) -> io::Result<String> {
     print!("{p}");
     io::stdout().flush()?;
-    read_line()
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    Ok(input)
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn quit() -> io::Result<bool> {
+fn confirm_quit() -> io::Result<bool> {
     let res = prompt("Are you sure you want to quit? (y/n): ")?
-        .trim_end()
+        .trim()
         .to_lowercase();
 
     Ok(res == "y" || res == "yes" || res.starts_with("y ") || res.starts_with("yes "))

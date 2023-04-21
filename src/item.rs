@@ -19,12 +19,12 @@ impl Default for Disposition {
 enum Food {
     Edible,
     Poisonous,
-    No,
+    Not,
 }
 
 impl Default for Food {
     fn default() -> Self {
-        Self::No
+        Self::Not
     }
 }
 
@@ -71,7 +71,7 @@ impl Item {
     }
 
     pub(crate) const fn can_eat(&self) -> bool {
-        !matches!(self.food, Food::No)
+        !matches!(self.food, Food::Not)
     }
 
     pub(crate) fn close(&mut self) -> String {
