@@ -567,10 +567,9 @@ impl Game {
     /// ```
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load(filename: &str) -> Result<Self, Box<dyn error::Error>> {
-        let mut bytes = Vec::new();
-        zstd::stream::copy_decode(File::open(filename)?, &mut bytes)?;
+        use std::fs;
 
-        Ok(bincode::deserialize(&bytes)?)
+        Ok(bincode::deserialize(&fs::read(filename)?)?)
     }
 
     // TODO: specific order?
@@ -768,7 +767,7 @@ impl Game {
                         } else {
                             "Ok.".to_owned()
                         },
-                    "restore" => self.restore("kingslayer.save")?,
+                    "restore" => self.restore("kingslayer.save"),
                     "save" => self.save("kingslayer.save")?,
                     s => self.ask(s),
                 }
@@ -828,12 +827,16 @@ impl Game {
     /// game.restore("kingslayer.save");
     /// ```
     #[cfg(not(target_arch = "wasm32"))]
-    pub fn restore(&mut self, filename: &str) -> Result<String, Box<dyn error::Error>> {
-        let game = Game::load(filename)?;
-        self.player = game.player;
-        self.items = game.items;
+    pub fn restore(&mut self, filename: &str) -> String {
+        match Game::load(filename) {
+            Ok(game) => {
+                self.player = game.player;
+                self.items = game.items;
 
-        Ok("OK".to_owned())
+                "OK".to_owned()
+            }
+            Err(e) => e.to_string(),
+        }
     }
 
     /// Save the Game to a file.
@@ -845,8 +848,8 @@ impl Game {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn save(&self, filename: &str) -> Result<String, Box<dyn error::Error>> {
         Ok(match File::create(filename) {
-            Ok(file) => {
-                zstd::stream::copy_encode(&*bincode::serialize(&self)?, file, 3)?;
+            Ok(mut file) => {
+                file.write_all(&bincode::serialize(self)?)?;
                 "Saved.".to_owned()
             }
             Err(e) => e.to_string(),
