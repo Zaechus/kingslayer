@@ -8,8 +8,8 @@ const USELESS_WORDS: [&str; 17] = [
 ];
 const PREPOSITIONS: [&str; 6] = ["in", "from", "on", "out", "under", "with"];
 
-fn alias(s: &String) -> &str {
-    match s.as_str() {
+fn alias(s: &str) -> &str {
+    match s {
         "n" => "north",
         "s" => "south",
         "e" => "east",
@@ -55,7 +55,7 @@ impl Tokens {
     pub(crate) fn new(words: &[String]) -> Self {
         let words: Vec<_> = words
             .iter()
-            .map(alias)
+            .map(|s| alias(s))
             .filter(|w| !USELESS_WORDS.contains(w))
             .collect();
 
@@ -207,6 +207,19 @@ impl Tokens {
     }
 
     pub(crate) fn with(verb: String, noun: String, mut prep: String, obj: String) -> Self {
+        let noun = noun
+            .split_whitespace()
+            .map(alias)
+            .filter(|w| !USELESS_WORDS.contains(w))
+            .collect::<Vec<_>>()
+            .join(" ");
+        let obj = obj
+            .split_whitespace()
+            .map(alias)
+            .filter(|w| !USELESS_WORDS.contains(w))
+            .collect::<Vec<_>>()
+            .join(" ");
+
         Self {
             action: Self::parse(&verb, &noun, &mut prep, &obj),
             verb,
