@@ -38,7 +38,7 @@
         locations: ["HOLD 1", "HOLD 2"],
         details: "You can find no way to open the barrels, but there is definitely root beer inside.",
         open_message: "You can find no way to open the barrels, but there is definitely root beer inside.",
-        take_message: "They're far too heavy.",
+        take_message: "The barrels are far too heavy.",
     ),
     "HOLD 1": (
         names: ["Hold"],

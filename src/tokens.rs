@@ -72,14 +72,14 @@ impl Tokens {
             } else {
                 noun = words[1..].join(" ");
             }
-            verb
+            verb.to_string()
         } else {
-            ""
+            String::new()
         };
 
         Self {
-            action: Self::parse(verb, &noun, &mut prep, &obj),
-            verb: verb.to_owned(),
+            action: Self::parse(&verb, &noun, &mut prep, &obj),
+            verb,
             noun,
             prep,
             obj,

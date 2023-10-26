@@ -54,7 +54,7 @@
         names: ["goblin"],
         locations: ["ARENA"],
         hp: 3,
-        disposition: Aggressive,
+        nature: Aggressive,
     ),
     "DAGGER": (
         names: ["dagger"],

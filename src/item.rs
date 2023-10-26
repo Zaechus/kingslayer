@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use crate::container::Container;
 
 #[derive(Debug, Deserialize, Serialize)]
-enum Disposition {
+enum Nature {
     Aggressive,
     Inanimate,
     Passive,
 }
 
-impl Default for Disposition {
+impl Default for Nature {
     fn default() -> Self {
         Self::Inanimate
     }
@@ -43,7 +43,7 @@ impl Default for Opacity {
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub(crate) struct Item {
-    disposition: Disposition,
+    nature: Nature,
     can_take: bool,
     close_message: String,
     container: Container,
@@ -67,7 +67,7 @@ pub(crate) struct Item {
 
 impl Item {
     pub(crate) const fn is_aggressive(&self) -> bool {
-        matches!(self.disposition, Disposition::Aggressive)
+        matches!(self.nature, Nature::Aggressive)
     }
 
     pub(crate) const fn can_eat(&self) -> bool {
@@ -128,8 +128,8 @@ impl Item {
     }
 
     pub(crate) fn hurt(&mut self, damage: i8) {
-        if matches!(self.disposition, Disposition::Passive) {
-            self.disposition = Disposition::Aggressive;
+        if matches!(self.nature, Nature::Passive) {
+            self.nature = Nature::Aggressive;
         }
         self.hp = self.hp.saturating_sub(damage)
     }

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, mem, str::FromStr};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::{
@@ -188,7 +188,7 @@ impl Game {
             .split_whitespace()
             .map(str::to_lowercase)
             .fold(vec![Vec::new()], |mut acc, w| {
-                if w == "and" {
+                if w == "and" || w == "then" {
                     acc.push(Vec::new())
                 } else {
                     acc.last_mut().unwrap().push(w)
@@ -231,7 +231,10 @@ impl Game {
 
                 self.update_last(tokens.clone());
 
-                self.parse(tokens.action())
+                match self.parse(tokens.action()) {
+                    Outcome::Active(output) => format!("{}{}", output, self.combat()),
+                    Outcome::Idle(output) => output,
+                }
             } else {
                 let tokens = self.replace_it(tokens);
 
@@ -244,7 +247,10 @@ impl Game {
                     }
                 }
 
-                format!("{}{}", self.parse(tokens.action()), self.combat())
+                match self.parse(tokens.action()) {
+                    Outcome::Active(output) => format!("{}{}", output, self.combat()),
+                    Outcome::Idle(output) => output,
+                }
             }
         } else {
             "Excuse me?".to_owned()
@@ -258,25 +264,28 @@ impl Game {
             } else {
                 let mut tokens = self.replace_it(Tokens::new(words));
 
-                // if the verb isn't recognized, try to use the verb of the previous command
+                // If the verb isn't recognized, try to use the verb of the previous command,
+                // but only if the previous command accepts a noun/obj
                 // i.e.: "take apple and orange" would try "take apple and take orange"
-                if let Action::Unknown(_) = tokens.action() {
-                    tokens = Tokens::with(
-                        self.last_command.verb().to_owned(),
-                        words.join(" "),
-                        self.last_command.prep().to_owned(),
-                        self.last_command.obj().to_owned(),
-                    );
+                if !self.last_command.noun().is_empty() || !self.last_command.obj().is_empty() {
+                    if let Action::Unknown(_) = tokens.action() {
+                        tokens = Tokens::with(
+                            self.last_command.verb().to_owned(),
+                            words.join(" "),
+                            self.last_command.prep().to_owned(),
+                            self.last_command.obj().to_owned(),
+                        );
+                    }
                 }
 
                 self.update_last(tokens.clone());
 
-                res = format!(
-                    "{}\n\n{}{}",
-                    res,
-                    self.parse(tokens.action()),
-                    self.combat()
-                );
+                match self.parse(tokens.action()) {
+                    Outcome::Active(output) => {
+                        res = format!("{}\n\n{}{}", res, output, self.combat())
+                    }
+                    Outcome::Idle(output) => res = format!("{}\n\n{}", res, output,),
+                }
             }
         }
 
@@ -285,13 +294,13 @@ impl Game {
         for mut l in res.lines().map(str::to_owned) {
             loop {
                 if l.len() < 80 {
-                    chunks.push(l.drain(..).collect());
+                    chunks.push(mem::take(&mut l));
                 } else if let Some(x) = l[..80].rfind(' ') {
                     chunks.push(l.drain(..x + 1).collect());
                 } else if let Some(x) = l[80..].find(' ') {
                     chunks.push(l.drain(..x + 81).collect());
                 } else {
-                    chunks.push(l.drain(..).collect());
+                    chunks.push(mem::take(&mut l));
                 };
                 if l.is_empty() {
                     break;
@@ -301,7 +310,6 @@ impl Game {
         chunks.join("\n")
     }
 
-    // TODO: only call this sometimes (not on questions, etc.)
     fn combat(&mut self) -> String {
         let mut damage = 0;
         let res = self.items.iter().fold(String::new(), |acc, (_, i)| {
@@ -312,8 +320,15 @@ impl Game {
                 acc
             }
         });
-        self.item_mut(&self.player.to_owned()).hurt(damage);
-        res
+
+        let player = self.item_mut(&self.player.to_owned());
+        player.hurt(damage);
+
+        if player.hp() <= 0 {
+            format!("{}\n\nYou die.", res)
+        } else {
+            res
+        }
     }
 
     fn attack(&mut self, enemy: &str, weapon: &str) -> String {
@@ -341,6 +356,9 @@ impl Game {
                 if loot.is_empty() {
                     " It dies.".to_owned()
                 } else {
+                    if loot.len() == 1 {
+                        self.last_it = loot[0].to_owned();
+                    }
                     format!(" It dies. It drops {}.", list_names(&loot, "and"))
                 }
             } else {
@@ -649,33 +667,33 @@ impl Game {
         self.item_mut(&location).open(reveals)
     }
 
-    fn parse(&mut self, action: &Action) -> String {
+    fn parse(&mut self, action: &Action) -> Outcome {
         match action {
             Action::Again => self.parse(&self.last_command.action().clone()),
-            Action::Attack(noun, obj) => self.parse_attack(noun, obj),
-            Action::Break(_) => "You can't do that yet.".to_owned(),
-            Action::Burn(_, _) => "You can't do that yet.".to_owned(),
-            Action::Clarify(message) => message.to_owned(),
-            Action::Climb => "You can't do that yet.".to_owned(),
-            Action::Close(noun) => self.parse_close(noun),
-            Action::Drop(noun) => self.parse_drop(noun),
-            Action::Put(noun, obj) => self.parse_put(noun, obj),
-            Action::Eat(noun) => self.parse_eat(noun),
-            Action::Examine(noun) => self.parse_examine(noun),
-            Action::Hello => "Hello!".to_owned(),
-            Action::Help => "That would be nice, wouldn't it?".to_owned(),
-            Action::Inventory => self.inventory(),
-            Action::Look => self.look(),
-            Action::Move(noun) => self.parse_move(noun),
-            Action::NoVerb => "Excuse me?".to_owned(),
-            Action::Open(noun) => self.parse_open(noun),
-            Action::Sleep => "Time passes...".to_owned(),
-            Action::Take(noun) => self.parse_take(noun),
-            Action::Unknown(verb) => format!("I do not know the verb \"{}\".", verb),
-            Action::Version => format!("Kingslayer {}", env!("CARGO_PKG_VERSION")),
-            Action::Walk(direction) => self.parse_walk(direction),
-            Action::Wear(_) => "You can't do that yet.".to_owned(),
-            Action::Where(noun) => self.parse_where(noun),
+            Action::Attack(noun, obj) => Outcome::Active(self.parse_attack(noun, obj)),
+            Action::Break(_) => Outcome::Active("You can't do that yet.".to_owned()),
+            Action::Burn(_, _) => Outcome::Active("You can't do that yet.".to_owned()),
+            Action::Clarify(message) => Outcome::Idle(message.to_owned()),
+            Action::Climb => Outcome::Active("You can't do that yet.".to_owned()),
+            Action::Close(noun) => Outcome::Active(self.parse_close(noun)),
+            Action::Drop(noun) => Outcome::Active(self.parse_drop(noun)),
+            Action::Put(noun, obj) => Outcome::Active(self.parse_put(noun, obj)),
+            Action::Eat(noun) => Outcome::Active(self.parse_eat(noun)),
+            Action::Examine(noun) => Outcome::Active(self.parse_examine(noun)),
+            Action::Hello => Outcome::Active("Hello!".to_owned()),
+            Action::Help => Outcome::Idle("That would be nice, wouldn't it?".to_owned()),
+            Action::Inventory => Outcome::Active(self.inventory()),
+            Action::Look => Outcome::Active(self.look()),
+            Action::Move(noun) => Outcome::Active(self.parse_move(noun)),
+            Action::NoVerb => Outcome::Active("Excuse me?".to_owned()),
+            Action::Open(noun) => Outcome::Active(self.parse_open(noun)),
+            Action::Sleep => Outcome::Active("Time passes...".to_owned()),
+            Action::Take(noun) => Outcome::Active(self.parse_take(noun)),
+            Action::Unknown(verb) => Outcome::Idle(format!("I do not know the verb \"{}\".", verb)),
+            Action::Version => Outcome::Idle(format!("Kingslayer {}", env!("CARGO_PKG_VERSION"))),
+            Action::Walk(direction) => Outcome::Active(self.parse_walk(direction)),
+            Action::Wear(_) => Outcome::Active("You can't do that yet.".to_owned()),
+            Action::Where(noun) => Outcome::Active(self.parse_where(noun)),
         }
     }
 
@@ -767,8 +785,8 @@ impl Game {
                         } else {
                             "Ok.".to_owned()
                         },
-                    "restore" => self.restore("kingslayer.save"),
-                    "save" => self.save("kingslayer.save")?,
+                    "restore" => self.restore("kingslayer.save"), // TODO: ask for filename
+                    "save" => self.save("kingslayer.save")?,      // TODO: ask for filename
                     s => self.ask(s),
                 }
             );
@@ -871,6 +889,7 @@ impl Game {
         }
     }
 
+    // TODO: prevent if in combat
     fn walk(&mut self, location: &str) -> String {
         let exit = self.item(location);
         let exit_dest = exit.dest().to_owned();
@@ -919,8 +938,8 @@ fn list_names(names: &[&str], sep: &str) -> String {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn prompt(p: &str) -> io::Result<String> {
-    print!("{p}");
+fn prompt(message: &str) -> io::Result<String> {
+    print!("{message}");
     io::stdout().flush()?;
 
     let mut input = String::new();
@@ -935,4 +954,9 @@ fn confirm_quit() -> io::Result<bool> {
         .to_lowercase();
 
     Ok(res == "y" || res == "yes" || res.starts_with("y ") || res.starts_with("yes "))
+}
+
+enum Outcome {
+    Active(String),
+    Idle(String),
 }
