@@ -1,5 +1,6 @@
 (player: "PLAYER", items: {
     "PLAYER": (
+        names: ["self", "myself"],
         locations: ["CENTER ROOM"],
         hp: 10,
     ),
