@@ -183,7 +183,7 @@ impl Tokens {
                     (true, _, true) => Action::what_do(verb),
                 }
             }
-            "take" | "hold" | "get" | "remove" => do_or_ask!(Take, noun, verb),
+            "take" | "get" | "grab" | "hold" | "remove" => do_or_ask!(Take, noun, verb),
             "version" => Action::Version,
             "wait" | "z" | "sleep" => Action::Sleep,
             "where" | "find" | "see" => {

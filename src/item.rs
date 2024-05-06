@@ -156,7 +156,7 @@ impl Item {
     }
 
     pub(crate) fn location(&self) -> &str {
-        if let Some(location) = self.locations.get(0) {
+        if let Some(location) = self.locations.first() {
             location
         } else {
             ""
@@ -185,7 +185,7 @@ impl Item {
     }
 
     pub(crate) fn name(&self) -> &str {
-        if let Some(name) = self.names.get(0) {
+        if let Some(name) = self.names.first() {
             name
         } else {
             ""
