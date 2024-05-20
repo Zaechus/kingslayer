@@ -186,6 +186,7 @@ impl Tokens {
             "take" | "get" | "grab" | "hold" | "remove" => do_or_ask!(Take, noun, verb),
             "version" => Action::Version,
             "wait" | "z" | "sleep" => Action::Sleep,
+            "wear" | "don" => Action::Wear(noun.to_owned()),
             "where" | "find" | "see" => {
                 if noun.is_empty() {
                     Action::NoVerb
