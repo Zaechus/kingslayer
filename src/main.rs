@@ -1,15 +1,18 @@
-use std::{env, error, fs, process};
+use std::{env, error, fs, process::ExitCode};
 
 use kingslayer::*;
 
-fn main() {
-    if let Err(err) = try_main() {
-        eprintln!("{}", err);
-        process::exit(1);
+fn main() -> ExitCode {
+    match run() {
+        Ok(code) => code,
+        Err(err) => {
+            eprintln!("{}", err);
+            ExitCode::FAILURE
+        }
     }
 }
 
-fn try_main() -> Result<(), Box<dyn error::Error>> {
+fn run() -> Result<ExitCode, Box<dyn error::Error>> {
     let mut game: Game = if let Some(filename) = env::args().nth(1) {
         fs::read_to_string(filename)?.parse()?
     } else {
@@ -18,5 +21,5 @@ fn try_main() -> Result<(), Box<dyn error::Error>> {
 
     game.play()?;
 
-    Ok(())
+    Ok(ExitCode::SUCCESS)
 }

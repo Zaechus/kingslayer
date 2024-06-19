@@ -773,7 +773,7 @@ impl Game {
     /// Start the Game in a command line setting where `print` macros are expected to work
     #[cfg(not(target_arch = "wasm32"))]
     pub fn play(&mut self) -> Result<(), Box<dyn error::Error>> {
-        println!("{}", self.ask("l"));
+        println!("{}", self.ask("look"));
 
         loop {
             println!(
