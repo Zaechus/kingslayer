@@ -237,11 +237,7 @@ impl Item {
         }
     }
 
-    pub(crate) fn take_message(&self) -> &str {
-        &self.take_message
-    }
-
     pub(crate) fn try_take(&self) -> bool {
-        self.can_take || !self.take_message().is_empty()
+        self.can_take || !self.take_message.is_empty()
     }
 }

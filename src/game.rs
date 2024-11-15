@@ -115,7 +115,7 @@ macro_rules! do_all {
             let items = $self
                 .items
                 .iter()
-                .filter(|(_, i)| $self.$in(i) && !i.name().is_empty() && i.try_take())
+                .filter(|(_, i)| $self.$in(i) && !i.name().is_empty() && i.try_take()) // TODO: might want to filter by criteria besides try_take
                 .map(|(loc, _)| loc.to_owned())
                 .collect::<Vec<_>>();
 
