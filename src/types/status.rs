@@ -1,26 +1,16 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
 pub enum CombatStatus {
     InCombat,
+    #[default]
     Resting,
 }
 
-impl Default for CombatStatus {
-    fn default() -> Self {
-        CombatStatus::Resting
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
 pub enum EnemyStatus {
     Angry,
+    #[default]
     Distracted,
     Asleep,
-}
-
-impl Default for EnemyStatus {
-    fn default() -> Self {
-        EnemyStatus::Distracted
-    }
 }

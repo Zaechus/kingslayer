@@ -212,7 +212,7 @@ Some available commands:
                 self.player.borrow_mut().engage_combat();
             }
             if !enemy.is_alive() {
-                format!("{}\nYou gained {} XP.", events_str, enemy.xp());
+                events_str.push_str(&format!("{}\nYou gained {} XP.", events_str, enemy.xp()));
                 self.player.borrow_mut().disengage_combat();
                 self.player.borrow_mut().gain_xp(enemy.xp());
             }

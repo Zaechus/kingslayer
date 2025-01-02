@@ -51,29 +51,35 @@ impl Stats {
         )
     }
 
-    pub fn increase_ability_score(&mut self, ability_score: &str) -> CmdResult {
-        if self.pts > 0 {
-            match &ability_score[0..3] {
-                "str" | "dex" | "con" | "int" | "wis" | "cha" => {
-                    self.pts -= 1;
-                    match &ability_score[0..3] {
-                        "str" => self.strngth += 1,
-                        "dex" => self.dex += 1,
-                        "con" => self.con += 1,
-                        "int" => self.int += 1,
-                        "wis" => self.wis += 1,
-                        "cha" => self.cha += 1,
-                        _ => (),
-                    }
-                    CmdResult::new(Action::Active, "Ability score increased by one.")
+    pub fn increase_ability_score(&mut self, ability: &str) -> CmdResult {
+        if self.pts == 0 {
+            return CmdResult::new(Action::Passive, "You do not have any stat points.");
+        }
+        if ability.len() < 3 {
+            return CmdResult::new(
+                Action::Passive,
+                format!("\"{}\" is not a valid ability.", ability),
+            );
+        }
+
+        match &ability[0..3] {
+            "str" | "dex" | "con" | "int" | "wis" | "cha" => {
+                self.pts -= 1;
+                match &ability[0..3] {
+                    "str" => self.strngth += 1,
+                    "dex" => self.dex += 1,
+                    "con" => self.con += 1,
+                    "int" => self.int += 1,
+                    "wis" => self.wis += 1,
+                    "cha" => self.cha += 1,
+                    _ => (),
                 }
-                _ => CmdResult::new(
-                    Action::Passive,
-                    format!("\"{}\" is not a valid ability score.", ability_score),
-                ),
+                CmdResult::new(Action::Active, "Ability score increased by one.")
             }
-        } else {
-            CmdResult::new(Action::Passive, "You do not have any stat points.")
+            _ => CmdResult::new(
+                Action::Passive,
+                format!("\"{}\" is not a valid ability.", ability),
+            ),
         }
     }
 

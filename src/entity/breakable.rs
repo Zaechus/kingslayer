@@ -1,17 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-impl Default for Durability {
-    fn default() -> Self {
-        Durability::Unbreakable
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub enum Durability {
     Durable(u32),
+    #[default]
     Unbreakable,
 }
 
 impl Durability {}
 
-pub trait Breakable {}
+// pub trait Breakable {}

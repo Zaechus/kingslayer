@@ -134,9 +134,9 @@ impl Lockable for Pathway {
         }
     }
 
-    fn lock(&mut self) -> CmdResult {
-        CmdResult::new(Action::Passive, "TODO: lock it")
-    }
+    // fn lock(&mut self) -> CmdResult {
+    //     CmdResult::new(Action::Passive, "TODO: lock it")
+    // }
 
     fn is_locked(&self) -> bool {
         if let Some(lock) = &self.lock {

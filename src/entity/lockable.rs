@@ -20,7 +20,7 @@ impl DoorLock {
 pub trait Lockable {
     fn unlock(&mut self) -> CmdResult;
 
-    fn lock(&mut self) -> CmdResult;
+    // fn lock(&mut self) -> CmdResult;
 
     fn is_locked(&self) -> bool;
 }
