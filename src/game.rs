@@ -147,6 +147,8 @@ pub struct Game {
     player: String,
     items: HashMap<String, Item>,
     #[serde(default)]
+    dead: bool,
+    #[serde(default)]
     last_command: Tokens,
     #[serde(default)]
     last_it: String,
@@ -325,6 +327,7 @@ impl Game {
         player.hurt(damage);
 
         if player.hp() <= 0 {
+            self.dead = true;
             format!("{}\n\nYou die.", res)
         } else {
             res
@@ -667,12 +670,12 @@ impl Game {
         self.item_mut(&location).open(reveals)
     }
 
+    // TODO: equip
     fn parse(&mut self, action: &Action) -> Outcome {
         match action {
             Action::Again => self.parse(&self.last_command.action().clone()),
             Action::Attack(noun, obj) => Outcome::Active(self.parse_attack(noun, obj)),
             Action::Break(_) => Outcome::Active("You can't do that yet.".to_owned()),
-            Action::Burn(_, _) => Outcome::Active("You can't do that yet.".to_owned()),
             Action::Clarify(message) => Outcome::Idle(message.to_owned()),
             Action::Climb => Outcome::Active("You can't do that yet.".to_owned()),
             Action::Close(noun) => Outcome::Active(self.parse_close(noun)),
@@ -720,6 +723,7 @@ impl Game {
         find!(self, "eat", noun, is_visible, eat)
     }
 
+    // TODO: account for a container also having details?
     fn parse_examine(&mut self, noun: &str) -> String {
         find!(self, "examine", noun, is_visible_has_details, examine);
         find!(self, "examine", noun, is_visible_has_door, examine_door);
@@ -775,7 +779,7 @@ impl Game {
     pub fn play(&mut self) -> Result<(), Box<dyn error::Error>> {
         println!("{}", self.ask("look"));
 
-        loop {
+        while !self.dead {
             println!(
                 "{}",
                 match prompt("\n> ")?.trim() {

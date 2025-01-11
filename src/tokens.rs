@@ -110,7 +110,6 @@ impl Tokens {
                 }
             }
             "break" | "destroy" | "smash" => Action::Break(String::new()),
-            "burn" => Action::Burn(String::new(), String::new()),
             "climb" => Action::Climb,
             "close" | "shut" => do_or_ask!(Close, noun, verb),
             "drop" | "throw" => {
