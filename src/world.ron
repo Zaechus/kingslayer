@@ -40,7 +40,7 @@
         dest: "BRIG",
         door: "BRIG DOOR",
     ),
-    "ROOT BEER BARRELS": (
+    "ROOT BEER BARRELS": ( // FIXME: english
         desc: "You can detect the slight scent of root beer.",
         names: ["barrels", "root beer", "crates"],
         locations: ["HOLD 1", "HOLD 2"],
@@ -109,7 +109,7 @@
     ),
     "STEEP STAIRS CREW DOWN": (
         desc: "Steep stairs lead downwards.",
-        names: ["steep stairs", "down"],
+        names: ["steep stairs leading downwards", "down"],
         locations: ["CREW DECK 1"],
         dest: "HOLD 1",
     ),
@@ -161,13 +161,13 @@
     ),
     "STEEP STAIRS CREW UP": (
         desc: "Steep stairs lead upwards.",
-        names: ["steep stairs", "up"],
+        names: ["steep stairs leading upwards", "up"],
         locations: ["CREW DECK 1"],
         dest: "CANNON DECK 1",
     ),
     "STEEP STAIRS CANNON DOWN": (
         desc: "Steep stairs lead downwards.",
-        names: ["steep stairs", "down"],
+        names: ["steep stairs leading downwards", "down"],
         locations: ["CANNON DECK 1"],
         dest: "CANNON DECK 1",
     ),
@@ -198,7 +198,7 @@
     ),
     "STEEP STAIRS CANNON UP": (
         desc: "Steep stairs lead upwards.",
-        names: ["steep stairs", "up"],
+        names: ["steep stairs leading upwards", "up"],
         locations: ["CANNON DECK 1"],
         dest: "MAIN DECK",
     ),
