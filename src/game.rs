@@ -673,7 +673,7 @@ impl Game {
     // TODO: equip
     fn parse(&mut self, action: &Action) -> Outcome {
         match action {
-            Action::Again => self.parse(&self.last_command.action().clone()),
+            Action::Again => self.parse(&self.last_command.action().clone()), // FIXME
             Action::Attack(noun, obj) => Outcome::Active(self.parse_attack(noun, obj)),
             Action::Break(_) => Outcome::Active("You can't do that yet.".to_owned()),
             Action::Clarify(message) => Outcome::Idle(message.to_owned()),
