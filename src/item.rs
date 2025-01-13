@@ -87,7 +87,7 @@ impl Item {
             Container::Closed => {
                 format!("The {} is already closed.", self.name())
             }
-            _ => format!("You cannot do that to a {}.", self.name()),
+            _ => format!("You cannot do that to the {}.", self.name()),
         }
     }
 
@@ -218,7 +218,7 @@ impl Item {
                     "Opened.".to_owned()
                 }
             }
-            _ => format!("You cannot do that to a {}.", self.name()),
+            _ => format!("You cannot do that to the {}.", self.name()),
         }
     }
 

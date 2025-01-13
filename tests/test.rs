@@ -6,8 +6,7 @@ mod tests {
     fn test() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        let excuse_me = ["", "a", "and", "a and", "and a"];
-        for s in excuse_me {
+        for s in ["", "a", "and", "a and", "and a"] {
             assert_eq!(game.ask(s), "Excuse me?");
         }
 
@@ -19,13 +18,15 @@ mod tests {
     fn look() {
         let mut game: Game = include_str!("world.ron").parse().unwrap();
 
-        let expected = "Center Room\nYou are in the center room.\nThere is a box here.";
         for s in [
             "l",           // alias
             "look",        // look command
             "look around", // long form
         ] {
-            assert_eq!(game.ask(s), expected);
+            assert_eq!(
+                game.ask(s),
+                "Center Room\nYou are in the center room.\nThere is a box here."
+            );
         }
     }
 
@@ -101,6 +102,13 @@ mod tests {
         assert_eq!(game.ask("put apple in apple"), "Impossible.");
         assert_eq!(game.ask("put box in box"), "Impossible.");
 
+        // try to open/close non-container
+        assert_eq!(
+            game.ask("open the apple"),
+            "You cannot do that to the apple."
+        );
+        assert_eq!(game.ask("close apple"), "You cannot do that to the apple.");
+
         // close
         assert_eq!(game.ask("close box"), "Closed.");
 
@@ -161,5 +169,13 @@ mod tests {
             game.ask("hit myself with my dagger"),
             "You hit the self with your dagger."
         );
+    }
+
+    #[test]
+    fn again() {
+        let mut game: Game = include_str!("world.ron").parse().unwrap();
+
+        game.ask("take it");
+        game.ask("again"); // make sure nothing funny happens
     }
 }

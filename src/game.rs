@@ -673,7 +673,7 @@ impl Game {
     // TODO: equip
     fn parse(&mut self, action: &Action) -> Outcome {
         match action {
-            Action::Again => self.parse(&self.last_command.action().clone()), // FIXME
+            Action::Again => self.parse_again(),
             Action::Attack(noun, obj) => Outcome::Active(self.parse_attack(noun, obj)),
             Action::Break(_) => Outcome::Active("You can't do that yet.".to_owned()),
             Action::Clarify(message) => Outcome::Idle(message.to_owned()),
@@ -697,6 +697,14 @@ impl Game {
             Action::Walk(direction) => Outcome::Active(self.parse_walk(direction)),
             Action::Wear(_) => Outcome::Active("You can't do that yet.".to_owned()),
             Action::Where(noun) => Outcome::Active(self.parse_where(noun)),
+        }
+    }
+
+    fn parse_again(&mut self) -> Outcome {
+        if let Action::Again = self.last_command.action() {
+            Outcome::Idle("Excuse me?".to_owned())
+        } else {
+            self.parse(&self.last_command.action().clone())
         }
     }
 

@@ -40,7 +40,7 @@
         dest: "BRIG",
         door: "BRIG DOOR",
     ),
-    "ROOT BEER BARRELS": ( // FIXME: english
+    "ROOT BEER BARRELS": (
         desc: "You can detect the slight scent of root beer.",
         names: ["barrels", "root beer", "crates"],
         locations: ["HOLD 1", "HOLD 2"],
