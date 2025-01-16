@@ -1,4 +1,4 @@
-(player: "PLAYER", items: {
+(player: "PLAYER", last_it: "stick", items: {
     "PLAYER": (
         names: ["self", "me", "myself", "i"],
         locations: ["BRIG"],

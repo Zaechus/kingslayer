@@ -1,4 +1,8 @@
-use std::{collections::HashMap, mem, str::FromStr};
+use std::{
+    collections::{BTreeMap, HashMap},
+    mem,
+    str::FromStr,
+};
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::{
@@ -593,35 +597,40 @@ impl Game {
         Ok(bincode::deserialize(&fs::read(filename)?)?)
     }
 
-    // TODO: specific order?
     fn look(&self) -> String {
         let room = self.item(self.player_location());
 
         format!(
-            "{}{}{}",
+            "{}{}\n{}",
             if !room.name().is_empty() {
                 format!("{}\n", room.name())
             } else {
                 String::new()
             },
             room.desc(),
-            self.items.iter().fold(String::new(), |acc, (loc, i)| {
-                if i.is_in(self.player_location()) {
-                    let desc = if i.is_container() {
-                        self.desc_contents(loc, i)
-                    } else {
-                        i.desc().to_owned()
-                    };
+            self.items
+                .iter()
+                .fold(BTreeMap::new(), |mut acc, (loc, i)| {
+                    if i.is_in(self.player_location()) {
+                        let desc = if i.is_container() {
+                            self.desc_contents(loc, i)
+                        } else {
+                            i.desc().to_owned()
+                        };
 
-                    if desc.is_empty() {
-                        acc
+                        if desc.is_empty() {
+                            acc
+                        } else {
+                            acc.insert(i.name(), desc);
+                            acc
+                        }
                     } else {
-                        format!("{}\n{}", acc, desc)
+                        acc
                     }
-                } else {
-                    acc
-                }
-            })
+                })
+                .into_values()
+                .collect::<Vec<_>>()
+                .join("\n")
         )
     }
 
