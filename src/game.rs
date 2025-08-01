@@ -290,7 +290,7 @@ impl Game {
                     Outcome::Active(output) => {
                         res = format!("{}\n\n{}{}", res, output, self.combat())
                     }
-                    Outcome::Idle(output) => res = format!("{}\n\n{}", res, output,),
+                    Outcome::Idle(output) => res = format!("{res}\n\n{output}"),
                 }
             }
         }
@@ -332,7 +332,7 @@ impl Game {
 
         if player.hp() <= 0 {
             self.dead = true;
-            format!("{}\n\nYou die.", res)
+            format!("{res}\n\nYou die.")
         } else {
             res
         }
@@ -534,7 +534,7 @@ impl Game {
         if inv.is_empty() {
             "Your inventory is empty.".to_owned()
         } else {
-            format!("You are carrying:{}", inv)
+            format!("You are carrying:{inv}")
         }
     }
 
@@ -702,7 +702,7 @@ impl Game {
             Action::Open(noun) => Outcome::Active(self.parse_open(noun)),
             Action::Sleep => Outcome::Active("Time passes...".to_owned()),
             Action::Take(noun) => Outcome::Active(self.parse_take(noun)),
-            Action::Unknown(verb) => Outcome::Idle(format!("I do not know the verb \"{}\".", verb)),
+            Action::Unknown(verb) => Outcome::Idle(format!("I do not know the verb \"{verb}\".")),
             Action::Version => Outcome::Idle(format!("Kingslayer {}", env!("CARGO_PKG_VERSION"))),
             Action::Walk(direction) => Outcome::Active(self.parse_walk(direction)),
             Action::Wear(_) => Outcome::Active("You can't do that yet.".to_owned()),
@@ -940,7 +940,7 @@ impl Game {
 }
 
 fn cant_see_any(noun: &str) -> String {
-    format!("You can't see any {} here.", noun)
+    format!("You can't see any {noun} here.")
 }
 
 fn list_names(names: &[&str], sep: &str) -> String {
@@ -955,7 +955,7 @@ fn list_names(names: &[&str], sep: &str) -> String {
                 "{a} {}, {sep} {a} {}",
                 names[1..names.len() - 1]
                     .iter()
-                    .fold(names[0].to_owned(), |acc, i| format!("{}, {a} {}", acc, i)),
+                    .fold(names[0].to_owned(), |acc, i| format!("{acc}, {a} {i}")),
                 names[names.len() - 1]
             )
         }

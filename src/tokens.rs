@@ -104,8 +104,8 @@ impl Tokens {
                 }
                 match (noun.is_empty(), prep.as_str(), obj.is_empty()) {
                     (false, _, false) => Action::Attack(noun.to_owned(), obj.to_owned()),
-                    (true, _, false) => Action::what_do(&format!("{} {} the {}", verb, prep, obj)),
-                    (false, _, true) => Action::what_do(&format!("{} the {} {}", verb, noun, prep)),
+                    (true, _, false) => Action::what_do(&format!("{verb} {prep} the {obj}")),
+                    (false, _, true) => Action::what_do(&format!("{verb} the {noun} {prep}")),
                     (true, _, true) => Action::what_do(verb),
                 }
             }
@@ -135,7 +135,7 @@ impl Tokens {
                     match prep.as_str() {
                         "in" => Action::Walk("enter".to_owned()),
                         "out" => Action::Walk("exit".to_owned()),
-                        _ => Action::Clarify(format!("Where do you want to {}?", verb)),
+                        _ => Action::Clarify(format!("Where do you want to {verb}?")),
                     }
                 } else {
                     Action::Walk(noun.to_owned())
@@ -177,8 +177,8 @@ impl Tokens {
                     (true, "on", false) => Action::Wear(obj.to_owned()),
                     (true, "on", true) => Action::what_do("put on"),
                     (false, _, false) => Action::Put(noun.to_owned(), obj.to_owned()),
-                    (true, _, false) => Action::what_do(&format!("{} {} the {}", verb, prep, obj)),
-                    (false, _, true) => Action::what_do(&format!("{} the {} {}", verb, noun, prep)),
+                    (true, _, false) => Action::what_do(&format!("{verb} {prep} the {obj}")),
+                    (false, _, true) => Action::what_do(&format!("{verb} the {noun} {prep}")),
                     (true, _, true) => Action::what_do(verb),
                 }
             }

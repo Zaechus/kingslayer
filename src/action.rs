@@ -36,6 +36,6 @@ impl Default for Action {
 
 impl Action {
     pub(crate) fn what_do(s: &str) -> Self {
-        Self::Clarify(format!("What do you want to {}?", s))
+        Self::Clarify(format!("What do you want to {s}?"))
     }
 }
