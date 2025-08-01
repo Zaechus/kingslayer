@@ -592,9 +592,10 @@ impl Game {
     /// ```
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load(filename: &str) -> Result<Self, Box<dyn error::Error>> {
-        use std::fs;
-
-        Ok(bincode::deserialize(&fs::read(filename)?)?)
+        Ok(bincode::serde::decode_from_std_read(
+            &mut File::open(filename)?,
+            bincode::config::standard(),
+        )?)
     }
 
     fn look(&self) -> String {
@@ -888,7 +889,10 @@ impl Game {
     pub fn save(&self, filename: &str) -> Result<String, Box<dyn error::Error>> {
         Ok(match File::create(filename) {
             Ok(mut file) => {
-                file.write_all(&bincode::serialize(self)?)?;
+                file.write_all(&bincode::serde::encode_to_vec(
+                    self,
+                    bincode::config::standard(),
+                )?)?;
                 "Saved.".to_owned()
             }
             Err(e) => e.to_string(),
