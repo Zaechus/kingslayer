@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
 pub(crate) enum Action {
     Again,
     Attack(String, String),
@@ -14,6 +14,7 @@ pub(crate) enum Action {
     Hello,
     Help,
     Inventory,
+    #[default]
     Look,
     Move(String),
     NoVerb,
@@ -26,12 +27,6 @@ pub(crate) enum Action {
     Walk(String),
     Wear(String),
     Where(String),
-}
-
-impl Default for Action {
-    fn default() -> Self {
-        Self::Look
-    }
 }
 
 impl Action {

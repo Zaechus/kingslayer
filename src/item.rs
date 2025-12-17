@@ -2,42 +2,27 @@ use serde::{Deserialize, Serialize};
 
 use crate::container::Container;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 enum Nature {
-    Aggressive,
+    #[default]
     Inanimate,
     Passive,
+    Aggressive,
 }
 
-impl Default for Nature {
-    fn default() -> Self {
-        Self::Inanimate
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 enum Food {
+    #[default]
+    Not,
     Edible,
     Poisonous,
-    Not,
 }
 
-impl Default for Food {
-    fn default() -> Self {
-        Self::Not
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 enum Opacity {
+    #[default]
     Opaque,
     Transparent,
-}
-
-impl Default for Opacity {
-    fn default() -> Self {
-        Self::Opaque
-    }
 }
 
 #[derive(Debug, Default, Deserialize, Serialize)]

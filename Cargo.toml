@@ -13,11 +13,8 @@ exclude = [".github"]
 edition = "2021"
 
 [dependencies]
-ron = "0.10"
+ron = "0.12"
 serde = { version = "1", features = ["derive"] }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-bincode = { version = "2.0", features = ["serde"] }
 
 [profile.release]
 panic = "abort"
