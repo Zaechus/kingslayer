@@ -318,10 +318,10 @@ impl Game {
 
     fn combat(&mut self) -> String {
         let mut damage = 0;
-        let res = self.items.iter().fold(String::new(), |acc, (_, i)| {
-            if i.is_in(self.player_location()) && i.is_aggressive() {
-                damage += i.damage();
-                format!("{}\n\nThe {} hits you.", acc, i.name()) // TODO: random different messages
+        let res = self.items.iter().fold(String::new(), |acc, (id, ent)| {
+            if ent.is_in(self.player_location()) && ent.is_aggressive() && *id != self.player {
+                damage += ent.damage();
+                format!("{}\n\nThe {} hits you.", acc, ent.name()) // TODO: random different messages
             } else {
                 acc
             }
