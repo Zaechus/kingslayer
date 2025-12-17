@@ -318,14 +318,20 @@ impl Game {
 
     fn combat(&mut self) -> String {
         let mut damage = 0;
+        let mut last = String::new();
         let res = self.items.iter().fold(String::new(), |acc, (id, ent)| {
             if ent.is_in(self.player_location()) && ent.is_aggressive() && *id != self.player {
                 damage += ent.damage();
+                last = ent.name().to_owned();
                 format!("{}\n\nThe {} hits you.", acc, ent.name()) // TODO: random different messages
             } else {
                 acc
             }
         });
+
+        if !last.is_empty() {
+            self.last_it = last;
+        }
 
         let player = self.item_mut(&self.player.to_owned());
         player.hurt(damage);
@@ -346,8 +352,10 @@ impl Game {
             enemy_item.hurt(damage);
 
             let enemy_name = enemy_item.name().to_owned();
-            let dies = if self.item(enemy).hp() <= 0 {
-                self.items.remove(enemy);
+            let dies = if enemy_item.hp() <= 0 {
+                if enemy != self.player {
+                    self.items.remove(enemy);
+                }
 
                 let player_location = self.player_location().to_owned();
                 let loot = self
@@ -361,7 +369,7 @@ impl Game {
                     .collect::<Vec<_>>();
 
                 if loot.is_empty() {
-                    " It dies.".to_owned()
+                    " It dies.".to_owned() // TODO: death message
                 } else {
                     if loot.len() == 1 {
                         self.last_it = loot[0].to_owned();
