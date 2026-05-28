@@ -28,12 +28,12 @@ enum Opacity {
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(default)]
 pub(crate) struct Item {
-    nature: Nature,
     can_take: bool,
     close_message: String,
     container: Container,
     covering: Vec<String>,
     damage: i8,
+    death_message: String,
     desc: String,
     dest: String,
     details: String,
@@ -45,16 +45,13 @@ pub(crate) struct Item {
     move_message: String,
     moved_message: String,
     names: Vec<String>,
+    nature: Nature,
     opacity: Opacity,
     open_message: String,
     take_message: String,
 }
 
 impl Item {
-    pub(crate) const fn is_aggressive(&self) -> bool {
-        matches!(self.nature, Nature::Aggressive)
-    }
-
     pub(crate) const fn can_eat(&self) -> bool {
         !matches!(self.food, Food::Not)
     }
@@ -82,6 +79,14 @@ impl Item {
 
     pub(crate) const fn damage(&self) -> i8 {
         self.damage
+    }
+
+    pub(crate) fn death_message(&self) -> &str {
+        if self.death_message.is_empty() {
+            "It dies."
+        } else {
+            &self.death_message
+        }
     }
 
     pub(crate) fn desc(&self) -> &str {
@@ -117,6 +122,10 @@ impl Item {
             self.nature = Nature::Aggressive;
         }
         self.hp = self.hp.saturating_sub(damage)
+    }
+
+    pub(crate) const fn is_aggressive(&self) -> bool {
+        matches!(self.nature, Nature::Aggressive)
     }
 
     pub(crate) const fn is_clear(&self) -> bool {

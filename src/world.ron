@@ -98,6 +98,7 @@
         nature: Aggressive,
         hp: 1,
         damage: 1,
+        death_message: "It disperses.",
     ),
     "SWORD": (
         desc: "There is a sword here.",

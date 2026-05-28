@@ -353,6 +353,7 @@ impl Game {
 
             let enemy_name = enemy_item.name().to_owned();
             let dies = if enemy_item.hp() <= 0 {
+                let death_message = enemy_item.death_message().to_owned();
                 if enemy != self.player {
                     self.items.remove(enemy);
                 }
@@ -369,12 +370,12 @@ impl Game {
                     .collect::<Vec<_>>();
 
                 if loot.is_empty() {
-                    " It dies.".to_owned() // TODO: death message
+                    format!(" {death_message}")
                 } else {
                     if loot.len() == 1 {
                         self.last_it = loot[0].to_owned();
                     }
-                    format!(" It dies. It drops {}.", list_names(&loot, "and"))
+                    format!(" {death_message} It drops {}.", list_names(&loot, "and"))
                 }
             } else {
                 String::new()
