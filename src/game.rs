@@ -7,7 +7,7 @@ use std::{
 #[cfg(not(target_arch = "wasm32"))]
 use std::{
     error,
-    fs::File,
+    fs::{self, File},
     io::{self, Write},
 };
 
@@ -184,7 +184,7 @@ impl Game {
     /// Parse a string into game actions and return the output.
     /// ```
     /// # use kingslayer::Game;
-    /// # let mut game: Game = include_str!("world.ron").parse().unwrap();
+    /// # let mut game: Game = Game::default();
     /// println!("{}", game.ask("look around"));
     /// ```
     pub fn ask<S: Into<String>>(&mut self, input: S) -> String {
@@ -596,7 +596,7 @@ impl Game {
     /// # use kingslayer::Game;
     /// # let game = Game::default();
     /// # game.save("kingslayer.save");
-    /// Game::load("kingslayer.save");
+    /// let game = Game::load("kingslayer.save");
     /// ```
     #[cfg(not(target_arch = "wasm32"))]
     pub fn load(filename: &str) -> Result<Self, Box<dyn error::Error>> {
@@ -869,6 +869,7 @@ impl Game {
     /// ```
     /// # use kingslayer::Game;
     /// # let mut game = Game::default();
+    /// # game.save("kingslayer.save");
     /// game.restore("kingslayer.save");
     /// ```
     #[cfg(not(target_arch = "wasm32"))]
@@ -892,11 +893,8 @@ impl Game {
     /// ```
     #[cfg(not(target_arch = "wasm32"))]
     pub fn save(&self, filename: &str) -> Result<String, Box<dyn error::Error>> {
-        Ok(match File::create(filename) {
-            Ok(mut file) => {
-                file.write_all(ron::ser::to_string(self)?.as_bytes())?;
-                "Saved.".to_owned()
-            }
+        Ok(match fs::write(filename, ron::ser::to_string(self)?) {
+            Ok(_) => "Saved.".to_owned(),
             Err(e) => e.to_string(),
         })
     }
